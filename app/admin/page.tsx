@@ -1,0 +1,246 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+
+type Tag = {
+  id: string
+  slug: string
+  label: string
+  sort_order: number
+}
+
+type Game = {
+  id: string
+  name: string
+  is_active: boolean
+  played_at: string | null
+  tags: Tag[]
+}
+
+export default function AdminGamesPage() {
+  const [games, setGames] = useState<Game[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+  const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState<string>('')
+
+  const [search, setSearch] = useState('')
+  const [editingGame, setEditingGame] = useState<Game | null>(null)
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
+  const [saving, setSaving] = useState(false)
+
+  async function loadAll() {
+    setLoading(true)
+    setStatus('')
+
+    const [gamesRes, tagsRes] = await Promise.all([
+      fetch('/api/admin/games'),
+      fetch('/api/tags'),
+    ])
+
+    const gamesJson = await gamesRes.json()
+    const tagsJson = await tagsRes.json()
+
+    if (!gamesRes.ok) {
+      setStatus(gamesJson.error || 'Failed to load games')
+      setLoading(false)
+      return
+    }
+    if (!tagsRes.ok) {
+      setStatus(tagsJson.error || 'Failed to load tags')
+      setLoading(false)
+      return
+    }
+
+    setGames(gamesJson.games ?? [])
+    setTags(tagsJson.tags ?? [])
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadAll()
+  }, [])
+
+  const filteredGames = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return games
+    return games.filter((g) => g.name.toLowerCase().includes(q))
+  }, [games, search])
+
+  function openEditor(game: Game) {
+    setEditingGame(game)
+    setSelectedTagIds(new Set(game.tags.map((t) => t.id)))
+  }
+
+  function toggleTag(tagId: string) {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(tagId)) next.delete(tagId)
+      else next.add(tagId)
+      return next
+    })
+  }
+
+  async function saveTags() {
+    if (!editingGame) return
+    setSaving(true)
+    setStatus('')
+
+    const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tagIds: Array.from(selectedTagIds) }),
+    })
+
+    const json = await res.json()
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to save tags')
+      setSaving(false)
+      return
+    }
+
+    // Optimistically update local state
+    const updatedTags = tags.filter((t) => selectedTagIds.has(t.id))
+    setGames((prev) =>
+      prev.map((g) => (g.id === editingGame.id ? { ...g, tags: updatedTags } : g))
+    )
+
+    setSaving(false)
+    setEditingGame(null)
+    setStatus('Saved.')
+  }
+
+  return (
+    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Games & Tags</h1>
+
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search games…"
+          style={{ padding: 10, minWidth: 260 }}
+        />
+        <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+          Refresh
+        </button>
+        {status && <span style={{ opacity: 0.85 }}><strong>{status}</strong></span>}
+      </div>
+
+      {loading ? (
+        <p>Loading…</p>
+      ) : (
+        <div style={{ display: 'grid', gap: 12 }}>
+          {filteredGames.map((g) => (
+            <div
+              key={g.id}
+              style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, display: 'grid', gap: 10 }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{g.name}</div>
+                  <div style={{ opacity: 0.75, fontSize: 13 }}>
+                    {g.is_active ? 'Active' : 'Inactive'}
+                    {g.played_at ? ` • Played` : ''}
+                  </div>
+                </div>
+
+                <button onClick={() => openEditor(g)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
+                  Edit tags
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {g.tags.length === 0 ? (
+                  <span style={{ opacity: 0.6 }}>No tags</span>
+                ) : (
+                  g.tags.map((t) => (
+                    <span
+                      key={t.id}
+                      style={{
+                        border: '1px solid #ccc',
+                        borderRadius: 999,
+                        padding: '4px 10px',
+                        fontSize: 13,
+                      }}
+                      title={t.slug}
+                    >
+                      {t.label}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Simple modal-like editor */}
+      {editingGame && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.35)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: 16,
+          }}
+        >
+          <div style={{ background: '#fff', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>
+                <div style={{ opacity: 0.8 }}>{editingGame.name}</div>
+              </div>
+              <button
+                onClick={() => setEditingGame(null)}
+                style={{ padding: '8px 12px', cursor: 'pointer' }}
+                disabled={saving}
+              >
+                Close
+              </button>
+            </div>
+
+            <div style={{ marginTop: 14, display: 'grid', gap: 8 }}>
+              {tags.map((t) => (
+                <label key={t.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTagIds.has(t.id)}
+                    onChange={() => toggleTag(t.id)}
+                    disabled={saving}
+                  />
+                  <span>
+                    {t.label} <span style={{ opacity: 0.6, fontSize: 12 }}>({t.slug})</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <button
+                onClick={saveTags}
+                style={{ padding: '10px 14px', cursor: 'pointer' }}
+                disabled={saving}
+              >
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                onClick={() => setEditingGame(null)}
+                style={{ padding: '10px 14px', cursor: 'pointer' }}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div style={{ marginTop: 10, opacity: 0.75, fontSize: 12 }}>
+              Saving replaces all tags for this game to match your selections.
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  )
+}
