@@ -24,7 +24,10 @@ export default function AdminGamesPage() {
   const [status, setStatus] = useState<string>('')
 
   const [search, setSearch] = useState('')
+
+  // Editor state
   const [editingGame, setEditingGame] = useState<Game | null>(null)
+  const [editingGameId, setEditingGameId] = useState<string | null>(null)
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
 
@@ -32,10 +35,7 @@ export default function AdminGamesPage() {
     setLoading(true)
     setStatus('')
 
-    const [gamesRes, tagsRes] = await Promise.all([
-      fetch('/api/admin/games'),
-      fetch('/api/tags'),
-    ])
+    const [gamesRes, tagsRes] = await Promise.all([fetch('/api/admin/games'), fetch('/api/tags')])
 
     const gamesJson = await gamesRes.json()
     const tagsJson = await tagsRes.json()
@@ -68,15 +68,25 @@ export default function AdminGamesPage() {
   }, [games, search])
 
   function openEditor(game: Game) {
-      if (!game?.id) {
-        setStatus('Cannot edit tags: this game is missing an id. Try Refresh.')
-        return
-      }
-      setEditingGame(game)
-      setSelectedTagIds(new Set((game.tags ?? []).map((t) => t.id).filter(Boolean)))
+    if (!game?.id) {
+      setStatus('Cannot edit tags: this game is missing an id. Try Refresh.')
+      return
     }
 
+    setEditingGame(game)
+    setEditingGameId(game.id)
+    setSelectedTagIds(new Set((game.tags ?? []).map((t) => t.id).filter(Boolean)))
+  }
+
+  function closeEditor() {
+    setEditingGame(null)
+    setEditingGameId(null)
+    setSelectedTagIds(new Set())
+  }
+
   function toggleTag(tagId: string) {
+    if (!tagId) return
+
     setSelectedTagIds((prev) => {
       const next = new Set(prev)
       if (next.has(tagId)) next.delete(tagId)
@@ -86,28 +96,26 @@ export default function AdminGamesPage() {
   }
 
   async function saveTags() {
-    console.log('saveTags editingGame:', editingGame)
+    // Helpful debug line if anything odd happens again
+    console.log('saveTags editingGameId:', editingGameId, 'editingGame:', editingGame)
 
-  if (!editingGame || !editingGame.id) {
-    setStatus('Missing game id. Please close and re-open the editor, then try again.')
-    return
-  }
-    if (!editingGame) return
+    if (!editingGameId) {
+      setStatus('Missing game id. Please close and re-open the editor, then try again.')
+      return
+    }
+
     setSaving(true)
     setStatus('')
 
-
-
     const cleanTagIds = Array.from(selectedTagIds).filter(
-  (id): id is string => typeof id === 'string' && id.length > 0 && id !== 'undefined'
-)
+      (id): id is string => typeof id === 'string' && id.length > 0 && id !== 'undefined'
+    )
 
-const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ tagIds: cleanTagIds }),
-})
-
+    const res = await fetch(`/api/admin/games/${editingGameId}/tags`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tagIds: cleanTagIds }),
+    })
 
     const json = await res.json()
     if (!res.ok) {
@@ -116,14 +124,12 @@ const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
       return
     }
 
-    // Optimistically update local state
-    const updatedTags = tags.filter((t) => selectedTagIds.has(t.id))
-    setGames((prev) =>
-      prev.map((g) => (g.id === editingGame.id ? { ...g, tags: updatedTags } : g))
-    )
+    // Optimistically update local state using what we actually saved
+    const updatedTags = tags.filter((t) => cleanTagIds.includes(t.id))
+    setGames((prev) => prev.map((g) => (g.id === editingGameId ? { ...g, tags: updatedTags } : g)))
 
     setSaving(false)
-    setEditingGame(null)
+    closeEditor()
     setStatus('Saved.')
   }
 
@@ -141,7 +147,11 @@ const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
         <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
           Refresh
         </button>
-        {status && <span style={{ opacity: 0.85 }}><strong>{status}</strong></span>}
+        {status && (
+          <span style={{ opacity: 0.85 }}>
+            <strong>{status}</strong>
+          </span>
+        )}
       </div>
 
       {loading ? (
@@ -162,7 +172,18 @@ const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
                   </div>
                 </div>
 
-                <button onClick={() => openEditor(g)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
+                <button
+                  onClick={() =>
+                    openEditor({
+                      id: g.id,
+                      name: g.name,
+                      is_active: g.is_active,
+                      played_at: g.played_at,
+                      tags: g.tags ?? [],
+                    })
+                  }
+                  style={{ padding: '8px 12px', cursor: 'pointer' }}
+                >
                   Edit tags
                 </button>
               </div>
@@ -210,11 +231,7 @@ const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
                 <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>
                 <div style={{ opacity: 0.8 }}>{editingGame.name}</div>
               </div>
-              <button
-                onClick={() => setEditingGame(null)}
-                style={{ padding: '8px 12px', cursor: 'pointer' }}
-                disabled={saving}
-              >
+              <button onClick={closeEditor} style={{ padding: '8px 12px', cursor: 'pointer' }} disabled={saving}>
                 Close
               </button>
             </div>
@@ -239,15 +256,11 @@ const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
               <button
                 onClick={saveTags}
                 style={{ padding: '10px 14px', cursor: 'pointer' }}
-                disabled={saving}
+                disabled={saving || !editingGameId}
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>
-              <button
-                onClick={() => setEditingGame(null)}
-                style={{ padding: '10px 14px', cursor: 'pointer' }}
-                disabled={saving}
-              >
+              <button onClick={closeEditor} style={{ padding: '10px 14px', cursor: 'pointer' }} disabled={saving}>
                 Cancel
               </button>
             </div>
@@ -261,3 +274,4 @@ const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
     </main>
   )
 }
+
