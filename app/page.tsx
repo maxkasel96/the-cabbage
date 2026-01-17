@@ -1,8 +1,7 @@
 'use client'
 
-import Nav from '@/app/components/Nav'
-
 import { useEffect, useState } from 'react'
+import Nav from './components/Nav'
 
 type Game = {
   id: string
@@ -30,11 +29,13 @@ export default function Home() {
   const [players, setPlayers] = useState<Player[]>([])
   const [tags, setTags] = useState<Tag[]>([])
 
-  const [winnerPlayerIds, setwinnerPlayerIds] = useState<string>('')
   const [status, setStatus] = useState<string>('')
 
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
+
+  // Multi-select winners (by player id)
+  const [winnerPlayerIds, setWinnerPlayerIds] = useState<Set<string>>(new Set())
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
@@ -49,7 +50,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
   }, [])
@@ -67,9 +67,22 @@ export default function Home() {
     setSelectedTagSlugs(new Set())
   }
 
+  function toggleWinner(playerId: string) {
+    setWinnerPlayerIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(playerId)) next.delete(playerId)
+      else next.add(playerId)
+      return next
+    })
+  }
+
+  function clearWinners() {
+    setWinnerPlayerIds(new Set())
+  }
+
   async function rollRandom() {
     setStatus('')
-    setwinnerPlayerIds('')
+    setWinnerPlayerIds(new Set()) // reset winners for the newly rolled game
 
     const params = new URLSearchParams()
     if (selectedTagSlugs.size > 0) {
@@ -93,12 +106,14 @@ export default function Home() {
     if (!game) return
     setStatus('')
 
+    const winnerIds = Array.from(winnerPlayerIds)
+
     const res = await fetch('/api/game/mark-played', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         gameId: game.id,
-        winnerPlayerIds: winnerPlayerIds || null,
+        winnerPlayerIds: winnerIds,
       }),
     })
 
@@ -108,7 +123,19 @@ export default function Home() {
       return
     }
 
-    setStatus(`Marked as played: ${game.name}`)
+    const winnerNames =
+      winnerIds.length === 0
+        ? null
+        : winnerIds
+            .map((id) => players.find((p) => p.id === id)?.display_name)
+            .filter(Boolean)
+            .join(', ')
+
+    setStatus(
+      winnerNames
+        ? `Saved: ${game.name} (Winners: ${winnerNames}). View History to confirm.`
+        : `Saved: ${game.name} (No winners selected). View History to confirm.`
+    )
 
     // Auto-roll again with current filters
     await rollRandom()
@@ -122,10 +149,18 @@ export default function Home() {
           .map((t) => t.label)
           .join(', ')
 
+  const selectedWinnersLabel =
+    winnerPlayerIds.size === 0
+      ? 'None'
+      : players
+          .filter((p) => winnerPlayerIds.has(p.id))
+          .map((p) => p.display_name)
+          .join(', ')
+
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Board Game Picker</h1>
       <Nav />
-      <h1 style={{ fontSize: 28, marginBottom: 12 }}>Board Game Picker</h1>
 
       {/* Tag filter chips */}
       {tags.length > 0 && (
@@ -135,7 +170,6 @@ export default function Home() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {tags.map((t) => {
               const active = selectedTagSlugs.has(t.slug)
-
               return (
                 <button
                   key={t.id}
@@ -195,14 +229,14 @@ export default function Home() {
       {/* Status */}
       {status && (
         <p style={{ marginBottom: 16 }}>
-          <strong>{status}</strong>
+          <strong>{status}</strong> <a href="/history">Open History</a>
         </p>
       )}
 
       {!game ? (
         <p>Click “Random game” to get a recommendation.</p>
       ) : (
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 520 }}>
+        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 720 }}>
           <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
 
           <p style={{ margin: '8px 0' }}>
@@ -216,25 +250,46 @@ export default function Home() {
 
           {game.notes && <p style={{ margin: '8px 0' }}>{game.notes}</p>}
 
-          <div style={{ marginTop: 12 }}>
-            <label>
-              Winner:{' '}
-              <select
-                value={winnerPlayerIds}
-                onChange={(e) => setwinnerPlayerIds(e.target.value)}
-                style={{ padding: 6, marginLeft: 6 }}
+          {/* Multi-winner picker */}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Select winner(s):</div>
+
+            <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
+              {players.map((p) => (
+                <label key={p.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={winnerPlayerIds.has(p.id)}
+                    onChange={() => toggleWinner(p.id)}
+                  />
+                  <span>{p.display_name}</span>
+                </label>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13 }}>
+              <strong>Selected:</strong> {selectedWinnersLabel}
+            </div>
+
+            {winnerPlayerIds.size > 0 && (
+              <button
+                onClick={clearWinners}
+                style={{
+                  marginTop: 6,
+                  fontSize: 12,
+                  background: 'none',
+                  border: 'none',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
               >
-                <option value="">(none)</option>
-                {players.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.display_name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                Clear winners
+              </button>
+            )}
           </div>
 
-          <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+          <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button onClick={markPlayed} style={{ padding: '10px 14px', cursor: 'pointer' }}>
               Mark as played
             </button>
@@ -247,4 +302,3 @@ export default function Home() {
     </main>
   )
 }
-
