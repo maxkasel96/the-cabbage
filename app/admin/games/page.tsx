@@ -69,7 +69,7 @@ export default function AdminGamesPage() {
 
   function openEditor(game: Game) {
     setEditingGame(game)
-    setSelectedTagIds(new Set(game.tags.map((t) => t.id)))
+    setSelectedTagIds(new Set(game.tags.map((t) => t.id).filter((id): id is string => !!id)))
   }
 
   function toggleTag(tagId: string) {
@@ -86,11 +86,18 @@ export default function AdminGamesPage() {
     setSaving(true)
     setStatus('')
 
-    const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tagIds: Array.from(selectedTagIds) }),
-    })
+
+
+    const cleanTagIds = Array.from(selectedTagIds).filter(
+  (id): id is string => typeof id === 'string' && id.length > 0 && id !== 'undefined'
+)
+
+const res = await fetch(`/api/admin/games/${editingGame.id}/tags`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ tagIds: cleanTagIds }),
+})
+
 
     const json = await res.json()
     if (!res.ok) {
