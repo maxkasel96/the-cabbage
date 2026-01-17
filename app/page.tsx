@@ -30,7 +30,7 @@ export default function Home() {
   const [players, setPlayers] = useState<Player[]>([])
   const [tags, setTags] = useState<Tag[]>([])
 
-  const [winnerPlayerId, setWinnerPlayerId] = useState<string>('')
+  const [winnerPlayerIds, setwinnerPlayerIds] = useState<string>('')
   const [status, setStatus] = useState<string>('')
 
   // Multi-select tag filters (by slug)
@@ -69,7 +69,7 @@ export default function Home() {
 
   async function rollRandom() {
     setStatus('')
-    setWinnerPlayerId('')
+    setwinnerPlayerIds('')
 
     const params = new URLSearchParams()
     if (selectedTagSlugs.size > 0) {
@@ -98,7 +98,7 @@ export default function Home() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         gameId: game.id,
-        winnerPlayerId: winnerPlayerId || null,
+        winnerPlayerIds: winnerPlayerIds || null,
       }),
     })
 
@@ -220,8 +220,8 @@ export default function Home() {
             <label>
               Winner:{' '}
               <select
-                value={winnerPlayerId}
-                onChange={(e) => setWinnerPlayerId(e.target.value)}
+                value={winnerPlayerIds}
+                onChange={(e) => setwinnerPlayerIds(e.target.value)}
                 style={{ padding: 6, marginLeft: 6 }}
               >
                 <option value="">(none)</option>

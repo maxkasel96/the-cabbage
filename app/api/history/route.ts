@@ -9,10 +9,11 @@ export async function GET() {
       id,
       name,
       played_at,
-      winner_player_id,
-      players:winner_player_id (
-        id,
-        display_name
+      game_winners (
+        players (
+          id,
+          display_name
+        )
       )
     `
     )
@@ -22,12 +23,25 @@ export async function GET() {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const history = (data ?? []).map((g: any) => ({
-    id: g.id,
-    name: g.name,
-    played_at: g.played_at,
-    winner: g.players ? { id: g.players.id, display_name: g.players.display_name } : null,
-  }))
+  const history = (data ?? []).map((g: any) => {
+    const winners =
+      (g.game_winners ?? [])
+        .map((gw: any) => gw.players)
+        .filter(Boolean)
+        // Deduplicate just in case
+        .reduce((acc: any[], p: any) => {
+          if (!acc.some((x) => x.id === p.id)) acc.push(p)
+          return acc
+        }, [])
+
+    return {
+      id: g.id,
+      name: g.name,
+      played_at: g.played_at,
+      winners, // array: [{ id, display_name }, ...]
+    }
+  })
 
   return NextResponse.json({ history })
 }
+
