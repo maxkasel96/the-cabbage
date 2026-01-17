@@ -31,12 +31,8 @@ export default function Home() {
   const [winnerPlayerId, setWinnerPlayerId] = useState<string>('')
   const [status, setStatus] = useState<string>('')
 
-  const [tags, setTags] = useState<Tag[]>([])
+  // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
-
-
-  // Tracks which tag filter is currently active (null = no filter)
-  const [activeTag, setActiveTag] = useState<string | null>(null)
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
@@ -50,25 +46,23 @@ export default function Home() {
     setTags(json.tags ?? [])
   }
 
-  async function fetchTags() {
-  const res = await fetch('/api/tags')
-  const json = await res.json()
-  setTags(json.tags ?? [])
-  }
-
   useEffect(() => {
     fetchPlayers()
     fetchTags()
   }, [])
 
   function toggleTag(slug: string) {
-  setSelectedTagSlugs((prev) => {
-    const next = new Set(prev)
-    if (next.has(slug)) next.delete(slug)
-    else next.add(slug)
-    return next
-  })
-}
+    setSelectedTagSlugs((prev) => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }
+
+  function clearFilters() {
+    setSelectedTagSlugs(new Set())
+  }
 
   async function rollRandom() {
     setStatus('')
@@ -79,7 +73,8 @@ export default function Home() {
       params.set('tags', Array.from(selectedTagSlugs).join(','))
     }
 
-    const res = await fetch(`/api/random?${params.toString()}`)
+    const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
+    const res = await fetch(url)
     const json = await res.json()
 
     if (!res.ok) {
@@ -112,96 +107,85 @@ export default function Home() {
 
     setStatus(`Marked as played: ${game.name}`)
 
-    // Auto-roll the next unplayed game using the same active filter
-    await rollRandom(activeTag)
+    // Auto-roll again with current filters
+    await rollRandom()
   }
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchPlayers()
-    fetchTags()
-  }, [])
+  const selectedLabels =
+    selectedTagSlugs.size === 0
+      ? 'None'
+      : tags
+          .filter((t) => selectedTagSlugs.has(t.slug))
+          .map((t) => t.label)
+          .join(', ')
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Board Game Picker</h1>
 
-      {/* Buttons */}
+      {/* Tag filter chips */}
+      {tags.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>Filter by vibe:</div>
 
-    {tags.length > 0 && (
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>Filter by vibe:</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {tags.map((t) => {
+              const active = selectedTagSlugs.has(t.slug)
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {tags.map((t) => {
-            const active = selectedTagSlugs.has(t.slug)
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => toggleTag(t.slug)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 999,
+                    border: '1px solid #ccc',
+                    cursor: 'pointer',
+                    background: active ? '#222' : '#fff',
+                    color: active ? '#fff' : '#000',
+                    fontSize: 13,
+                  }}
+                  title={t.slug}
+                >
+                  {active ? '✓ ' : ''}
+                  {t.label}
+                </button>
+              )
+            })}
+          </div>
 
-            return (
+          <div style={{ marginTop: 8, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ opacity: 0.8, fontSize: 13 }}>
+              <strong>Filters:</strong> {selectedLabels}
+            </div>
+
+            {selectedTagSlugs.size > 0 && (
               <button
-                key={t.id}
-                onClick={() => toggleTag(t.slug)}
+                onClick={clearFilters}
                 style={{
-                  padding: '6px 12px',
-                  borderRadius: 999,
-                  border: '1px solid #ccc',
+                  fontSize: 12,
+                  background: 'none',
+                  border: 'none',
+                  textDecoration: 'underline',
                   cursor: 'pointer',
-                  background: active ? '#222' : '#fff',
-                  color: active ? '#fff' : '#000',
-                  fontSize: 13,
+                  padding: 0,
                 }}
               >
-                {active ? '✓ ' : ''}
-                {t.label}
+                Clear filters
               </button>
-            )
-          })}
+            )}
+          </div>
         </div>
+      )}
 
-        {selectedTagSlugs.size > 0 && (
-          <button
-            onClick={() => setSelectedTagSlugs(new Set())}
-            style={{
-              marginTop: 8,
-              fontSize: 12,
-              background: 'none',
-              border: 'none',
-              textDecoration: 'underline',
-              cursor: 'pointer',
-            }}
-          >
-            Clear filters
-          </button>
-        )}
-      </div>
-    )}
-
-      <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-        <button
-          onClick={() => rollRandom(null)}
-          style={{
-            padding: '10px 14px',
-            cursor: 'pointer',
-            border: activeTag === null ? '2px solid #000' : '1px solid #ddd',
-          }}
-          title="No filter"
-        >
+      {/* Primary actions */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
           Random game
         </button>
-
-        {tags.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => rollRandom(t.slug)}
-            style={{
-              padding: '10px 14px',
-              cursor: 'pointer',
-              border: activeTag === t.slug ? '2px solid #000' : '1px solid #ddd',
-            }}
-            title={t.slug}
-          >
-            {t.label}
-          </button>
-        ))}
+        <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+          Roll again
+        </button>
       </div>
 
       {/* Status */}
@@ -211,18 +195,8 @@ export default function Home() {
         </p>
       )}
 
-      {/* Active filter indicator */}
-      <p style={{ marginTop: 0, marginBottom: 16, opacity: 0.8 }}>
-        Filter:{' '}
-        <strong>
-          {activeTag
-            ? tags.find((t) => t.slug === activeTag)?.label ?? activeTag
-            : 'None'}
-        </strong>
-      </p>
-
       {!game ? (
-        <p>Click “Random game” or a tag to get a recommendation.</p>
+        <p>Click “Random game” to get a recommendation.</p>
       ) : (
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 520 }}>
           <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
@@ -260,9 +234,7 @@ export default function Home() {
             <button onClick={markPlayed} style={{ padding: '10px 14px', cursor: 'pointer' }}>
               Mark as played
             </button>
-
-            {/* Roll again respects the current filter */}
-            <button onClick={() => rollRandom(activeTag)} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+            <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
               Roll again
             </button>
           </div>
