@@ -179,8 +179,8 @@ export default function Home() {
                     borderRadius: 999,
                     border: '1px solid #ccc',
                     cursor: 'pointer',
-                    background: active ? '#222' : '#fff',
-                    color: active ? '#fff' : '#000',
+                    background: active ? '#388e4a' : '#fff',
+                    color: active ? '#fff' : '#388e4a',
                     fontSize: 13,
                   }}
                   title={t.slug}
