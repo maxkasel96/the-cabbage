@@ -16,11 +16,23 @@ type Player = {
   display_name: string
 }
 
+type Tag = {
+  id: string
+  slug: string
+  label: string
+  sort_order: number
+}
+
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+
   const [winnerPlayerId, setWinnerPlayerId] = useState<string>('')
   const [status, setStatus] = useState<string>('')
+
+  // Tracks which tag filter is currently active (null = no filter)
+  const [activeTag, setActiveTag] = useState<string | null>(null)
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
@@ -28,16 +40,29 @@ export default function Home() {
     setPlayers(json.players ?? [])
   }
 
-  async function rollRandom() {
+  async function fetchTags() {
+    const res = await fetch('/api/tags')
+    const json = await res.json()
+    setTags(json.tags ?? [])
+  }
+
+  async function rollRandom(tagSlug: string | null = activeTag) {
     setStatus('')
     setWinnerPlayerId('')
-    const res = await fetch('/api/random')
+
+    // Update active tag when user explicitly clicks a tag button or Random game
+    setActiveTag(tagSlug)
+
+    const url = tagSlug ? `/api/random?tag=${encodeURIComponent(tagSlug)}` : '/api/random'
+    const res = await fetch(url)
     const json = await res.json()
+
     if (!res.ok) {
       setGame(null)
       setStatus(json.message || json.error || 'Failed to fetch a game')
       return
     }
+
     setGame(json.game)
   }
 
@@ -61,45 +86,82 @@ export default function Home() {
     }
 
     setStatus(`Marked as played: ${game.name}`)
-    // Auto-roll the next unplayed game
-    await rollRandom()
+
+    // Auto-roll the next unplayed game using the same active filter
+    await rollRandom(activeTag)
   }
 
   useEffect(() => {
     fetchPlayers()
+    fetchTags()
   }, [])
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Board Game Picker</h1>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+        <button
+          onClick={() => rollRandom(null)}
+          style={{
+            padding: '10px 14px',
+            cursor: 'pointer',
+            border: activeTag === null ? '2px solid #000' : '1px solid #ddd',
+          }}
+          title="No filter"
+        >
           Random game
         </button>
+
+        {tags.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => rollRandom(t.slug)}
+            style={{
+              padding: '10px 14px',
+              cursor: 'pointer',
+              border: activeTag === t.slug ? '2px solid #000' : '1px solid #ddd',
+            }}
+            title={t.slug}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
+      {/* Status */}
       {status && (
         <p style={{ marginBottom: 16 }}>
           <strong>{status}</strong>
         </p>
       )}
 
+      {/* Active filter indicator */}
+      <p style={{ marginTop: 0, marginBottom: 16, opacity: 0.8 }}>
+        Filter:{' '}
+        <strong>
+          {activeTag
+            ? tags.find((t) => t.slug === activeTag)?.label ?? activeTag
+            : 'None'}
+        </strong>
+      </p>
+
       {!game ? (
-        <p>Click “Random game” to get a recommendation.</p>
+        <p>Click “Random game” or a tag to get a recommendation.</p>
       ) : (
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 520 }}>
           <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
 
           <p style={{ margin: '8px 0' }}>
             Players:{' '}
-            {game.min_players && game.max_players
-              ? `${game.min_players}–${game.max_players}`
-              : '—'}
+            {game.min_players && game.max_players ? `${game.min_players}–${game.max_players}` : '—'}
           </p>
+
           <p style={{ margin: '8px 0' }}>
             Playtime: {game.playtime_minutes ? `${game.playtime_minutes} min` : '—'}
           </p>
+
           {game.notes && <p style={{ margin: '8px 0' }}>{game.notes}</p>}
 
           <div style={{ marginTop: 12 }}>
@@ -124,7 +186,9 @@ export default function Home() {
             <button onClick={markPlayed} style={{ padding: '10px 14px', cursor: 'pointer' }}>
               Mark as played
             </button>
-            <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+
+            {/* Roll again respects the current filter */}
+            <button onClick={() => rollRandom(activeTag)} style={{ padding: '10px 14px', cursor: 'pointer' }}>
               Roll again
             </button>
           </div>
@@ -133,3 +197,4 @@ export default function Home() {
     </main>
   )
 }
+
