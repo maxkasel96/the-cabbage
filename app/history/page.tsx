@@ -15,6 +15,12 @@ type HistoryRow = {
   winners: Winner[]
 }
 
+type ScoreRow = {
+  player_id: string
+  display_name: string
+  wins: number
+}
+
 export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,6 +48,24 @@ export default function HistoryPage() {
     loadHistory()
   }, [])
 
+  // Scoreboard: count wins by player across all history rows
+  const scores = useMemo<ScoreRow[]>(() => {
+    const map = new Map<string, ScoreRow>()
+
+    for (const h of history) {
+      for (const w of h.winners ?? []) {
+        const existing = map.get(w.id)
+        if (existing) {
+          existing.wins += 1
+        } else {
+          map.set(w.id, { player_id: w.id, display_name: w.display_name, wins: 1 })
+        }
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.wins - a.wins || a.display_name.localeCompare(b.display_name))
+  }, [history])
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return history
@@ -58,6 +82,48 @@ export default function HistoryPage() {
       <h1 style={{ fontSize: 26, marginBottom: 8 }}>History</h1>
       <Nav />
 
+      {/* Scoreboard */}
+      <div style={{ marginTop: 8, marginBottom: 18 }}>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Scoreboard</div>
+
+        {loading ? (
+          <p>Loading…</p>
+        ) : scores.length === 0 ? (
+          <p style={{ opacity: 0.75 }}>No wins recorded yet.</p>
+        ) : (
+          <div style={{ border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden', maxWidth: 520 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr',
+                background: '#f6f6f6',
+                padding: 10,
+                fontWeight: 700,
+              }}
+            >
+              <div>Player</div>
+              <div>Wins</div>
+            </div>
+
+            {scores.map((s) => (
+              <div
+                key={s.player_id}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1fr',
+                  padding: 10,
+                  borderTop: '1px solid #eee',
+                }}
+              >
+                <div>{s.display_name}</div>
+                <div style={{ fontWeight: 700 }}>{s.wins}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Search + controls */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
         <input
           value={search}
@@ -75,6 +141,7 @@ export default function HistoryPage() {
         )}
       </div>
 
+      {/* History list */}
       {loading ? (
         <p>Loading…</p>
       ) : filtered.length === 0 ? (
@@ -121,4 +188,5 @@ export default function HistoryPage() {
     </main>
   )
 }
+
 
