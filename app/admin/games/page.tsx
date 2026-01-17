@@ -68,9 +68,13 @@ export default function AdminGamesPage() {
   }, [games, search])
 
   function openEditor(game: Game) {
-    setEditingGame(game)
-    setSelectedTagIds(new Set(game.tags.map((t) => t.id).filter((id): id is string => !!id)))
-  }
+      if (!game?.id) {
+        setStatus('Cannot edit tags: this game is missing an id. Try Refresh.')
+        return
+      }
+      setEditingGame(game)
+      setSelectedTagIds(new Set((game.tags ?? []).map((t) => t.id).filter(Boolean)))
+    }
 
   function toggleTag(tagId: string) {
     setSelectedTagIds((prev) => {
@@ -82,6 +86,12 @@ export default function AdminGamesPage() {
   }
 
   async function saveTags() {
+    console.log('saveTags editingGame:', editingGame)
+
+  if (!editingGame || !editingGame.id) {
+    setStatus('Missing game id. Please close and re-open the editor, then try again.')
+    return
+  }
     if (!editingGame) return
     setSaving(true)
     setStatus('')
