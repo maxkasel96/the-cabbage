@@ -96,7 +96,7 @@ export default function HistoryPage() {
               style={{
                 display: 'grid',
                 gridTemplateColumns: '2fr 1fr',
-                background: '#f6f6f6',
+                background: '#388e4a',
                 padding: 10,
                 fontWeight: 700,
               }}
@@ -153,7 +153,7 @@ export default function HistoryPage() {
               display: 'grid',
               gridTemplateColumns: '2fr 1fr 1fr',
               gap: 0,
-              background: '#f6f6f6',
+              background: '#388e4a',
               padding: 10,
               fontWeight: 700,
             }}
