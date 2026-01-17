@@ -11,7 +11,7 @@ export default function Nav() {
     borderRadius: 8,
     border: pathname === href ? '2px solid #000' : '1px solid #ddd',
     textDecoration: 'none',
-    color: '#000',
+    color: '#18b500',
     fontWeight: 600 as const,
   })
 
