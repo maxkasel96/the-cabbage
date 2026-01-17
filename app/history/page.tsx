@@ -3,11 +3,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 
+type Winner = {
+  id: string
+  display_name: string
+}
+
 type HistoryRow = {
   id: string
   name: string
   played_at: string
-  winner: { id: string; display_name: string } | null
+  winners: Winner[]
 }
 
 export default function HistoryPage() {
@@ -33,13 +38,19 @@ export default function HistoryPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadHistory()
   }, [])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return history
-    return history.filter((h) => h.name.toLowerCase().includes(q) || (h.winner?.display_name ?? '').toLowerCase().includes(q))
+
+    return history.filter((h) => {
+      const gameMatch = h.name.toLowerCase().includes(q)
+      const winnerMatch = (h.winners ?? []).some((w) => w.display_name.toLowerCase().includes(q))
+      return gameMatch || winnerMatch
+    })
   }, [history, search])
 
   return (
@@ -70,31 +81,44 @@ export default function HistoryPage() {
         <p>No played games yet.</p>
       ) : (
         <div style={{ border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden', maxWidth: 820 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 0, background: '#f6f6f6', padding: 10, fontWeight: 700 }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '2fr 1fr 1fr',
+              gap: 0,
+              background: '#f6f6f6',
+              padding: 10,
+              fontWeight: 700,
+            }}
+          >
             <div>Game</div>
-            <div>Winner</div>
+            <div>Winners</div>
             <div>Played</div>
           </div>
 
-          {filtered.map((h) => (
-            <div
-              key={h.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr 1fr',
-                padding: 10,
-                borderTop: '1px solid #eee',
-              }}
-            >
-              <div>{h.name}</div>
-              <div style={{ opacity: 0.9 }}>{h.winner?.display_name ?? '—'}</div>
-              <div style={{ opacity: 0.75 }}>
-                {new Date(h.played_at).toLocaleString()}
+          {filtered.map((h) => {
+            const winnersLabel =
+              (h.winners ?? []).length === 0 ? '—' : h.winners.map((w) => w.display_name).join(', ')
+
+            return (
+              <div
+                key={h.id}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1fr 1fr',
+                  padding: 10,
+                  borderTop: '1px solid #eee',
+                }}
+              >
+                <div>{h.name}</div>
+                <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
+                <div style={{ opacity: 0.75 }}>{new Date(h.played_at).toLocaleString()}</div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </main>
   )
 }
+
