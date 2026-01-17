@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Nav from '@/app/components/Nav'
+
 
 type Tag = {
   id: string
@@ -135,6 +137,7 @@ export default function AdminGamesPage() {
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <Nav />
       <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Games & Tags</h1>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>

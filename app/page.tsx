@@ -1,5 +1,7 @@
 'use client'
 
+import Nav from '@/app/components/Nav'
+
 import { useEffect, useState } from 'react'
 
 type Game = {
@@ -47,6 +49,7 @@ export default function Home() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
   }, [])
@@ -121,6 +124,7 @@ export default function Home() {
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <Nav />
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Board Game Picker</h1>
 
       {/* Tag filter chips */}
