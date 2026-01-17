@@ -31,6 +31,10 @@ export default function Home() {
   const [winnerPlayerId, setWinnerPlayerId] = useState<string>('')
   const [status, setStatus] = useState<string>('')
 
+  const [tags, setTags] = useState<Tag[]>([])
+  const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
+
+
   // Tracks which tag filter is currently active (null = no filter)
   const [activeTag, setActiveTag] = useState<string | null>(null)
 
@@ -46,15 +50,36 @@ export default function Home() {
     setTags(json.tags ?? [])
   }
 
-  async function rollRandom(tagSlug: string | null = activeTag) {
+  async function fetchTags() {
+  const res = await fetch('/api/tags')
+  const json = await res.json()
+  setTags(json.tags ?? [])
+  }
+
+  useEffect(() => {
+    fetchPlayers()
+    fetchTags()
+  }, [])
+
+  function toggleTag(slug: string) {
+  setSelectedTagSlugs((prev) => {
+    const next = new Set(prev)
+    if (next.has(slug)) next.delete(slug)
+    else next.add(slug)
+    return next
+  })
+}
+
+  async function rollRandom() {
     setStatus('')
     setWinnerPlayerId('')
 
-    // Update active tag when user explicitly clicks a tag button or Random game
-    setActiveTag(tagSlug)
+    const params = new URLSearchParams()
+    if (selectedTagSlugs.size > 0) {
+      params.set('tags', Array.from(selectedTagSlugs).join(','))
+    }
 
-    const url = tagSlug ? `/api/random?tag=${encodeURIComponent(tagSlug)}` : '/api/random'
-    const res = await fetch(url)
+    const res = await fetch(`/api/random?${params.toString()}`)
     const json = await res.json()
 
     if (!res.ok) {
@@ -102,6 +127,54 @@ export default function Home() {
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Board Game Picker</h1>
 
       {/* Buttons */}
+
+    {tags.length > 0 && (
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Filter by vibe:</div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {tags.map((t) => {
+            const active = selectedTagSlugs.has(t.slug)
+
+            return (
+              <button
+                key={t.id}
+                onClick={() => toggleTag(t.slug)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 999,
+                  border: '1px solid #ccc',
+                  cursor: 'pointer',
+                  background: active ? '#222' : '#fff',
+                  color: active ? '#fff' : '#000',
+                  fontSize: 13,
+                }}
+              >
+                {active ? '✓ ' : ''}
+                {t.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {selectedTagSlugs.size > 0 && (
+          <button
+            onClick={() => setSelectedTagSlugs(new Set())}
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              background: 'none',
+              border: 'none',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+    )}
+
       <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
         <button
           onClick={() => rollRandom(null)}
