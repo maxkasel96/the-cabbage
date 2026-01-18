@@ -94,6 +94,3 @@ let q = (supabaseServer as any)
   const game = data[Math.floor(Math.random() * data.length)]
   return NextResponse.json({ game, tournamentId })
 }
-
-
-adsf
