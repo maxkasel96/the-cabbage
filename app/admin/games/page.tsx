@@ -37,6 +37,10 @@ export default function AdminGamesPage() {
   const [newGameActive, setNewGameActive] = useState(true)
   const [creating, setCreating] = useState(false)
 
+  // Delete state
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+
   async function loadAll() {
     setLoading(true)
     setStatus('')
@@ -184,178 +188,214 @@ export default function AdminGamesPage() {
     setStatus(`Added game: ${json.game.name}`)
   }
 
-  return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-      <Nav />
-      <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Games & Tags</h1>
+  async function deleteGame(game: Game) {
+    if (!game?.id) return
 
-      {/* Add new game */}
-      <div
-        style={{
-          border: '1px solid #ddd',
-          borderRadius: 10,
-          padding: 14,
-          marginBottom: 16,
-          maxWidth: 720,
-        }}
-      >
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
+    const ok = window.confirm(`Delete "${game.name}"? This cannot be undone.`)
+    if (!ok) return
 
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+    setDeletingId(game.id)
+    setStatus('')
+
+    const res = await fetch(`/api/admin/games/${game.id}`, { method: 'DELETE' })
+
+    // safe parse (avoids crashing if response is empty/non-json)
+    const text = await res.text()
+    const json = text ? JSON.parse(text) : null
+
+    if (!res.ok) {
+      setStatus(json?.error || 'Failed to delete game')
+      setDeletingId(null)
+      return
+    }
+
+    setGames((prev) => prev.filter((g) => g.id !== game.id))
+    setDeletingId(null)
+    setStatus(`Deleted game: ${game.name}`)
+    }
+
+ return (
+  <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+    <Nav />
+    <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Games & Tags</h1>
+
+    {/* Add new game */}
+    <div
+      style={{
+        border: '1px solid #ddd',
+        borderRadius: 10,
+        padding: 14,
+        marginBottom: 16,
+        maxWidth: 720,
+      }}
+    >
+      <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
+
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          value={newGameName}
+          onChange={(e) => setNewGameName(e.target.value)}
+          placeholder="Game name…"
+          style={{ padding: 10, minWidth: 280 }}
+          disabled={creating}
+        />
+
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input
-            value={newGameName}
-            onChange={(e) => setNewGameName(e.target.value)}
-            placeholder="Game name…"
-            style={{ padding: 10, minWidth: 280 }}
+            type="checkbox"
+            checked={newGameActive}
+            onChange={(e) => setNewGameActive(e.target.checked)}
             disabled={creating}
           />
+          Active
+        </label>
 
-          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              type="checkbox"
-              checked={newGameActive}
-              onChange={(e) => setNewGameActive(e.target.checked)}
-              disabled={creating}
-            />
-            Active
-          </label>
-
-          <button
-            onClick={createGame}
-            style={{ padding: '10px 14px', cursor: creating ? 'not-allowed' : 'pointer' }}
-            disabled={creating}
-          >
-            {creating ? 'Adding…' : 'Add game'}
-          </button>
-
-          {status && (
-            <span style={{ opacity: 0.85 }}>
-              <strong>{status}</strong>
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Search + refresh */}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search games…"
-          style={{ padding: 10, minWidth: 260 }}
-        />
-        <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
-          Refresh
+        <button
+          onClick={createGame}
+          style={{ padding: '10px 14px', cursor: creating ? 'not-allowed' : 'pointer' }}
+          disabled={creating}
+        >
+          {creating ? 'Adding…' : 'Add game'}
         </button>
+
+        {status && (
+          <span style={{ opacity: 0.85 }}>
+            <strong>{status}</strong>
+          </span>
+        )}
       </div>
+    </div>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
-          {filteredGames.map((g) => (
-            <div
-              key={g.id}
-              style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, display: 'grid', gap: 10 }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 700 }}>{g.name}</div>
-                  <div style={{ opacity: 0.75, fontSize: 13 }}>
-                    {g.is_active ? 'Active' : 'Inactive'}
-                    {g.played_at ? ` • Played` : ''}
-                  </div>
+    {/* Search + refresh */}
+    <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search games…"
+        style={{ padding: 10, minWidth: 260 }}
+      />
+      <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+        Refresh
+      </button>
+    </div>
+
+    {loading ? (
+      <p>Loading…</p>
+    ) : (
+      <div style={{ display: 'grid', gap: 12 }}>
+        {filteredGames.map((g) => (
+          <div
+            key={g.id}
+            style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, display: 'grid', gap: 10 }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700 }}>{g.name}</div>
+                <div style={{ opacity: 0.75, fontSize: 13 }}>
+                  {g.is_active ? 'Active' : 'Inactive'}
+                  {g.played_at ? ` • Played` : ''}
                 </div>
+              </div>
 
+              <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => openEditor(g)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
                   Edit tags
                 </button>
-              </div>
 
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {g.tags.length === 0 ? (
-                  <span style={{ opacity: 0.6 }}>No tags</span>
-                ) : (
-                  g.tags.map((t) => (
-                    <span
-                      key={t.id}
-                      style={{
-                        border: '1px solid #ccc',
-                        borderRadius: 999,
-                        padding: '4px 10px',
-                        fontSize: 13,
-                      }}
-                      title={t.slug}
-                    >
-                      {t.label}
-                    </span>
-                  ))
-                )}
+                <button
+                  onClick={() => deleteGame(g)}
+                  style={{ padding: '8px 12px', cursor: deletingId === g.id ? 'not-allowed' : 'pointer' }}
+                  disabled={deletingId === g.id}
+                >
+                  {deletingId === g.id ? 'Deleting…' : 'Delete'}
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Modal editor */}
-      {editingGame && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.35)',
-            display: 'grid',
-            placeItems: 'center',
-            padding: 16,
-          }}
-        >
-          <div style={{ background: '#fff', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>
-                <div style={{ opacity: 0.8 }}>{editingGame.name}</div>
-              </div>
-              <button onClick={closeEditor} style={{ padding: '8px 12px', cursor: 'pointer' }} disabled={saving}>
-                Close
-              </button>
-            </div>
-
-            <div style={{ marginTop: 14, display: 'grid', gap: 8 }}>
-              {tags.map((t) => (
-                <label key={t.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedTagIds.has(t.id)}
-                    onChange={() => toggleTag(t.id)}
-                    disabled={saving}
-                  />
-                  <span>
-                    {t.label} <span style={{ opacity: 0.6, fontSize: 12 }}>({t.slug})</span>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {g.tags.length === 0 ? (
+                <span style={{ opacity: 0.6 }}>No tags</span>
+              ) : (
+                g.tags.map((t) => (
+                  <span
+                    key={t.id}
+                    style={{
+                      border: '1px solid #ccc',
+                      borderRadius: 999,
+                      padding: '4px 10px',
+                      fontSize: 13,
+                    }}
+                    title={t.slug}
+                  >
+                    {t.label}
                   </span>
-                </label>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-              <button
-                onClick={saveTags}
-                style={{ padding: '10px 14px', cursor: 'pointer' }}
-                disabled={saving || !editingGameId}
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-              <button onClick={closeEditor} style={{ padding: '10px 14px', cursor: 'pointer' }} disabled={saving}>
-                Cancel
-              </button>
-            </div>
-
-            <div style={{ marginTop: 10, opacity: 0.75, fontSize: 12 }}>
-              Saving replaces all tags for this game to match your selections.
+                ))
+              )}
             </div>
           </div>
+        ))}
+      </div>
+    )}
+
+    {/* Modal editor */}
+    {editingGame && (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.35)',
+          display: 'grid',
+          placeItems: 'center',
+          padding: 16,
+        }}
+      >
+        <div style={{ background: '#fff', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>
+              <div style={{ opacity: 0.8 }}>{editingGame.name}</div>
+            </div>
+            <button onClick={closeEditor} style={{ padding: '8px 12px', cursor: 'pointer' }} disabled={saving}>
+              Close
+            </button>
+          </div>
+
+          <div style={{ marginTop: 14, display: 'grid', gap: 8 }}>
+            {tags.map((t) => (
+              <label key={t.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedTagIds.has(t.id)}
+                  onChange={() => toggleTag(t.id)}
+                  disabled={saving}
+                />
+                <span>
+                  {t.label} <span style={{ opacity: 0.6, fontSize: 12 }}>({t.slug})</span>
+                </span>
+              </label>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+            <button
+              onClick={saveTags}
+              style={{ padding: '10px 14px', cursor: 'pointer' }}
+              disabled={saving || !editingGameId}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button onClick={closeEditor} style={{ padding: '10px 14px', cursor: 'pointer' }} disabled={saving}>
+              Cancel
+            </button>
+          </div>
+
+          <div style={{ marginTop: 10, opacity: 0.75, fontSize: 12 }}>
+            Saving replaces all tags for this game to match your selections.
+          </div>
         </div>
-      )}
-    </main>
-  )
+      </div>
+    )}
+  </main>
+)
 }
 
