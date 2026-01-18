@@ -40,6 +40,10 @@ export default function AdminGamesPage() {
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
+  // Bulk edit states
+  const [selectedGameIds, setSelectedGameIds] = useState<Set<string>>(new Set())
+  const [bulkTagId, setBulkTagId] = useState<string>('') // tag to add
+  const [bulkApplying, setBulkApplying] = useState(false)
 
   async function loadAll() {
     setLoading(true)
@@ -214,6 +218,73 @@ export default function AdminGamesPage() {
     setStatus(`Deleted game: ${game.name}`)
     }
 
+  // Bulk edit helpers
+  function toggleGameSelected(gameId: string) {
+      setSelectedGameIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(gameId)) next.delete(gameId)
+        else next.add(gameId)
+        return next
+      })
+    }
+
+  function clearBulkSelection() {
+      setSelectedGameIds(new Set())
+      setBulkTagId('')
+    }
+
+  function selectAllFiltered() {
+      setSelectedGameIds(new Set(filteredGames.map((g) => g.id)))
+    }
+
+  async function applyBulkAddTag() {
+  if (bulkApplying) return
+
+  const gameIds = Array.from(selectedGameIds)
+  if (gameIds.length === 0) {
+    setStatus('Select at least one game.')
+    return
+  }
+  if (!bulkTagId) {
+    setStatus('Select a tag to add.')
+    return
+  }
+
+  setBulkApplying(true)
+  setStatus('')
+
+  const res = await fetch('/api/admin/games/bulk-add-tag', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ gameIds, tagId: bulkTagId }),
+  })
+
+  const json = await res.json().catch(() => ({}))
+
+  if (!res.ok) {
+    setStatus(json.error || 'Failed to apply bulk tag')
+    setBulkApplying(false)
+    return
+  }
+
+  // Update local UI (merge the tag onto each selected game)
+  const tagToAdd = tags.find((t) => t.id === bulkTagId)
+  if (tagToAdd) {
+    setGames((prev) =>
+      prev.map((g) => {
+        if (!selectedGameIds.has(g.id)) return g
+        if (g.tags?.some((t) => t.id === tagToAdd.id)) return g
+        return { ...g, tags: [...(g.tags ?? []), tagToAdd] }
+      })
+    )
+  }
+
+  setStatus(`Added tag to ${gameIds.length} game(s).`)
+  setBulkApplying(false)
+  clearBulkSelection()
+}
+
+
  return (
   <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
     <Nav />
@@ -279,6 +350,51 @@ export default function AdminGamesPage() {
       </button>
     </div>
 
+    {/* Bulk actions */}
+    <div
+      style={{
+        border: '1px solid #ddd',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 16,
+        maxWidth: 900,
+        display: 'flex',
+        gap: 12,
+        alignItems: 'center',
+        flexWrap: 'wrap',
+      }}
+    >
+      <div style={{ fontWeight: 800 }}>Bulk:</div>
+      <div style={{ opacity: 0.8 }}>
+        Selected: <strong>{selectedGameIds.size}</strong>
+      </div>
+
+      <button onClick={selectAllFiltered} style={{ padding: '8px 10px', cursor: 'pointer' }} disabled={loading}>
+        Select all (filtered)
+      </button>
+
+      <button onClick={clearBulkSelection} style={{ padding: '8px 10px', cursor: 'pointer' }}>
+        Clear
+      </button>
+
+      <select value={bulkTagId} onChange={(e) => setBulkTagId(e.target.value)} style={{ padding: '8px 10px' }}>
+        <option value="">Add tag…</option>
+        {tags.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.label}
+          </option>
+        ))}
+      </select>
+
+      <button
+        onClick={applyBulkAddTag}
+        style={{ padding: '8px 12px', cursor: bulkApplying ? 'not-allowed' : 'pointer' }}
+        disabled={bulkApplying || selectedGameIds.size === 0 || !bulkTagId}
+      >
+        {bulkApplying ? 'Applying…' : 'Apply tag to selected'}
+      </button>
+    </div>
+
     {loading ? (
       <p>Loading…</p>
     ) : (
@@ -289,14 +405,25 @@ export default function AdminGamesPage() {
             style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, display: 'grid', gap: 10 }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700 }}>{g.name}</div>
-                <div style={{ opacity: 0.75, fontSize: 13 }}>
-                  {g.is_active ? 'Active' : 'Inactive'}
-                  {g.played_at ? ` • Played` : ''}
+              {/* Left: checkbox + name */}
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedGameIds.has(g.id)}
+                  onChange={() => toggleGameSelected(g.id)}
+                  style={{ marginTop: 4 }}
+                />
+
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{g.name}</div>
+                  <div style={{ opacity: 0.75, fontSize: 13 }}>
+                    {g.is_active ? 'Active' : 'Inactive'}
+                    {g.played_at ? ` • Played` : ''}
+                  </div>
                 </div>
               </div>
 
+              {/* Right: actions */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => openEditor(g)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
                   Edit tags
@@ -312,6 +439,7 @@ export default function AdminGamesPage() {
               </div>
             </div>
 
+            {/* Tags */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {g.tags.length === 0 ? (
                 <span style={{ opacity: 0.6 }}>No tags</span>
