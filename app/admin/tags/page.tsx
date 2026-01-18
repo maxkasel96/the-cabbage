@@ -184,7 +184,7 @@ export default function AdminTagsPage() {
             style={{
               display: 'grid',
               gridTemplateColumns: '2fr 2fr 1fr',
-              background: '#f6f6f6',
+              background: '#388e4a',
               padding: 10,
               fontWeight: 700,
             }}

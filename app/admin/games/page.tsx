@@ -349,7 +349,7 @@ export default function AdminGamesPage() {
           padding: 16,
         }}
       >
-        <div style={{ background: '#fff', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
+        <div style={{ background: '#388e4a', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>
