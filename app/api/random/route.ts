@@ -7,6 +7,19 @@ export const revalidate = 0
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
 
+  // 1) Resolve active tournament
+  const t = await supabaseServer
+    .from('tournaments')
+    .select('id')
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (t.error) return NextResponse.json({ error: t.error.message }, { status: 500 })
+  if (!t.data?.id) return NextResponse.json({ error: 'No active tournament set.' }, { status: 400 })
+
+  const tournamentId = t.data.id as string
+
+  // 2) Parse tags (supports ?tags=a,b and legacy ?tag=a)
   const tagsParam = searchParams.get('tags')?.trim() || ''
   const legacyTag = searchParams.get('tag')?.trim() || ''
 
@@ -17,37 +30,58 @@ export async function GET(request: Request) {
         ? [legacyTag]
         : []
 
-  // No tags selected
+  // 3) Get list of played game IDs for this tournament
+  const played = await supabaseServer
+    .from('plays')
+    .select('game_id')
+    .eq('tournament_id', tournamentId)
+
+  if (played.error) return NextResponse.json({ error: played.error.message }, { status: 500 })
+
+  const playedIds = Array.from(
+    new Set((played.data ?? []).map((r: any) => r.game_id).filter(Boolean))
+  )
+
+  // Helper for "exclude played"
+  const excludePlayed = (q: any) => (playedIds.length ? q.not('id', 'in', `(${playedIds.join(',')})`) : q)
+
+  // 4) No tags selected
   if (tagSlugs.length === 0) {
-    const { data, error } = await supabaseServer
+    let q = supabaseServer
       .from('games')
-      .select('id, name, min_players, max_players, playtime_minutes, notes, played_at, winner_player_id')
-      .is('played_at', null)
+      .select('id, name, min_players, max_players, playtime_minutes, notes')
       .eq('is_active', true)
+
+    q = excludePlayed(q)
+
+    const { data, error } = await q
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     if (!data || data.length === 0) {
-      return NextResponse.json({ message: 'No unplayed games found.' }, { status: 404 })
+      return NextResponse.json({ message: 'No unplayed games found for the active tournament.' }, { status: 404 })
     }
 
     const game = data[Math.floor(Math.random() * data.length)]
-    return NextResponse.json({ game })
+    return NextResponse.json({ game, tournamentId })
   }
 
-  // Tags selected (OR semantics)
-  const { data, error } = await supabaseServer
+  // 5) Tags selected (OR semantics)
+  let q = supabaseServer
     .from('games')
     .select(
       `
-      id, name, min_players, max_players, playtime_minutes, notes, played_at, winner_player_id,
+      id, name, min_players, max_players, playtime_minutes, notes,
       game_tags!inner(
         tags!inner(slug)
       )
       `
     )
-    .is('played_at', null)
     .eq('is_active', true)
-    .in('game_tags.tags.slug', tagSlugs)
+    .in('game_tags.tags.slug' as any, tagSlugs) // nested path typing workaround
+
+  q = excludePlayed(q)
+
+  const { data, error } = await q
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data || data.length === 0) {
@@ -58,7 +92,8 @@ export async function GET(request: Request) {
   }
 
   const game = data[Math.floor(Math.random() * data.length)]
-  return NextResponse.json({ game })
+  return NextResponse.json({ game, tournamentId })
 }
+
 
 
