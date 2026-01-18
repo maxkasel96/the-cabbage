@@ -64,3 +64,27 @@ export async function GET() {
 
   return NextResponse.json({ games })
 }
+
+export async function POST(req: Request) {
+  const body = await req.json().catch(() => null)
+
+  const name = (body?.name as string | undefined)?.trim() ?? ''
+  const is_active = (body?.is_active as boolean | undefined) ?? true
+
+  if (!name) {
+    return NextResponse.json({ error: 'name is required' }, { status: 400 })
+  }
+
+  // Insert the new game
+  const ins = await supabaseServer
+    .from('games')
+    .insert([{ name, is_active }])
+    .select('id, name, is_active, played_at')
+    .single()
+
+  if (ins.error) {
+    return NextResponse.json({ error: ins.error.message }, { status: 500 })
+  }
+
+  
+}

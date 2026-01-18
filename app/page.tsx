@@ -279,7 +279,7 @@ export default function Home() {
         className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
         style={{ padding: '10px 14px', cursor: isRolling ? 'not-allowed' : 'pointer', opacity: isRolling ? 0.75 : 1 }}
       >
-        {isRolling ? 'Rolling… 🎲' : game ? 'Roll again' : 'Random game'}
+        {isRolling ? 'Choosing from the cabbage… 🥬' : game ? 'Pick another game from the cabbage 🥬' : 'Pick a game from the cabbage 🥬'}
       </button>
 
       {/* Status */}
@@ -348,9 +348,6 @@ export default function Home() {
           <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button onClick={markPlayed} style={{ padding: '10px 14px', cursor: 'pointer' }}>
               Mark as played
-            </button>
-            <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
-              Roll again
             </button>
           </div>
         </div>

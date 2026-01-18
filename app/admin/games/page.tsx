@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '@/app/components/Nav'
 
-
 type Tag = {
   id: string
   slug: string
@@ -32,6 +31,11 @@ export default function AdminGamesPage() {
   const [editingGameId, setEditingGameId] = useState<string | null>(null)
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+
+  // Add new game state
+  const [newGameName, setNewGameName] = useState('')
+  const [newGameActive, setNewGameActive] = useState(true)
+  const [creating, setCreating] = useState(false)
 
   async function loadAll() {
     setLoading(true)
@@ -98,7 +102,6 @@ export default function AdminGamesPage() {
   }
 
   async function saveTags() {
-    // Helpful debug line if anything odd happens again
     console.log('saveTags editingGameId:', editingGameId, 'editingGame:', editingGame)
 
     if (!editingGameId) {
@@ -135,11 +138,96 @@ export default function AdminGamesPage() {
     setStatus('Saved.')
   }
 
+  async function createGame() {
+    const name = newGameName.trim()
+    if (!name) {
+      setStatus('Game name is required.')
+      return
+    }
+
+    setCreating(true)
+    setStatus('')
+
+    const res = await fetch('/api/admin/games', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, is_active: newGameActive }),
+    })
+
+    const json = await res.json()
+
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to create game')
+      setCreating(false)
+      return
+    }
+
+    // Add new game to UI immediately
+    setGames((prev) => {
+      if (prev.some((g) => g.id === json.game.id)) return prev
+      return [json.game, ...prev]
+    })
+
+    // Reset form
+    setNewGameName('')
+    setNewGameActive(true)
+    setCreating(false)
+    setStatus(`Added game: ${json.game.name}`)
+  }
+
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
       <Nav />
       <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Games & Tags</h1>
 
+      {/* Add new game */}
+      <div
+        style={{
+          border: '1px solid #ddd',
+          borderRadius: 10,
+          padding: 14,
+          marginBottom: 16,
+          maxWidth: 720,
+        }}
+      >
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            value={newGameName}
+            onChange={(e) => setNewGameName(e.target.value)}
+            placeholder="Game name…"
+            style={{ padding: 10, minWidth: 280 }}
+            disabled={creating}
+          />
+
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="checkbox"
+              checked={newGameActive}
+              onChange={(e) => setNewGameActive(e.target.checked)}
+              disabled={creating}
+            />
+            Active
+          </label>
+
+          <button
+            onClick={createGame}
+            style={{ padding: '10px 14px', cursor: creating ? 'not-allowed' : 'pointer' }}
+            disabled={creating}
+          >
+            {creating ? 'Adding…' : 'Add game'}
+          </button>
+
+          {status && (
+            <span style={{ opacity: 0.85 }}>
+              <strong>{status}</strong>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Search + refresh */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
         <input
           value={search}
@@ -150,11 +238,6 @@ export default function AdminGamesPage() {
         <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
           Refresh
         </button>
-        {status && (
-          <span style={{ opacity: 0.85 }}>
-            <strong>{status}</strong>
-          </span>
-        )}
       </div>
 
       {loading ? (
@@ -175,18 +258,7 @@ export default function AdminGamesPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() =>
-                    openEditor({
-                      id: g.id,
-                      name: g.name,
-                      is_active: g.is_active,
-                      played_at: g.played_at,
-                      tags: g.tags ?? [],
-                    })
-                  }
-                  style={{ padding: '8px 12px', cursor: 'pointer' }}
-                >
+                <button onClick={() => openEditor(g)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
                   Edit tags
                 </button>
               </div>
@@ -216,7 +288,7 @@ export default function AdminGamesPage() {
         </div>
       )}
 
-      {/* Simple modal-like editor */}
+      {/* Modal editor */}
       {editingGame && (
         <div
           style={{
