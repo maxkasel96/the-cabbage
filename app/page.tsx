@@ -163,6 +163,14 @@ export default function Home() {
     // Auto-roll again with current filters
     await rollRandom()
   }
+  
+function openMarkPlayedModal() {
+  if (!game) return
+  setStatus('')
+  setNoteDraft('')
+  setNoteModalOpen(true)
+}
+
 
 // Function for saving note and closing modal
   async function confirmMarkPlayed() {
