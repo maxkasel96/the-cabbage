@@ -180,7 +180,7 @@ export default function Home() {
                     border: '1px solid #ccc',
                     cursor: 'pointer',
                     background: active ? '#222' : '#388e4a',
-                    color: active ? '#fff' : '#388e4a',
+                    color: active ? '#388e4a' : '#fff',
                     fontSize: 13,
                   }}
                   title={t.slug}
