@@ -290,7 +290,7 @@ export default function Home() {
       )}
 
       {!game ? (
-        <p>Click “Random game” to get a recommendation.</p>
+        <p>Let the cabbage take the guessing out of things. Select Pick a game from the cabbage to get rolling.</p>
       ) : (
         <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 720 }}
 >          <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
