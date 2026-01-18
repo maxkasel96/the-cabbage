@@ -50,6 +50,7 @@ export default function Home() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
   }, [])
@@ -80,27 +81,42 @@ export default function Home() {
     setWinnerPlayerIds(new Set())
   }
 
+
+  // Random roll animation helper
+  const [isRolling, setIsRolling] = useState(false)
+  const [rollKey, setRollKey] = useState(0)
+
   async function rollRandom() {
-    setStatus('')
-    setWinnerPlayerIds(new Set()) // reset winners for the newly rolled game
+  if (isRolling) return
 
-    const params = new URLSearchParams()
-    if (selectedTagSlugs.size > 0) {
-      params.set('tags', Array.from(selectedTagSlugs).join(','))
-    }
+  setStatus('')
+  setWinnerPlayerIds(new Set())
+  setIsRolling(true)
 
-    const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
-    const res = await fetch(url)
-    const json = await res.json()
+  // Let the “rolling” animation be visible before the fetch resolves
+  await new Promise((r) => setTimeout(r, 350))
 
-    if (!res.ok) {
-      setGame(null)
-      setStatus(json.message || json.error || 'Failed to fetch a game')
-      return
-    }
-
-    setGame(json.game)
+  const params = new URLSearchParams()
+  if (selectedTagSlugs.size > 0) {
+    params.set('tags', Array.from(selectedTagSlugs).join(','))
   }
+
+  const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
+  const res = await fetch(url)
+  const json = await res.json()
+
+  if (!res.ok) {
+    setGame(null)
+    setStatus(json.message || json.error || 'Failed to fetch a game')
+    setIsRolling(false)
+    return
+  }
+
+  setGame(json.game)
+  setRollKey((k) => k + 1) // retrigger pop animation
+  setIsRolling(false)
+}
+
 
   async function markPlayed() {
     if (!game) return
@@ -159,6 +175,46 @@ export default function Home() {
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+
+      {/* rolling an animation */}
+      <style>{`
+        @keyframes shake {
+          0% { transform: translateX(0) rotate(0deg); }
+          20% { transform: translateX(-6px) rotate(-1deg); }
+          40% { transform: translateX(6px) rotate(1deg); }
+          60% { transform: translateX(-4px) rotate(-1deg); }
+          80% { transform: translateX(4px) rotate(1deg); }
+          100% { transform: translateX(0) rotate(0deg); }
+        }
+
+        @keyframes pop {
+          0% { transform: scale(0.98); opacity: 0.2; }
+          60% { transform: scale(1.02); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        .rollBtn {
+          transition: transform 120ms ease, opacity 120ms ease;
+        }
+        .rollBtn:active {
+          transform: scale(0.98);
+        }
+        .rollBtnRolling {
+          animation: shake 420ms ease-in-out;
+        }
+
+        .gameCardPop {
+          animation: pop 220ms ease-out;
+        }
+
+        .gameCardRolling {
+          animation: shake 420ms ease-in-out;
+          filter: blur(0.6px);
+          opacity: 0.85;
+        }
+      `}</style>
+
+
       <h1 style={{ fontSize: 28, marginBottom: 8 }}>Board Game Picker</h1>
       <Nav />
 
@@ -217,14 +273,14 @@ export default function Home() {
       )}
 
       {/* Primary actions */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-        <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
-          Random game
-        </button>
-        <button onClick={rollRandom} style={{ padding: '10px 14px', cursor: 'pointer' }}>
-          Roll again
-        </button>
-      </div>
+      <button
+        onClick={rollRandom}
+        disabled={isRolling}
+        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
+        style={{ padding: '10px 14px', cursor: isRolling ? 'not-allowed' : 'pointer', opacity: isRolling ? 0.75 : 1 }}
+      >
+        {isRolling ? 'Rolling… 🎲' : game ? 'Roll again' : 'Random game'}
+      </button>
 
       {/* Status */}
       {status && (
@@ -236,8 +292,8 @@ export default function Home() {
       {!game ? (
         <p>Click “Random game” to get a recommendation.</p>
       ) : (
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 720 }}>
-          <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
+        <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 720 }}
+>          <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
 
           <p style={{ margin: '8px 0' }}>
             Players:{' '}
