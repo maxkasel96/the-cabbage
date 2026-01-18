@@ -29,6 +29,9 @@ export default function Nav() {
       <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
       Admin: Tags
       </Link>  
+      <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
+      Admin: Tournaments
+      </Link>  
     </nav>
   )
 }
