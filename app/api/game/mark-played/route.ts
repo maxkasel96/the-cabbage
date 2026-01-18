@@ -13,6 +13,12 @@ export async function POST(req: Request) {
     (body?.winnerPlayerIds as unknown) ??
     (body?.winnerPlayerId ? [body.winnerPlayerId] : [])
 
+  const noteRaw = body?.note
+  const note =
+    typeof noteRaw === 'string'
+      ? noteRaw.trim().slice(0, 2000)
+      : null
+
   if (!gameId || !uuidRegex.test(gameId)) {
     return NextResponse.json({ error: `Invalid gameId: ${gameId}` }, { status: 400 })
   }
@@ -56,6 +62,19 @@ export async function POST(req: Request) {
     const rows = winnerPlayerIds.map((playerId) => ({ play_id: playId, player_id: playerId }))
     const ins = await supabaseServer.from('game_winners').insert(rows)
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 })
+  }
+
+  // 3) Mark the game as played + store the note
+  const upd = await supabaseServer
+    .from('games')
+    .update({
+      played_at: new Date().toISOString(),
+      played_note: note,
+    })
+    .eq('id', gameId)
+
+  if (upd.error) {
+    return NextResponse.json({ error: upd.error.message }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true, tournamentId, gameId, playId, winnerPlayerIds })

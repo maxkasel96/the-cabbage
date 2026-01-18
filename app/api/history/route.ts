@@ -1,50 +1,50 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { getActiveTournamentId } from '@/lib/getActiveTournamentId'
 
 export async function GET() {
-  const tournamentId = await getActiveTournamentId()
-  if (!tournamentId) {
-    return NextResponse.json({ error: 'No active tournament set.' }, { status: 400 })
-  }
-
   const { data, error } = await supabaseServer
-    .from('plays')
+    .from('games')
     .select(
       `
       id,
+      name,
       played_at,
-      games ( id, name ),
+      played_note,
       game_winners (
-        players ( id, display_name )
+        players (
+          id,
+          display_name
+        )
       )
     `
     )
-    .eq('tournament_id', tournamentId)
+    .not('played_at', 'is', null)
     .order('played_at', { ascending: false })
+    .order('name', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const history = (data ?? []).map((p: any) => {
+  const history = (data ?? []).map((g: any) => {
     const winners =
-      (p.game_winners ?? [])
+      (g.game_winners ?? [])
         .map((gw: any) => gw.players)
         .filter(Boolean)
-        .reduce((acc: any[], pl: any) => {
-          if (!acc.some((x) => x.id === pl.id)) acc.push(pl)
+        .reduce((acc: any[], p: any) => {
+          if (!acc.some((x) => x.id === p.id)) acc.push(p)
           return acc
         }, [])
 
     return {
-      id: p.id,              // play id (unique row key)
-      game_id: p.games?.id,  // optional, if you ever want it
-      name: p.games?.name,
-      played_at: p.played_at,
+      id: g.id,
+      name: g.name,
+      played_at: g.played_at,
       winners,
+      notes: g.played_note ?? null,
     }
   })
 
-  return NextResponse.json({ history, tournamentId })
+  return NextResponse.json({ history })
 }
+
 
 
