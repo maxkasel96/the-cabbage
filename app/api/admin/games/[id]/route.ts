@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
-  const id = context.params?.id
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params
 
   console.log('DELETE /api/admin/games/:id', { id, url: req.url })
 
