@@ -31,6 +31,11 @@ export default function Home() {
 
   const [status, setStatus] = useState<string>('')
 
+  // note modal state
+  const [noteModalOpen, setNoteModalOpen] = useState(false)
+  const [noteDraft, setNoteDraft] = useState('')
+  const [marking, setMarking] = useState(false)
+
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
 
@@ -121,6 +126,8 @@ export default function Home() {
   async function markPlayed() {
     if (!game) return
     setStatus('')
+    setNoteDraft('')
+    setNoteModalOpen(true)
 
     const winnerIds = Array.from(winnerPlayerIds)
 
@@ -154,6 +161,42 @@ export default function Home() {
     )
 
     // Auto-roll again with current filters
+    await rollRandom()
+  }
+
+// Function for saving note and closing modal
+  async function confirmMarkPlayed() {
+    if (!game) return
+    if (marking) return
+
+    setMarking(true)
+    setStatus('')
+
+    const winnerIds = Array.from(winnerPlayerIds)
+    const note = noteDraft.trim()
+
+    const res = await fetch('/api/game/mark-played', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameId: game.id,
+        winnerPlayerIds: winnerIds,
+        note: note.length ? note : null,
+      }),
+    })
+
+    const json = await res.json()
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to mark as played')
+      setMarking(false)
+      return
+    }
+
+    setNoteModalOpen(false)
+    setMarking(false)
+
+    setStatus(`Saved: ${game.name}. View History to confirm.`)
+
     await rollRandom()
   }
 
@@ -346,12 +389,74 @@ export default function Home() {
           </div>
 
           <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-            <button onClick={markPlayed} style={{ padding: '10px 14px', cursor: 'pointer' }}>
-              Mark as played
+            <button onClick={openMarkPlayedModal} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+            Mark as played
             </button>
           </div>
         </div>
       )}
+      {noteModalOpen && game && (
+  <div
+    style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.35)',
+      display: 'grid',
+      placeItems: 'center',
+      padding: 16,
+      zIndex: 50,
+    }}
+  >
+    <div style={{ background: '#fff', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 18, fontWeight: 800 }}>Add a note</div>
+          <div style={{ opacity: 0.8 }}>{game.name}</div>
+        </div>
+        <button
+          onClick={() => setNoteModalOpen(false)}
+          style={{ padding: '8px 12px', cursor: 'pointer' }}
+          disabled={marking}
+        >
+          Close
+        </button>
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <textarea
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
+          rows={5}
+          style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid #ddd' }}
+          disabled={marking}
+        />
+        <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12 }}>
+          This note will appear in History under “Notes”.
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+        <button
+          onClick={confirmMarkPlayed}
+          style={{ padding: '10px 14px', cursor: marking ? 'not-allowed' : 'pointer' }}
+          disabled={marking}
+        >
+          {marking ? 'Saving…' : 'Save & mark played'}
+        </button>
+
+        <button
+          onClick={() => setNoteModalOpen(false)}
+          style={{ padding: '10px 14px', cursor: marking ? 'not-allowed' : 'pointer' }}
+          disabled={marking}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </main>
   )
 }

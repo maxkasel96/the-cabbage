@@ -9,11 +9,11 @@ type Winner = {
 }
 
 type HistoryRow = {
-  id: string // play id
-  game_id?: string
+  id: string
   name: string
   played_at: string
   winners: Winner[]
+  notes: string | null
 }
 
 type ScoreRow = {
@@ -237,7 +237,7 @@ export default function HistoryPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '2fr 1fr 1fr',
+              gridTemplateColumns: '2fr 1fr 2fr 1fr',
               gap: 0,
               background: '#388e4a',
               padding: 10,
@@ -246,6 +246,7 @@ export default function HistoryPage() {
           >
             <div>Game</div>
             <div>Winners</div>
+            <div>Notes</div>
             <div>Played</div>
           </div>
 
@@ -263,8 +264,9 @@ export default function HistoryPage() {
                   borderTop: '1px solid #eee',
                 }}
               >
-                <div>{h.name}</div>
+              <div>{h.name}</div>
                 <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
+                <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
                 <div style={{ opacity: 0.75 }}>{new Date(h.played_at).toLocaleString()}</div>
               </div>
             )
