@@ -235,7 +235,7 @@ export default function Home() {
                     borderRadius: 999,
                     border: '1px solid #ccc',
                     cursor: 'pointer',
-                    background: active ? '#222' : '#388e4a',
+                    background: active ? '#ffffff' : '#388e4a',
                     color: active ? '#388e4a' : '#fff',
                     fontSize: 13,
                   }}
