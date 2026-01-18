@@ -75,7 +75,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 })
   }
 
-  // Insert the new game
   const ins = await supabaseServer
     .from('games')
     .insert([{ name, is_active }])
@@ -86,5 +85,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: ins.error.message }, { status: 500 })
   }
 
-  
+  return NextResponse.json({ game: { ...ins.data, tags: [] } }, { status: 201 })
 }
+

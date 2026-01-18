@@ -68,9 +68,14 @@ export default function AdminGamesPage() {
   }, [])
 
   const filteredGames = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return games
-    return games.filter((g) => g.name.toLowerCase().includes(q))
+  const q = search.trim().toLowerCase()
+  const base = !q
+    ? games
+    : games.filter((g) => g.name.toLowerCase().includes(q))
+
+  return [...base].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  )
   }, [games, search])
 
   function openEditor(game: Game) {
@@ -164,9 +169,13 @@ export default function AdminGamesPage() {
 
     // Add new game to UI immediately
     setGames((prev) => {
-      if (prev.some((g) => g.id === json.game.id)) return prev
-      return [json.game, ...prev]
-    })
+  const created: Game = { ...json.game, tags: json.game.tags ?? [] } // ensure tags exists
+  if (prev.some((g) => g.id === created.id)) return prev
+
+  return [...prev, created].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  )
+  })
 
     // Reset form
     setNewGameName('')
