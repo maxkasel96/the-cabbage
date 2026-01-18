@@ -66,18 +66,18 @@ export async function GET(request: Request) {
   }
 
   // 5) Tags selected (OR semantics)
-  let q = supabaseServer
-    .from('games')
-    .select(
-      `
-      id, name, min_players, max_players, playtime_minutes, notes,
-      game_tags!inner(
-        tags!inner(slug)
-      )
-      `
+let q = (supabaseServer as any)
+  .from('games')
+  .select(
+    `
+    id, name, min_players, max_players, playtime_minutes, notes,
+    game_tags!inner(
+      tags!inner(slug)
     )
-    .eq('is_active', true)
-    .in('game_tags.tags.slug' as any, tagSlugs) // nested path typing workaround
+    `
+  )
+  .eq('is_active', true)
+  .in('game_tags.tags.slug' as any, tagSlugs) // nested path typing workaround
 
   q = excludePlayed(q)
 
