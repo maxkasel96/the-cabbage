@@ -9,7 +9,8 @@ type Winner = {
 }
 
 type HistoryRow = {
-  id: string
+  id: string // play id
+  game_id?: string
   name: string
   played_at: string
   winners: Winner[]
@@ -21,20 +22,57 @@ type ScoreRow = {
   wins: number
 }
 
+type Tournament = {
+  id: string
+  label: string
+  year_start: number
+  year_end: number
+  is_active: boolean
+}
+
 export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryRow[]>([])
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
 
-  async function loadHistory() {
+  // Tournament navigation
+  const [tournaments, setTournaments] = useState<Tournament[]>([])
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string>('') // '' means "active" until loaded
+
+  async function loadTournaments() {
+    const res = await fetch('/api/tournaments', { cache: 'no-store' })
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to load tournaments')
+      return
+    }
+
+    const list: Tournament[] = json.tournaments ?? []
+    setTournaments(list)
+
+    // Default to active tournament (if we haven't selected anything yet)
+    if (!selectedTournamentId) {
+      const active = list.find((t) => t.is_active)
+      if (active) setSelectedTournamentId(active.id)
+    }
+  }
+
+  async function loadHistory(tournamentId?: string) {
     setLoading(true)
     setStatus('')
-    const res = await fetch('/api/history')
-    const json = await res.json()
+
+    const url = tournamentId
+      ? `/api/history?tournamentId=${encodeURIComponent(tournamentId)}`
+      : '/api/history'
+
+    const res = await fetch(url, { cache: 'no-store' })
+    const json = await res.json().catch(() => ({}))
 
     if (!res.ok) {
       setStatus(json.error || 'Failed to load history')
+      setHistory([])
       setLoading(false)
       return
     }
@@ -43,10 +81,20 @@ export default function HistoryPage() {
     setLoading(false)
   }
 
+  // Initial load: tournaments first (to pick an active), then history
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadHistory()
+    ;(async () => {
+      await loadTournaments()
+    })()
   }, [])
+
+  // Whenever selected tournament changes, reload history for that tournament
+  useEffect(() => {
+    // If we haven't resolved a tournament yet, don't fetch
+    if (!selectedTournamentId) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadHistory(selectedTournamentId)
+  }, [selectedTournamentId])
 
   // Scoreboard: count wins by player across all history rows
   const scores = useMemo<ScoreRow[]>(() => {
@@ -77,10 +125,38 @@ export default function HistoryPage() {
     })
   }, [history, search])
 
+  const selectedTournamentLabel =
+    tournaments.find((t) => t.id === selectedTournamentId)?.label ||
+    tournaments.find((t) => t.is_active)?.label ||
+    'Active tournament'
+
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
       <h1 style={{ fontSize: 26, marginBottom: 8 }}>History</h1>
       <Nav />
+
+      {/* Tournament navigation */}
+      {tournaments.length > 0 && (
+        <div style={{ marginTop: 10, marginBottom: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ fontWeight: 800 }}>Tournament year:</div>
+
+          <select
+            value={selectedTournamentId}
+            onChange={(e) => setSelectedTournamentId(e.target.value)}
+            style={{ padding: '8px 10px' }}
+          >
+            {tournaments.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.year_start}-{t.year_end} {t.is_active ? '(Active)' : ''} — {t.label}
+              </option>
+            ))}
+          </select>
+
+          <div style={{ opacity: 0.75, fontSize: 13 }}>
+            Viewing: <strong>{selectedTournamentLabel}</strong>
+          </div>
+        </div>
+      )}
 
       {/* Scoreboard */}
       <div style={{ marginTop: 8, marginBottom: 18 }}>
@@ -131,9 +207,19 @@ export default function HistoryPage() {
           placeholder="Search game or winner…"
           style={{ padding: 10, minWidth: 260 }}
         />
-        <button onClick={loadHistory} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+
+        <button
+          onClick={() => {
+            // refresh tournaments too, in case a new year was created
+            loadTournaments()
+            if (selectedTournamentId) loadHistory(selectedTournamentId)
+            else loadHistory()
+          }}
+          style={{ padding: '10px 14px', cursor: 'pointer' }}
+        >
           Refresh
         </button>
+
         {status && (
           <span style={{ opacity: 0.85 }}>
             <strong>{status}</strong>
@@ -188,5 +274,6 @@ export default function HistoryPage() {
     </main>
   )
 }
+
 
 

@@ -36,7 +36,8 @@ export async function GET() {
         }, [])
 
     return {
-      id: p.games?.id,
+      id: p.id,              // play id (unique row key)
+      game_id: p.games?.id,  // optional, if you ever want it
       name: p.games?.name,
       played_at: p.played_at,
       winners,
