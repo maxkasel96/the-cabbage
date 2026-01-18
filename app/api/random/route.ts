@@ -30,11 +30,12 @@ export async function GET(request: Request) {
         ? [legacyTag]
         : []
 
-  // 3) Get list of played game IDs for this tournament
+  // 3) Get list of *played* game IDs for this tournament (played_at IS NOT NULL)
   const played = await supabaseServer
     .from('plays')
     .select('game_id')
     .eq('tournament_id', tournamentId)
+    .not('played_at', 'is', null)
 
   if (played.error) return NextResponse.json({ error: played.error.message }, { status: 500 })
 
@@ -43,7 +44,12 @@ export async function GET(request: Request) {
   )
 
   // Helper for "exclude played"
-  const excludePlayed = (q: any) => (playedIds.length ? q.not('id', 'in', `(${playedIds.join(',')})`) : q)
+  // NOTE: UUIDs should be quoted inside the in(...) list
+  const excludePlayed = (q: any) => {
+    if (!playedIds.length) return q
+    const quoted = playedIds.map((id: string) => `"${id}"`).join(',')
+    return q.not('id', 'in', `(${quoted})`)
+  }
 
   // 4) No tags selected
   if (tagSlugs.length === 0) {
@@ -58,7 +64,10 @@ export async function GET(request: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     if (!data || data.length === 0) {
-      return NextResponse.json({ message: 'No unplayed games found for the active tournament.' }, { status: 404 })
+      return NextResponse.json(
+        { message: 'No unplayed games found for the active tournament.' },
+        { status: 404 }
+      )
     }
 
     const game = data[Math.floor(Math.random() * data.length)]
@@ -66,18 +75,18 @@ export async function GET(request: Request) {
   }
 
   // 5) Tags selected (OR semantics)
-let q = (supabaseServer as any)
-  .from('games')
-  .select(
-    `
-    id, name, min_players, max_players, playtime_minutes, notes,
-    game_tags!inner(
-      tags!inner(slug)
+  let q = (supabaseServer as any)
+    .from('games')
+    .select(
+      `
+      id, name, min_players, max_players, playtime_minutes, notes,
+      game_tags!inner(
+        tags!inner(slug)
+      )
+      `
     )
-    `
-  )
-  .eq('is_active', true)
-  .in('game_tags.tags.slug' as any, tagSlugs) // nested path typing workaround
+    .eq('is_active', true)
+    .in('game_tags.tags.slug' as any, tagSlugs) // nested path typing workaround
 
   q = excludePlayed(q)
 

@@ -66,12 +66,16 @@ export async function POST(req: Request) {
 
   // 3) Mark the game as played + store the note
   const upd = await supabaseServer
-    .from('games')
+    .from('plays')
     .update({
       played_at: new Date().toISOString(),
       played_note: note,
     })
-    .eq('id', gameId)
+    .eq('id', playId)
+
+  if (upd.error) {
+    return NextResponse.json({ error: upd.error.message }, { status: 500 })
+  }
 
   if (upd.error) {
     return NextResponse.json({ error: upd.error.message }, { status: 500 })
