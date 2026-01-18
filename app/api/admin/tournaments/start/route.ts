@@ -30,3 +30,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ tournament: ins.data })
 }
+
+export async function GET() {
+  return NextResponse.json({ ok: true, route: '/api/admin/tournaments/start' })
+}
