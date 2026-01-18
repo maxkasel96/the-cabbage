@@ -20,12 +20,15 @@ export default function Nav() {
       <Link href="/" style={linkStyle('/')}>
         Home
       </Link>
-      <Link href="/admin/games" style={linkStyle('/admin/games')}>
-        Admin: Games
-      </Link>
       <Link href="/history" style={linkStyle('/history')}>
         History
       </Link>
+      <Link href="/admin/games" style={linkStyle('/admin/games')}>
+        Admin: Games
+      </Link>
+      <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
+      Admin: Tags
+      </Link>  
     </nav>
   )
 }
