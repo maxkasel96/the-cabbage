@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 export async function GET() {
   const { data, error } = await supabaseServer
     .from('tournaments')
-    .select('id, label, year_start, year_end, is_active')
+    .select('id, label, year_start, year_end, is_active, created_at')
     .order('year_start', { ascending: false })
     .order('created_at', { ascending: false })
 
