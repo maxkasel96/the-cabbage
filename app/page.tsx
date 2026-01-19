@@ -39,6 +39,8 @@ export default function Home() {
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
 
+  const [playerCount, setPlayerCount] = useState('')
+
   // Multi-select winners (by player id)
   const [winnerPlayerIds, setWinnerPlayerIds] = useState<Set<string>>(new Set())
 
@@ -104,6 +106,10 @@ export default function Home() {
   const params = new URLSearchParams()
   if (selectedTagSlugs.size > 0) {
     params.set('tags', Array.from(selectedTagSlugs).join(','))
+  }
+  const trimmedPlayerCount = playerCount.trim()
+  if (trimmedPlayerCount) {
+    params.set('maxPlayers', trimmedPlayerCount)
   }
 
   const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
@@ -331,6 +337,29 @@ function openMarkPlayedModal() {
           </div>
         </div>
       )}
+
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Number of players:</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <input
+            type="number"
+            min={1}
+            value={playerCount}
+            onChange={(event) => setPlayerCount(event.target.value)}
+            placeholder="e.g., 4"
+            style={{
+              padding: '6px 10px',
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              fontSize: 13,
+              width: 120,
+            }}
+          />
+          <div style={{ fontSize: 12, opacity: 0.7 }}>
+            Leave blank to ignore player count.
+          </div>
+        </div>
+      </div>
 
       {/* Primary actions */}
       <button
