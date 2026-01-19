@@ -166,7 +166,6 @@ export default function AdminGamesPage() {
           : g
       )
     )
-    setStatus(`Saved player counts for ${game.name}.`)
     setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: `Saved player counts for ${game.name}.` }))
     setPlayersSavingId(null)
   }
