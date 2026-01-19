@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #e6efe0;
+  --foreground: #1e2b18;
+  --page-background: #e6efe0;
+  --surface: #d8e4cc;
+  --surface-alt: #c7d6b6;
+  --nav-surface: #2f4a1e;
+  --primary: #5e7f3a;
+  --primary-hover: #4c6a2e;
+  --secondary: #8fae72;
+  --text-primary: #1e2b18;
+  --text-secondary: #4e6a3b;
+  --text-muted: #6f8f5a;
+  --text-inverse: #f4f8f0;
+  --border-strong: #8fae72;
+  --divider-soft: #b6c9a3;
 }
 
 @theme inline {
@@ -12,15 +25,38 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--text-primary);
+}
+
+input,
+select,
+textarea {
+  background: var(--page-background);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+}
+
+button {
+  background: var(--primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-inverse);
+  cursor: pointer;
+  padding: 8px 14px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
