@@ -542,7 +542,7 @@ function openMarkPlayedModal() {
           cursor: isRolling ? 'not-allowed' : 'pointer',
           opacity: isRolling ? 0.75 : 1,
           fontSize: 20,
-          marginBottom: game ? 24 : 0,
+          marginBottom: game ? 24 : 16,
         }}
       >
         {isRolling ? 'Choosing from the cabbage… 🥬' : game ? 'Pick another game from the cabbage 🥬' : 'Pick a game from the cabbage 🥬'}
