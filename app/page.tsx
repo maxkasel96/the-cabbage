@@ -329,7 +329,7 @@ function openMarkPlayedModal() {
       `}</style>
 
 
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Board Game Picker</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 8 }}>The Game Cabbage</h1>
       <Nav />
 
       {/* Tag filter chips */}

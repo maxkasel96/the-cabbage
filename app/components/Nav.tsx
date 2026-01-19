@@ -26,7 +26,7 @@ export default function Nav() {
       }}
     >
       <Link href="/" style={linkStyle('/')}>
-        Home
+        The Game Cabbage
       </Link>
       <Link href="/history" style={linkStyle('/history')}>
         History
