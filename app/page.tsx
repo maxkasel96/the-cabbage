@@ -392,7 +392,7 @@ function openMarkPlayedModal() {
           border-radius: 18px;
           padding: 20px;
           max-width: 760px;
-          background: #388e4a;
+          background: #000000;
           border: 2px solid #2e7d32;
           box-shadow: 0 16px 30px rgba(27, 94, 32, 0.3);
           position: relative;
@@ -439,6 +439,27 @@ function openMarkPlayedModal() {
           gap: 6px;
           align-items: center;
           color: #ffffff;
+        }
+
+        .markPlayedButton {
+          background: linear-gradient(135deg, #48c06b, #2e7d32);
+          color: #ffffff;
+          border: none;
+          border-radius: 999px;
+          padding: 12px 20px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.35);
+          transition: transform 120ms ease, box-shadow 120ms ease;
+        }
+
+        .markPlayedButton:hover {
+          transform: translateY(-1px) scale(1.01);
+          box-shadow: 0 16px 28px rgba(0, 0, 0, 0.4);
+        }
+
+        .markPlayedButton:active {
+          transform: scale(0.98);
         }
 
       `}</style>
@@ -593,7 +614,11 @@ function openMarkPlayedModal() {
           </div>
 
             <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-              <button onClick={openMarkPlayedModal} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+              <button
+                onClick={openMarkPlayedModal}
+                className="markPlayedButton"
+                style={{ cursor: 'pointer' }}
+              >
                 Mark as played
               </button>
             </div>
