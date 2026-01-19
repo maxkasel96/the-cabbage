@@ -32,18 +32,18 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
   }
 
   const palette = {
-    navBackground: 'linear-gradient(135deg, #1c2621 0%, #243229 100%)',
-    navBorder: '#2f4036',
-    linkIdleBackground: '#2a3a31',
-    linkIdleBorder: '#3b5246',
-    linkIdleText: '#e3f3ea',
-    linkActiveBackground: '#f0c26c',
-    linkActiveBorder: '#e6b155',
-    linkActiveText: '#2b2618',
-    dropdownBackground: '#202b24',
-    dropdownBorder: '#2f4036',
-    shadowStrong: '0 16px 30px rgba(7, 10, 9, 0.4)',
-    shadowSoft: '0 10px 22px rgba(4, 8, 6, 0.3)',
+    navBackground: 'var(--nav-surface)',
+    navBorder: 'var(--border-strong)',
+    linkIdleBackground: 'rgba(244, 248, 240, 0.14)',
+    linkIdleBorder: 'rgba(244, 248, 240, 0.35)',
+    linkIdleText: 'var(--text-inverse)',
+    linkActiveBackground: 'var(--primary)',
+    linkActiveBorder: 'var(--primary)',
+    linkActiveText: 'var(--text-inverse)',
+    dropdownBackground: 'var(--nav-surface)',
+    dropdownBorder: 'var(--border-strong)',
+    shadowStrong: '0 16px 30px rgba(30, 43, 24, 0.35)',
+    shadowSoft: '0 10px 22px rgba(30, 43, 24, 0.25)',
   }
 
   const linkStyle = (href: string) => {

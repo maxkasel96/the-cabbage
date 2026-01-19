@@ -16,10 +16,10 @@ export default function PageTitle({ children }: PageTitleProps) {
         letterSpacing: 1,
         display: 'inline-block',
         backgroundImage:
-          'linear-gradient(120deg, #f0c26c 0%, #4ade80 45%, #38bdf8 100%)',
+          'linear-gradient(120deg, var(--primary) 0%, var(--secondary) 60%, var(--nav-surface) 100%)',
         WebkitBackgroundClip: 'text',
         color: 'transparent',
-        textShadow: '0 10px 24px rgba(4, 8, 6, 0.45)',
+        textShadow: '0 8px 20px rgba(30, 43, 24, 0.2)',
       }}
     >
       {children}
