@@ -176,8 +176,8 @@ export default function BracketPage() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: '#061a12',
-        color: '#f4f7fb',
+        backgroundColor: 'var(--page-background)',
+        color: 'var(--text-primary)',
         minHeight: '100vh',
       }}
     >
@@ -193,7 +193,7 @@ export default function BracketPage() {
         }}
       >
         <header style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <p style={{ margin: 0, color: '#cfe8d6' }}>
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
             Shuffle active players into a single-elimination bracket with automatic byes.
           </p>
           <div
@@ -204,15 +204,15 @@ export default function BracketPage() {
               alignItems: 'center',
               padding: 12,
               borderRadius: 12,
-              background: '#0f2a1f',
-              border: '1px solid rgba(74, 222, 128, 0.2)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-strong)',
             }}
           >
-            <span style={{ fontWeight: 700, color: '#e6edf8' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
               Active players: {isLoadingPlayers ? '…' : playerCount}
             </span>
             {playerCount < 2 && !isLoadingPlayers ? (
-              <span style={{ color: '#fbbf24', fontWeight: 700 }}>
+              <span style={{ color: 'var(--primary)', fontWeight: 700 }}>
                 Need at least 2 active players to generate a bracket.
               </span>
             ) : null}
@@ -224,13 +224,13 @@ export default function BracketPage() {
             display: 'flex',
             flexWrap: 'wrap',
             gap: 12,
-            alignItems: 'center',
-            padding: 12,
-            borderRadius: 12,
-            background: '#0f2a1f',
-            border: '1px solid rgba(74, 222, 128, 0.2)',
-          }}
-        >
+          alignItems: 'center',
+          padding: 12,
+          borderRadius: 12,
+          background: 'var(--surface)',
+          border: '1px solid var(--border-strong)',
+        }}
+      >
           <button
             type="button"
             onClick={handleGenerate}
@@ -239,8 +239,8 @@ export default function BracketPage() {
               padding: '10px 18px',
               borderRadius: 999,
               border: 'none',
-              background: isGenerateDisabled ? 'rgba(148, 163, 184, 0.35)' : '#4ade80',
-              color: isGenerateDisabled ? '#94a3b8' : '#062314',
+              background: isGenerateDisabled ? 'rgba(47, 74, 30, 0.2)' : 'var(--primary)',
+              color: isGenerateDisabled ? 'rgba(30, 43, 24, 0.6)' : 'var(--text-inverse)',
               fontWeight: 700,
               fontSize: 15,
               cursor: isGenerateDisabled ? 'not-allowed' : 'pointer',
@@ -249,7 +249,7 @@ export default function BracketPage() {
           >
             {bracket ? 'Regenerate Bracket' : 'Generate Bracket'}
           </button>
-          <span style={{ color: '#cfe8d6', opacity: 0.8 }}>
+          <span style={{ color: 'var(--text-secondary)', opacity: 0.8 }}>
             {bracket ? `Generated ${new Date(bracket.generatedAt).toLocaleString()}` : 'No bracket yet.'}
           </span>
         </div>
@@ -260,9 +260,9 @@ export default function BracketPage() {
             style={{
               padding: '12px 14px',
               borderRadius: 12,
-              border: '1px solid rgba(251, 191, 36, 0.35)',
-              backgroundColor: '#1f2c1d',
-              color: '#fbbf24',
+              border: '1px solid rgba(111, 143, 74, 0.45)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-primary)',
               fontWeight: 700,
             }}
           >
@@ -284,15 +284,15 @@ export default function BracketPage() {
                 style={{
                   padding: 16,
                   borderRadius: 16,
-                  border: '2px solid #14532d',
-                  background: '#0a2016',
-                  boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+                  border: '2px solid var(--border-strong)',
+                  background: 'var(--surface)',
+                  boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 12,
                 }}
               >
-                <h2 style={{ margin: 0, fontSize: 18, color: '#e7f8ed', letterSpacing: 0.6 }}>
+                <h2 style={{ margin: 0, fontSize: 18, color: 'var(--text-primary)', letterSpacing: 0.6 }}>
                   Round {round.roundNumber}
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -307,17 +307,16 @@ export default function BracketPage() {
                         style={{
                           padding: '10px 12px',
                           borderRadius: 12,
-                          border: '1px solid rgba(74, 222, 128, 0.2)',
-                          background:
-                            index % 2 === 0
-                              ? 'linear-gradient(90deg, rgba(6,26,18,0.95), rgba(8,32,22,0.85))'
-                              : 'linear-gradient(90deg, rgba(8,32,22,0.95), rgba(10,40,26,0.85))',
+                          border: '1px solid var(--divider-soft)',
+                          background: index % 2 === 0 ? 'var(--surface)' : 'var(--surface-alt)',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: 6,
                         }}
                       >
-                        <span style={{ fontSize: 12, color: '#cfe8d6', fontWeight: 700, letterSpacing: 0.6 }}>
+                        <span
+                          style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: 0.6 }}
+                        >
                           Match {index + 1}
                         </span>
                         <div style={{ display: 'grid', gap: 6 }}>
@@ -325,23 +324,25 @@ export default function BracketPage() {
                             style={{
                               padding: '8px 10px',
                               borderRadius: 10,
-                              backgroundColor: slotAName ? '#0f2a1f' : '#0b1f16',
-                              border: '1px dashed rgba(74, 222, 128, 0.35)',
+                              backgroundColor: slotAName ? 'var(--page-background)' : 'rgba(241, 246, 237, 0.7)',
+                              border: '1px dashed var(--divider-soft)',
                               fontWeight: 700,
-                              color: slotAName ? '#f4f7fb' : '#94a3b8',
+                              color: slotAName ? 'var(--text-primary)' : 'rgba(30, 43, 24, 0.6)',
                             }}
                           >
                             {slotAName ?? 'Bye'}
                           </div>
-                          <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>vs</div>
+                          <div style={{ textAlign: 'center', color: 'rgba(63, 90, 42, 0.6)', fontSize: 12 }}>
+                            vs
+                          </div>
                           <div
                             style={{
                               padding: '8px 10px',
                               borderRadius: 10,
-                              backgroundColor: slotBName ? '#0f2a1f' : '#0b1f16',
-                              border: '1px dashed rgba(74, 222, 128, 0.35)',
+                              backgroundColor: slotBName ? 'var(--page-background)' : 'rgba(241, 246, 237, 0.7)',
+                              border: '1px dashed var(--divider-soft)',
                               fontWeight: 700,
-                              color: slotBName ? '#f4f7fb' : '#94a3b8',
+                              color: slotBName ? 'var(--text-primary)' : 'rgba(30, 43, 24, 0.6)',
                             }}
                           >
                             {slotBName ?? 'Bye'}
@@ -359,9 +360,9 @@ export default function BracketPage() {
             style={{
               padding: 16,
               borderRadius: 16,
-              border: '1px dashed rgba(74, 222, 128, 0.35)',
-              backgroundColor: '#0b1f16',
-              color: '#cfe8d6',
+              border: '1px dashed var(--divider-soft)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-secondary)',
             }}
           >
             Generate a bracket to see the round-by-round layout.
