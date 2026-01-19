@@ -35,6 +35,7 @@ export default function Home() {
   const [noteModalOpen, setNoteModalOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
   const [marking, setMarking] = useState(false)
+  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false)
 
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
@@ -60,6 +61,13 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
+  }, [])
+
+  useEffect(() => {
+    const hasSeenWelcome = window.localStorage.getItem('cabbageWelcomeSeen') === 'true'
+    if (!hasSeenWelcome) {
+      setWelcomeModalOpen(true)
+    }
   }, [])
 
   function toggleTag(slug: string) {
@@ -193,6 +201,11 @@ function openMarkPlayedModal() {
   setNoteDraft('')
   setNoteModalOpen(true)
 }
+
+  function closeWelcomeModal() {
+    window.localStorage.setItem('cabbageWelcomeSeen', 'true')
+    setWelcomeModalOpen(false)
+  }
 
 
 // Function for saving note and closing modal
@@ -479,6 +492,55 @@ function openMarkPlayedModal() {
             <button onClick={openMarkPlayedModal} style={{ padding: '10px 14px', cursor: 'pointer' }}>
             Mark as played
             </button>
+          </div>
+        </div>
+      )}
+      {welcomeModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: 16,
+            zIndex: 60,
+          }}
+        >
+          <div
+            style={{
+              background: '#388e4a',
+              color: '#ffffff',
+              borderRadius: 16,
+              width: 'min(720px, 94vw)',
+              padding: 24,
+              boxShadow: '0 18px 50px rgba(0,0,0,0.28)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={closeWelcomeModal}
+                style={{
+                  background: '#ffffff',
+                  color: '#1b5e20',
+                  border: 'none',
+                  borderRadius: 999,
+                  padding: '8px 14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
+            <p style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
+              Welcome, weary traveler. You have found yourself embarking on a quest for the hallowed cabbage — an
+              ancient relic of great power and deeply unclear purpose. Many have sought it, few have returned
+              unchanged, and none can quite explain the rules. Along this journey you will face trials of wit, luck,
+              and wildly confident bad decisions. Proceed boldly, trust the cabbage, and know this: the quest is
+              serious, but the outcome absolutely is not.
+            </p>
           </div>
         </div>
       )}
