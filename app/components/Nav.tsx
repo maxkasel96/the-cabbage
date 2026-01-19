@@ -23,15 +23,20 @@ export default function Nav() {
       <Link href="/history" style={linkStyle('/history')}>
         History
       </Link>
-      <Link href="/admin/games" style={linkStyle('/admin/games')}>
-        Admin: Games
-      </Link>
-      <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
-      Admin: Tags
-      </Link>  
-      <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
-      Admin: Tournaments
-      </Link>  
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={{ fontWeight: 600 }}>Admin pages</span>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingLeft: 4 }}>
+          <Link href="/admin/games" style={linkStyle('/admin/games')}>
+            Games
+          </Link>
+          <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
+            Tags
+          </Link>
+          <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
+            Tournaments
+          </Link>
+        </div>
+      </div>
     </nav>
   )
 }
