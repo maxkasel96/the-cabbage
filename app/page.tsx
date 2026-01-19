@@ -115,7 +115,6 @@ export default function Home() {
 
   setStatus('')
   setWinnerPlayerIds(new Set())
-  setShowBounce(false)
   setIsRolling(true)
 
   // Let the “rolling” animation be visible before the fetch resolves
@@ -143,7 +142,6 @@ export default function Home() {
 
   setGame(json.game)
   setRollKey((k) => k + 1) // retrigger pop animation
-  setShowBounce(true)
   setIsRolling(false)
 }
 
