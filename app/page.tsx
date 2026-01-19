@@ -115,6 +115,7 @@ export default function Home() {
 
   setStatus('')
   setWinnerPlayerIds(new Set())
+  setShowBounce(false)
   setIsRolling(true)
 
   // Let the “rolling” animation be visible before the fetch resolves
@@ -142,6 +143,7 @@ export default function Home() {
 
   setGame(json.game)
   setRollKey((k) => k + 1) // retrigger pop animation
+  setShowBounce(true)
   setIsRolling(false)
 }
 
@@ -267,6 +269,14 @@ function openMarkPlayedModal() {
           100% { transform: scale(1); opacity: 1; }
         }
 
+        @keyframes cabbageBounce {
+          0% { transform: scale(1) rotate(0deg); }
+          30% { transform: scale(1.08) rotate(-3deg); }
+          55% { transform: scale(0.98) rotate(2deg); }
+          80% { transform: scale(1.04) rotate(-1deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+
         .rollBtn {
           transition: transform 120ms ease, opacity 120ms ease;
           background: #388e4a;
@@ -282,6 +292,9 @@ function openMarkPlayedModal() {
         }
         .rollBtnRolling {
           animation: shake 420ms ease-in-out;
+        }
+        .rollBtnSelected {
+          animation: cabbageBounce 600ms ease-out;
         }
 
         .gameCardPop {
