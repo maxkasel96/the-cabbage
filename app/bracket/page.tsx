@@ -66,13 +66,31 @@ function buildBracket(players: Player[]): Bracket {
 
   const rounds: Round[] = [{ roundNumber: 1, matches: roundOneMatches }]
 
+  const advanceIfBye = (match: Match) => {
+    const hasSlotA = Boolean(match.slotA.playerId)
+    const hasSlotB = Boolean(match.slotB.playerId)
+    if (hasSlotA && !hasSlotB) return match.slotA
+    if (!hasSlotA && hasSlotB) return match.slotB
+    return null
+  }
+
   for (let round = 2; round <= roundCount; round += 1) {
-    const matchesInRound = totalSlots / Math.pow(2, round)
-    const matches: Match[] = Array.from({ length: matchesInRound }, () => ({
-      id: crypto.randomUUID(),
-      slotA: { playerId: null, displayName: null },
-      slotB: { playerId: null, displayName: null },
-    }))
+    const previousRound = rounds[rounds.length - 1]
+    const matches: Match[] = []
+
+    for (let i = 0; i < previousRound.matches.length; i += 2) {
+      const previousMatchA = previousRound.matches[i]
+      const previousMatchB = previousRound.matches[i + 1]
+      const advancingA = advanceIfBye(previousMatchA)
+      const advancingB = advanceIfBye(previousMatchB)
+
+      matches.push({
+        id: crypto.randomUUID(),
+        slotA: advancingA ?? { playerId: null, displayName: null },
+        slotB: advancingB ?? { playerId: null, displayName: null },
+      })
+    }
+
     rounds.push({ roundNumber: round, matches })
   }
 
