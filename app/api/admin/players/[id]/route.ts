@@ -1,14 +1,15 @@
+import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 type Params = {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export async function PUT(req: Request, { params }: Params) {
-  const id = params.id
+export async function PUT(req: NextRequest, { params }: Params) {
+  const { id } = await params
   const body = await req.json().catch(() => null)
   const isActive = body?.is_active
 
