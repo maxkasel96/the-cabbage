@@ -159,7 +159,7 @@ export default function HistoryPage() {
             border: '1px solid rgba(74, 222, 128, 0.2)',
           }}
         >
-          <div style={{ fontWeight: 800, color: '#e6edf8' }}>Tournament year:</div>
+          <div style={{ fontWeight: 800, color: '#e6edf8', flex: '0 0 auto' }}>Tournament year:</div>
 
           <select
             value={selectedTournamentId}
@@ -170,6 +170,10 @@ export default function HistoryPage() {
               color: '#f4f7fb',
               border: '1px solid rgba(255,255,255,0.15)',
               borderRadius: 8,
+              flex: '1 1 220px',
+              minWidth: 0,
+              maxWidth: 320,
+              width: '100%',
             }}
           >
             {tournaments.map((t) => (
