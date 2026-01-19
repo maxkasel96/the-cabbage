@@ -131,19 +131,46 @@ export default function HistoryPage() {
     'Active tournament'
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-      <h1 style={{ fontSize: 26, marginBottom: 8 }}>The Anals</h1>
+    <main
+      style={{
+        padding: 24,
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        backgroundColor: '#0b1320',
+        color: '#f4f7fb',
+        minHeight: '100vh',
+      }}
+    >
+      <h1 style={{ fontSize: 28, marginBottom: 8, letterSpacing: 0.6 }}>The Anals</h1>
       <Nav />
 
       {/* Tournament navigation */}
       {tournaments.length > 0 && (
-        <div style={{ marginTop: 10, marginBottom: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ fontWeight: 800 }}>Tournament year:</div>
+        <div
+          style={{
+            marginTop: 10,
+            marginBottom: 14,
+            display: 'flex',
+            gap: 10,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            padding: 12,
+            borderRadius: 12,
+            background: '#101a2b',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
+          <div style={{ fontWeight: 800, color: '#e6edf8' }}>Tournament year:</div>
 
           <select
             value={selectedTournamentId}
             onChange={(e) => setSelectedTournamentId(e.target.value)}
-            style={{ padding: '8px 10px' }}
+            style={{
+              padding: '8px 12px',
+              background: '#0b111c',
+              color: '#f4f7fb',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: 8,
+            }}
           >
             {tournaments.map((t) => (
               <option key={t.id} value={t.id}>
@@ -152,7 +179,7 @@ export default function HistoryPage() {
             ))}
           </select>
 
-          <div style={{ opacity: 0.75, fontSize: 13 }}>
+          <div style={{ opacity: 0.75, fontSize: 13, color: '#c7d2e5' }}>
             Viewing: <strong>{selectedTournamentLabel}</strong>
           </div>
         </div>
@@ -160,21 +187,34 @@ export default function HistoryPage() {
 
       {/* Scoreboard */}
       <div style={{ marginTop: 8, marginBottom: 18 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Scoreboard</div>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, letterSpacing: 1 }}>Scoreboard</div>
 
         {loading ? (
           <p>Loading…</p>
         ) : scores.length === 0 ? (
           <p style={{ opacity: 0.75 }}>No wins recorded yet.</p>
         ) : (
-          <div style={{ border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden', maxWidth: 520 }}>
+          <div
+            style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              maxWidth: 620,
+              border: '2px solid #1e293b',
+              background: '#0a0f17',
+              boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+            }}
+          >
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '2fr 1fr',
-                background: '#388e4a',
-                padding: 10,
+                background: 'linear-gradient(90deg, #182033, #0b1018)',
+                padding: '12px 16px',
                 fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                color: '#e5ecff',
+                borderBottom: '2px solid #f97316',
               }}
             >
               <div>Player</div>
@@ -187,12 +227,16 @@ export default function HistoryPage() {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '2fr 1fr',
-                  padding: 10,
-                  borderTop: '1px solid #eee',
+                  padding: '12px 16px',
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  background: 'linear-gradient(90deg, rgba(11,16,24,0.95), rgba(9,12,19,0.75))',
+                  fontFamily:
+                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                  color: '#f8fafc',
                 }}
               >
                 <div>{s.display_name}</div>
-                <div style={{ fontWeight: 700 }}>{s.wins}</div>
+                <div style={{ fontWeight: 700, color: '#f97316' }}>{s.wins}</div>
               </div>
             ))}
           </div>
@@ -200,12 +244,31 @@ export default function HistoryPage() {
       </div>
 
       {/* Search + controls */}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+          padding: 12,
+          borderRadius: 12,
+          background: '#101a2b',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}
+      >
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search game or winner…"
-          style={{ padding: 10, minWidth: 260 }}
+          style={{
+            padding: 10,
+            minWidth: 260,
+            background: '#0b111c',
+            color: '#f4f7fb',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 8,
+          }}
         />
 
         <button
@@ -215,7 +278,16 @@ export default function HistoryPage() {
             if (selectedTournamentId) loadHistory(selectedTournamentId)
             else loadHistory()
           }}
-          style={{ padding: '10px 14px', cursor: 'pointer' }}
+          style={{
+            padding: '10px 16px',
+            cursor: 'pointer',
+            background: '#f97316',
+            color: '#0b111c',
+            border: 'none',
+            borderRadius: 999,
+            fontWeight: 700,
+            letterSpacing: 0.4,
+          }}
         >
           Refresh
         </button>
@@ -233,15 +305,28 @@ export default function HistoryPage() {
       ) : filtered.length === 0 ? (
         <p>No played games yet.</p>
       ) : (
-        <div style={{ border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden', maxWidth: 820 }}>
+        <div
+          style={{
+            borderRadius: 16,
+            overflow: 'hidden',
+            maxWidth: 960,
+            border: '2px solid #1e293b',
+            background: '#0a0f17',
+            boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+          }}
+        >
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '2fr 1fr 2fr 1fr',
               gap: 0,
-              background: '#388e4a',
-              padding: 10,
+              background: 'linear-gradient(90deg, #182033, #0b1018)',
+              padding: '12px 16px',
               fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              color: '#e5ecff',
+              borderBottom: '2px solid #f97316',
             }}
           >
             <div>Game</div>
@@ -250,7 +335,7 @@ export default function HistoryPage() {
             <div>Played</div>
           </div>
 
-          {filtered.map((h) => {
+          {filtered.map((h, index) => {
             const winnersLabel =
               (h.winners ?? []).length === 0 ? '—' : h.winners.map((w) => w.display_name).join(', ')
 
@@ -259,14 +344,18 @@ export default function HistoryPage() {
                 key={h.id}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 2fr 1fr', // ✅ match header
+                  gridTemplateColumns: '2fr 1fr 2fr 1fr',
                   gap: 0,
-                  padding: 10,
-                  borderTop: '1px solid #eee',
+                  padding: '12px 16px',
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
                   alignItems: 'start',
+                  background:
+                    index % 2 === 0
+                      ? 'linear-gradient(90deg, rgba(12,17,28,0.95), rgba(10,13,20,0.85))'
+                      : 'linear-gradient(90deg, rgba(14,20,32,0.95), rgba(11,15,22,0.85))',
                 }}
               >
-                <div>{h.name}</div>
+                <div style={{ fontWeight: 600 }}>{h.name}</div>
                 <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
                 <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
                 <div style={{ opacity: 0.75 }}>{h.played_at ? new Date(h.played_at).toLocaleString() : '—'}</div>
@@ -278,5 +367,4 @@ export default function HistoryPage() {
     </main>
   )
 }
-
 
