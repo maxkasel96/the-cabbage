@@ -77,10 +77,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: upd.error.message }, { status: 500 })
   }
 
-  if (upd.error) {
-    return NextResponse.json({ error: upd.error.message }, { status: 500 })
-  }
-
   return NextResponse.json({ ok: true, tournamentId, gameId, playId, winnerPlayerIds })
 }
-
