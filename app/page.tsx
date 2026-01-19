@@ -261,7 +261,15 @@ function openMarkPlayedModal() {
           .join(', ')
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+    <main
+      style={{
+        padding: 24,
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        backgroundColor: '#061a12',
+        color: '#f4f7fb',
+        minHeight: '100vh',
+      }}
+    >
 
       {/* rolling an animation */}
       <style>{`
@@ -290,13 +298,13 @@ function openMarkPlayedModal() {
 
         .rollBtn {
           transition: transform 120ms ease, opacity 120ms ease;
-          background: #388e4a;
-          color: #fff;
+          background: #4ade80;
+          color: #062314;
           border: none;
           border-radius: 16px;
           font-weight: 700;
           letter-spacing: 0.2px;
-          box-shadow: 0 10px 16px rgba(56, 142, 74, 0.28);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
         }
         .rollBtn:active {
           transform: scale(0.98);
@@ -319,27 +327,27 @@ function openMarkPlayedModal() {
         }
 
         .noteTextarea::placeholder {
-          color: #6b6e6a;
+          color: rgba(244, 247, 251, 0.6);
         }
         
         .noteTextarea {
-          color: #000;
+          color: #f4f7fb;
         }
 
         .filtersCard {
-          background: #388e4a;
-          border: 1px solid #2e7d32;
+          background: #0f2a1f;
+          border: 1px solid rgba(74, 222, 128, 0.2);
           border-radius: 16px;
           padding: 16px;
-          box-shadow: 0 10px 24px rgba(27, 94, 32, 0.24);
+          box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
           max-width: 840px;
-          color: #ffffff;
+          color: #f4f7fb;
         }
 
         .chip {
           padding: 7px 14px;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.45);
+          border: 1px solid rgba(74, 222, 128, 0.35);
           cursor: pointer;
           font-size: 13px;
           font-weight: 600;
@@ -347,8 +355,8 @@ function openMarkPlayedModal() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: #388e4a;
-          color: #ffffff;
+          background: #0b1f16;
+          color: #f4f7fb;
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
@@ -358,46 +366,46 @@ function openMarkPlayedModal() {
         }
 
         .chipActive {
-          background: #388e4a;
-          color: #ffffff;
-          border-color: #ffffff;
+          background: #14532d;
+          color: #f4f7fb;
+          border-color: #4ade80;
           box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
         }
 
         .filtersSummary {
-          background: #388e4a;
+          background: #0b1f16;
           border-radius: 12px;
           padding: 10px 12px;
-          border: 1px dashed rgba(255, 255, 255, 0.6);
+          border: 1px dashed rgba(74, 222, 128, 0.6);
           font-size: 13px;
-          color: #ffffff;
+          color: #f4f7fb;
         }
 
         .playersInput {
           padding: 8px 12px;
           border-radius: 10px;
-          border: 1px solid rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(74, 222, 128, 0.45);
           font-size: 14px;
           width: 140px;
-          background: #388e4a;
-          color: #ffffff;
+          background: #0b1f16;
+          color: #f4f7fb;
           box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
         }
 
         .playersInput::placeholder {
-          color: rgba(255, 255, 255, 0.75);
+          color: rgba(244, 247, 251, 0.7);
         }
 
         .resultCard {
           border-radius: 18px;
           padding: 20px;
           max-width: 760px;
-          background: #000000;
-          border: 2px solid #2e7d32;
-          box-shadow: 0 16px 30px rgba(27, 94, 32, 0.3);
+          background: #0a2016;
+          border: 2px solid #14532d;
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
           position: relative;
           overflow: hidden;
-          color: #ffffff;
+          color: #f4f7fb;
         }
 
         .resultCard::after {
@@ -415,8 +423,8 @@ function openMarkPlayedModal() {
           gap: 6px;
           padding: 6px 10px;
           border-radius: 999px;
-          background: #1b5e20;
-          color: #fff;
+          background: #14532d;
+          color: #e7f8ed;
           font-size: 12px;
           font-weight: 700;
           letter-spacing: 0.3px;
@@ -430,20 +438,20 @@ function openMarkPlayedModal() {
         }
 
         .statPill {
-          background: #388e4a;
-          border: 1px solid rgba(255, 255, 255, 0.6);
+          background: #0f2a1f;
+          border: 1px solid rgba(74, 222, 128, 0.3);
           border-radius: 12px;
           padding: 8px 12px;
           font-weight: 600;
           display: inline-flex;
           gap: 6px;
           align-items: center;
-          color: #ffffff;
+          color: #f4f7fb;
         }
 
         .markPlayedButton {
-          background: linear-gradient(135deg, #48c06b, #2e7d32);
-          color: #ffffff;
+          background: linear-gradient(135deg, #4ade80, #14532d);
+          color: #062314;
           border: none;
           border-radius: 999px;
           padding: 12px 20px;
@@ -465,7 +473,7 @@ function openMarkPlayedModal() {
       `}</style>
 
 
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>The Game Cabbage</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 8, letterSpacing: 0.6 }}>The Game Cabbage</h1>
       <Nav />
 
       <section style={{ marginBottom: 20 }}>
@@ -522,6 +530,7 @@ function openMarkPlayedModal() {
                   textDecoration: 'underline',
                   cursor: 'pointer',
                   padding: 0,
+                  color: '#cfe8d6',
                 }}
               >
                 Clear filters
@@ -551,18 +560,23 @@ function openMarkPlayedModal() {
       {/* Status */}
       {status && (
         <p style={{ marginBottom: 16 }}>
-          <strong>{status}</strong> <a href="/history">Open History</a>
+          <strong>{status}</strong>{' '}
+          <a href="/history" style={{ color: '#4ade80' }}>
+            Open History
+          </a>
         </p>
       )}
 
       {!game ? (
-        <p>Let the cabbage take the guessing out of things. Select Pick a game from the cabbage to get rolling.</p>
+        <p style={{ color: '#cfe8d6' }}>
+          Let the cabbage take the guessing out of things. Select Pick a game from the cabbage to get rolling.
+        </p>
       ) : (
         <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'}>
           <div className="resultCard">
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div className="resultBadge">✨ Fresh from the cabbage</div>
-              <div style={{ fontSize: 12, opacity: 0.7 }}>Ready when you are</div>
+              <div style={{ fontSize: 12, opacity: 0.7, color: '#cfe8d6' }}>Ready when you are</div>
             </div>
             <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{game.name}</h2>
 
@@ -573,7 +587,7 @@ function openMarkPlayedModal() {
               <div className="statPill">⏱️ Playtime: {game.playtime_minutes ? `${game.playtime_minutes} min` : '—'}</div>
             </div>
 
-            {game.notes && <p style={{ margin: '8px 0', fontStyle: 'italic' }}>{game.notes}</p>}
+            {game.notes && <p style={{ margin: '8px 0', fontStyle: 'italic', color: '#cfe8d6' }}>{game.notes}</p>}
 
           {/* Multi-winner picker */}
           <div style={{ marginTop: 14 }}>
@@ -581,7 +595,7 @@ function openMarkPlayedModal() {
 
             <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
               {players.map((p) => (
-                <label key={p.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <label key={p.id} style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#f4f7fb' }}>
                   <input
                     type="checkbox"
                     checked={winnerPlayerIds.has(p.id)}
@@ -592,7 +606,7 @@ function openMarkPlayedModal() {
               ))}
             </div>
 
-            <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13 }}>
+            <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13, color: '#cfe8d6' }}>
               <strong>Selected:</strong> {selectedWinnersLabel}
             </div>
 
@@ -607,6 +621,7 @@ function openMarkPlayedModal() {
                   textDecoration: 'underline',
                   cursor: 'pointer',
                   padding: 0,
+                  color: '#cfe8d6',
                 }}
               >
                 Clear winners
@@ -631,7 +646,7 @@ function openMarkPlayedModal() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.45)',
+            background: 'rgba(4, 12, 8, 0.7)',
             display: 'grid',
             placeItems: 'center',
             padding: 16,
@@ -640,21 +655,22 @@ function openMarkPlayedModal() {
         >
           <div
             style={{
-              background: '#388e4a',
-              color: '#ffffff',
+              background: '#0f2a1f',
+              color: '#f4f7fb',
               borderRadius: 16,
               width: 'min(720px, 94vw)',
               padding: 24,
               boxShadow: '0 18px 50px rgba(0,0,0,0.28)',
               textAlign: 'center',
+              border: '1px solid rgba(74, 222, 128, 0.2)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 onClick={closeWelcomeModal}
                 style={{
-                  background: '#ffffff',
-                  color: '#1b5e20',
+                  background: '#4ade80',
+                  color: '#062314',
                   border: 'none',
                   borderRadius: 999,
                   padding: '8px 14px',
@@ -676,73 +692,103 @@ function openMarkPlayedModal() {
         </div>
       )}
       {noteModalOpen && game && (
-  <div
-    style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(0,0,0,0.35)',
-      display: 'grid',
-      placeItems: 'center',
-      padding: 16,
-      zIndex: 50,
-    }}
-  >
-    <div style={{ background: '#388e4a', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>Add a note</div>
-          <div style={{ opacity: 0.8 }}>{game.name}</div>
-        </div>
-        <button
-          onClick={() => setNoteModalOpen(false)}
-          style={{ padding: '8px 12px', cursor: 'pointer' }}
-          disabled={marking}
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(4, 12, 8, 0.6)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: 16,
+            zIndex: 50,
+          }}
         >
-          Close
-        </button>
-      </div>
-
-      <div style={{ marginTop: 12 }}>
-        <textarea
-          className="noteTextarea"
-            value={noteDraft}
-            onChange={(e) => setNoteDraft(e.target.value)}
-            placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
-            rows={5}
+          <div
             style={{
-              width: '100%',
-              padding: 10,
-              borderRadius: 10,
-              border: '1px solid #ddd',
-              background: '#ffffff'
+              background: '#0f2a1f',
+              borderRadius: 12,
+              width: 'min(720px, 95vw)',
+              padding: 16,
+              border: '1px solid rgba(74, 222, 128, 0.2)',
             }}
-            disabled={marking}
-        />
-        <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12 }}>
-          This note will appear in History under “Notes”.
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800 }}>Add a note</div>
+                <div style={{ opacity: 0.8, color: '#cfe8d6' }}>{game.name}</div>
+              </div>
+              <button
+                onClick={() => setNoteModalOpen(false)}
+                style={{
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  borderRadius: 999,
+                  border: '1px solid rgba(74, 222, 128, 0.35)',
+                  background: '#0b1f16',
+                  color: '#f4f7fb',
+                }}
+                disabled={marking}
+              >
+                Close
+              </button>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <textarea
+                className="noteTextarea"
+                value={noteDraft}
+                onChange={(e) => setNoteDraft(e.target.value)}
+                placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
+                rows={5}
+                style={{
+                  width: '100%',
+                  padding: 10,
+                  borderRadius: 10,
+                  border: '1px solid rgba(74, 222, 128, 0.35)',
+                  background: '#0b1f16',
+                }}
+                disabled={marking}
+              />
+              <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12, color: '#cfe8d6' }}>
+                This note will appear in History under “Notes”.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+              <button
+                onClick={confirmMarkPlayed}
+                style={{
+                  padding: '10px 14px',
+                  cursor: marking ? 'not-allowed' : 'pointer',
+                  borderRadius: 999,
+                  border: 'none',
+                  background: '#4ade80',
+                  color: '#062314',
+                  fontWeight: 700,
+                }}
+                disabled={marking}
+              >
+                {marking ? 'Saving…' : 'Save & mark played'}
+              </button>
+
+              <button
+                onClick={() => setNoteModalOpen(false)}
+                style={{
+                  padding: '10px 14px',
+                  cursor: marking ? 'not-allowed' : 'pointer',
+                  borderRadius: 999,
+                  border: '1px solid rgba(74, 222, 128, 0.35)',
+                  background: '#0b1f16',
+                  color: '#f4f7fb',
+                }}
+                disabled={marking}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
-        <button
-          onClick={confirmMarkPlayed}
-          style={{ padding: '10px 14px', cursor: marking ? 'not-allowed' : 'pointer' }}
-          disabled={marking}
-        >
-          {marking ? 'Saving…' : 'Save & mark played'}
-        </button>
-
-        <button
-          onClick={() => setNoteModalOpen(false)}
-          style={{ padding: '10px 14px', cursor: marking ? 'not-allowed' : 'pointer' }}
-          disabled={marking}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
     </main>
   )
