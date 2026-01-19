@@ -1,9 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { getActiveTournamentId } from '@/lib/getActiveTournamentId'
 
-export async function GET() {
-  const tournamentId = await getActiveTournamentId()
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const requestedTournamentId = searchParams.get('tournamentId')?.trim()
+  const tournamentId = requestedTournamentId || (await getActiveTournamentId())
   if (!tournamentId) {
     return NextResponse.json({ error: 'No active tournament set.' }, { status: 400 })
   }
@@ -55,7 +57,6 @@ export async function GET() {
 
   return NextResponse.json({ history, tournamentId })
 }
-
 
 
 
