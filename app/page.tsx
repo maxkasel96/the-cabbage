@@ -326,47 +326,162 @@ function openMarkPlayedModal() {
           color: #000;
         }
 
+        .filtersCard {
+          background: #f4faf5;
+          border: 1px solid #d6ead9;
+          border-radius: 16px;
+          padding: 16px;
+          box-shadow: 0 10px 24px rgba(27, 94, 32, 0.08);
+          max-width: 840px;
+        }
+
+        .chip {
+          padding: 7px 14px;
+          border-radius: 999px;
+          border: 1px solid #c7d9cc;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #ffffff;
+          color: #2b3a2d;
+          transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+        }
+
+        .chip:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 12px rgba(27, 94, 32, 0.12);
+        }
+
+        .chipActive {
+          background: linear-gradient(135deg, #3aa85a, #2e7d32);
+          color: #ffffff;
+          border-color: transparent;
+          box-shadow: 0 8px 16px rgba(46, 125, 50, 0.24);
+        }
+
+        .filtersSummary {
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 10px 12px;
+          border: 1px dashed #c7d9cc;
+          font-size: 13px;
+        }
+
+        .playersInput {
+          padding: 8px 12px;
+          border-radius: 10px;
+          border: 1px solid #c7d9cc;
+          font-size: 14px;
+          width: 140px;
+          background: #ffffff;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+        }
+
+        .resultCard {
+          border-radius: 18px;
+          padding: 20px;
+          max-width: 760px;
+          background: linear-gradient(150deg, #ffffff 0%, #f2fbf5 55%, #e5f6ea 100%);
+          border: 2px solid #cfe8d4;
+          box-shadow: 0 16px 30px rgba(27, 94, 32, 0.16);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .resultCard::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at top right, rgba(255,255,255,0.7), transparent 45%),
+            radial-gradient(circle at 20% 20%, rgba(56,142,74,0.14), transparent 50%);
+          pointer-events: none;
+        }
+
+        .resultBadge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          background: #1b5e20;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+        }
+
+        .statRow {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin: 10px 0 6px;
+        }
+
+        .statPill {
+          background: #ffffff;
+          border: 1px solid #d6ead9;
+          border-radius: 12px;
+          padding: 8px 12px;
+          font-weight: 600;
+          display: inline-flex;
+          gap: 6px;
+          align-items: center;
+        }
+
       `}</style>
 
 
       <h1 style={{ fontSize: 28, marginBottom: 8 }}>The Game Cabbage</h1>
       <Nav />
 
-      {/* Tag filter chips */}
-      {tags.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Filter by vibe:</div>
-
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {tags.map((t) => {
-              const active = selectedTagSlugs.has(t.slug)
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => toggleTag(t.slug)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 999,
-                    border: '1px solid #ccc',
-                    cursor: 'pointer',
-                    background: active ? '#ffffff' : '#388e4a',
-                    color: active ? '#388e4a' : '#fff',
-                    fontSize: 13,
-                  }}
-                  title={t.slug}
-                >
-                  {active ? '✓ ' : ''}
-                  {t.label}
-                </button>
-              )
-            })}
-          </div>
-
-          <div style={{ marginTop: 8, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ opacity: 0.8, fontSize: 13 }}>
+      <section style={{ marginBottom: 20 }}>
+        <div className="filtersCard">
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Choose your vibe</div>
+              <div style={{ fontSize: 13, opacity: 0.75 }}>
+                Mix and match tags to steer the cabbage toward your perfect quest.
+              </div>
+            </div>
+            <div className="filtersSummary">
               <strong>Filters:</strong> {selectedLabels}
             </div>
+          </div>
 
+          {tags.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+              {tags.map((t) => {
+                const active = selectedTagSlugs.has(t.slug)
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => toggleTag(t.slug)}
+                    className={`chip ${active ? 'chipActive' : ''}`}
+                    title={t.slug}
+                  >
+                    <span>{active ? '✨' : '•'}</span>
+                    {t.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div style={{ marginTop: 14, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ fontWeight: 600 }}>Number of players</div>
+            <input
+              className="playersInput"
+              type="number"
+              min={1}
+              value={playerCount}
+              onChange={(event) => setPlayerCount(event.target.value)}
+              placeholder="e.g., 4"
+            />
+            <div style={{ fontSize: 12, opacity: 0.7 }}>Leave blank to ignore player count.</div>
             {selectedTagSlugs.size > 0 && (
               <button
                 onClick={clearFilters}
@@ -384,30 +499,7 @@ function openMarkPlayedModal() {
             )}
           </div>
         </div>
-      )}
-
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>Number of players:</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <input
-            type="number"
-            min={1}
-            value={playerCount}
-            onChange={(event) => setPlayerCount(event.target.value)}
-            placeholder="e.g., 4"
-            style={{
-              padding: '6px 10px',
-              borderRadius: 6,
-              border: '1px solid #ccc',
-              fontSize: 13,
-              width: 120,
-            }}
-          />
-          <div style={{ fontSize: 12, opacity: 0.7 }}>
-            Leave blank to ignore player count.
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Primary actions */}
       <button
@@ -435,19 +527,22 @@ function openMarkPlayedModal() {
       {!game ? (
         <p>Let the cabbage take the guessing out of things. Select Pick a game from the cabbage to get rolling.</p>
       ) : (
-        <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, maxWidth: 720 }}
->          <h2 style={{ fontSize: 22, marginTop: 0 }}>{game.name}</h2>
+        <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'}>
+          <div className="resultCard">
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <div className="resultBadge">✨ Fresh from the cabbage</div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>Ready when you are</div>
+            </div>
+            <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{game.name}</h2>
 
-          <p style={{ margin: '8px 0' }}>
-            Players:{' '}
-            {game.min_players && game.max_players ? `${game.min_players}–${game.max_players}` : '—'}
-          </p>
+            <div className="statRow">
+              <div className="statPill">
+                👥 Players: {game.min_players && game.max_players ? `${game.min_players}–${game.max_players}` : '—'}
+              </div>
+              <div className="statPill">⏱️ Playtime: {game.playtime_minutes ? `${game.playtime_minutes} min` : '—'}</div>
+            </div>
 
-          <p style={{ margin: '8px 0' }}>
-            Playtime: {game.playtime_minutes ? `${game.playtime_minutes} min` : '—'}
-          </p>
-
-          {game.notes && <p style={{ margin: '8px 0' }}>{game.notes}</p>}
+            {game.notes && <p style={{ margin: '8px 0', fontStyle: 'italic' }}>{game.notes}</p>}
 
           {/* Multi-winner picker */}
           <div style={{ marginTop: 14 }}>
@@ -488,10 +583,11 @@ function openMarkPlayedModal() {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-            <button onClick={openMarkPlayedModal} style={{ padding: '10px 14px', cursor: 'pointer' }}>
-            Mark as played
-            </button>
+            <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+              <button onClick={openMarkPlayedModal} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+                Mark as played
+              </button>
+            </div>
           </div>
         </div>
       )}
