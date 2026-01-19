@@ -50,18 +50,28 @@ function buildBracket(players: Player[]): Bracket {
   const shuffled = shufflePlayers(players)
   const totalSlots = nextPowerOfTwo(shuffled.length)
   const roundCount = Math.log2(totalSlots)
-  const slots: MatchSlot[] = Array.from({ length: totalSlots }, (_, index) => {
-    const player = shuffled[index]
-    return player ? { playerId: player.id, displayName: player.display_name } : { playerId: null, displayName: null }
-  })
+  const matchCount = totalSlots / 2
+  const emptySlot = { playerId: null, displayName: null }
 
-  const roundOneMatches: Match[] = []
-  for (let i = 0; i < slots.length; i += 2) {
-    roundOneMatches.push({
-      id: crypto.randomUUID(),
-      slotA: slots[i],
-      slotB: slots[i + 1],
-    })
+  const roundOneMatches: Match[] = Array.from({ length: matchCount }, () => ({
+    id: crypto.randomUUID(),
+    slotA: emptySlot,
+    slotB: emptySlot,
+  }))
+
+  let playerIndex = 0
+  for (let i = 0; i < roundOneMatches.length; i += 1) {
+    const player = shuffled[playerIndex]
+    if (!player) break
+    roundOneMatches[i].slotA = { playerId: player.id, displayName: player.display_name }
+    playerIndex += 1
+  }
+
+  for (let i = 0; i < roundOneMatches.length; i += 1) {
+    const player = shuffled[playerIndex]
+    if (!player) break
+    roundOneMatches[i].slotB = { playerId: player.id, displayName: player.display_name }
+    playerIndex += 1
   }
 
   const rounds: Round[] = [{ roundNumber: 1, matches: roundOneMatches }]
