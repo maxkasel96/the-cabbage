@@ -93,11 +93,19 @@ function buildBracket(players: Player[]): Bracket {
       const previousMatchB = previousRound.matches[i + 1]
       const advancingA = round === 2 ? advanceIfBye(previousMatchA) : null
       const advancingB = round === 2 ? advanceIfBye(previousMatchB) : null
+      const placeholderA: MatchSlot = {
+        playerId: null,
+        displayName: `Winner of Round ${round - 1} Match ${i + 1}`,
+      }
+      const placeholderB: MatchSlot = {
+        playerId: null,
+        displayName: `Winner of Round ${round - 1} Match ${i + 2}`,
+      }
 
       matches.push({
         id: crypto.randomUUID(),
-        slotA: advancingA ?? { playerId: null, displayName: null },
-        slotB: advancingB ?? { playerId: null, displayName: null },
+        slotA: advancingA ?? placeholderA,
+        slotB: advancingB ?? placeholderB,
       })
     }
 
