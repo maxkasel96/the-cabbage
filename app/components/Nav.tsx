@@ -27,20 +27,39 @@ export default function Nav() {
     }
   }
 
+  const palette = {
+    navBackground: 'linear-gradient(135deg, #1c2621 0%, #243229 100%)',
+    navBorder: '#2f4036',
+    linkIdleBackground: '#2a3a31',
+    linkIdleBorder: '#3b5246',
+    linkIdleText: '#e3f3ea',
+    linkActiveBackground: '#f0c26c',
+    linkActiveBorder: '#e6b155',
+    linkActiveText: '#2b2618',
+    dropdownBackground: '#202b24',
+    dropdownBorder: '#2f4036',
+    shadowStrong: '0 16px 30px rgba(7, 10, 9, 0.4)',
+    shadowSoft: '0 10px 22px rgba(4, 8, 6, 0.3)',
+  }
+
   const linkStyle = (href: string) => {
     const isActive = pathname === href
     return {
-      padding: '10px 14px',
+      padding: '10px 16px',
       borderRadius: 999,
-      border: isActive ? '1px solid #2f6d4a' : '1px solid #8fb29a',
+      border: `1px solid ${
+        isActive ? palette.linkActiveBorder : palette.linkIdleBorder
+      }`,
       textDecoration: 'none',
-      color: isActive ? '#1d4732' : '#1f4d3a',
-      backgroundColor: isActive ? '#d7ead3' : '#f5f2e8',
+      color: isActive ? palette.linkActiveText : palette.linkIdleText,
+      backgroundColor: isActive
+        ? palette.linkActiveBackground
+        : palette.linkIdleBackground,
       fontWeight: 600 as const,
       fontSize: 14,
       letterSpacing: 0.2,
       transition: 'all 0.2s ease',
-      boxShadow: isActive ? '0 6px 14px rgba(47, 109, 74, 0.18)' : 'none',
+      boxShadow: isActive ? palette.shadowSoft : 'none',
     }
   }
 
@@ -52,11 +71,11 @@ export default function Nav() {
         marginBottom: 20,
         flexWrap: 'wrap',
         alignItems: 'center',
-        padding: '12px 16px',
-        borderRadius: 18,
-        border: '1px solid #cbd5c1',
-        backgroundColor: '#e9f1e5',
-        boxShadow: '0 12px 30px rgba(15, 23, 42, 0.18)',
+        padding: '14px 18px',
+        borderRadius: 20,
+        border: `1px solid ${palette.navBorder}`,
+        backgroundImage: palette.navBackground,
+        boxShadow: palette.shadowStrong,
       }}
     >
       <Link href="/" style={linkStyle('/')}>
@@ -79,14 +98,16 @@ export default function Nav() {
             listStyle: 'none',
             cursor: 'pointer',
             fontWeight: 600,
-            padding: '10px 14px',
+            padding: '10px 16px',
             borderRadius: 999,
-            border: isAdmin ? '1px solid #2f6d4a' : '1px solid #8fb29a',
-            color: isAdmin ? '#1d4732' : '#1f4d3a',
-            backgroundColor: isAdmin ? '#d7ead3' : '#f5f2e8',
-            boxShadow: isAdmin
-              ? '0 6px 14px rgba(47, 109, 74, 0.18)'
-              : 'none',
+            border: `1px solid ${
+              isAdmin ? palette.linkActiveBorder : palette.linkIdleBorder
+            }`,
+            color: isAdmin ? palette.linkActiveText : palette.linkIdleText,
+            backgroundColor: isAdmin
+              ? palette.linkActiveBackground
+              : palette.linkIdleBackground,
+            boxShadow: isAdmin ? palette.shadowSoft : 'none',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
@@ -101,9 +122,9 @@ export default function Nav() {
             flexDirection: 'column',
             gap: 8,
             padding: 12,
-            border: '1px solid #e2e8d7',
+            border: `1px solid ${palette.dropdownBorder}`,
             borderRadius: 14,
-            backgroundColor: '#f8f7f2',
+            backgroundColor: palette.dropdownBackground,
             width: 'min(240px, calc(100vw - 32px))',
             maxWidth: 'calc(100vw - 32px)',
             position: 'absolute',
@@ -112,7 +133,7 @@ export default function Nav() {
             right: 0,
             marginInline: 'auto',
             zIndex: 10,
-            boxShadow: '0 16px 28px rgba(15, 23, 42, 0.14)',
+            boxShadow: palette.shadowStrong,
             boxSizing: 'border-box',
           }}
         >
