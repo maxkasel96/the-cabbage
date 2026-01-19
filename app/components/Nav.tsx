@@ -16,16 +16,51 @@ export default function Nav() {
   })
 
   return (
-    <nav style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
+    <nav
+      style={{
+        display: 'flex',
+        gap: 10,
+        marginBottom: 18,
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+      }}
+    >
       <Link href="/" style={linkStyle('/')}>
         Home
       </Link>
       <Link href="/history" style={linkStyle('/history')}>
         History
       </Link>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontWeight: 600 }}>Admin pages</span>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingLeft: 4 }}>
+      <details
+        style={{ position: 'relative' }}
+        open={pathname.startsWith('/admin')}
+      >
+        <summary
+          style={{
+            listStyle: 'none',
+            cursor: 'pointer',
+            fontWeight: 600,
+            padding: '8px 12px',
+            borderRadius: 8,
+            border: '1px solid #ddd',
+            color: '#388e4a',
+          }}
+        >
+          Admin pages
+        </summary>
+        <div
+          style={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            padding: 10,
+            border: '1px solid #ddd',
+            borderRadius: 10,
+            backgroundColor: '#fff',
+            minWidth: 180,
+          }}
+        >
           <Link href="/admin/games" style={linkStyle('/admin/games')}>
             Games
           </Link>
@@ -36,7 +71,7 @@ export default function Nav() {
             Tournaments
           </Link>
         </div>
-      </div>
+      </details>
     </nav>
   )
 }
