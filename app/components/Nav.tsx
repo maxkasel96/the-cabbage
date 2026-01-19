@@ -67,6 +67,9 @@ export default function Nav() {
           <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
             Tags
           </Link>
+          <Link href="/admin/players" style={linkStyle('/admin/players')}>
+            Players
+          </Link>
           <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
             Tournaments
           </Link>
