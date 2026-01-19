@@ -132,7 +132,7 @@ export default function HistoryPage() {
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-      <h1 style={{ fontSize: 26, marginBottom: 8 }}>History</h1>
+      <h1 style={{ fontSize: 26, marginBottom: 8 }}>The Anals</h1>
       <Nav />
 
       {/* Tournament navigation */}
@@ -278,6 +278,5 @@ export default function HistoryPage() {
     </main>
   )
 }
-
 
 

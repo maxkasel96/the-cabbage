@@ -29,7 +29,7 @@ export default function Nav() {
         The Game Cabbage
       </Link>
       <Link href="/history" style={linkStyle('/history')}>
-        History
+        The Anals
       </Link>
       <details
         style={{ position: 'relative' }}
