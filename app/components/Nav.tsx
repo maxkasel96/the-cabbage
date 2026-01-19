@@ -2,16 +2,28 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function Nav() {
   const pathname = usePathname()
   const isAdmin = pathname.startsWith('/admin')
   const detailsRef = useRef<HTMLDetailsElement>(null)
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false)
 
   const handleAdminItemClick = () => {
     if (detailsRef.current) {
       detailsRef.current.open = false
+    }
+    setIsAdminMenuOpen(false)
+  }
+
+  useEffect(() => {
+    setIsAdminMenuOpen(false)
+  }, [pathname])
+
+  const handleAdminToggle = () => {
+    if (detailsRef.current) {
+      setIsAdminMenuOpen(detailsRef.current.open)
     }
   }
 
@@ -56,7 +68,8 @@ export default function Nav() {
       <details
         ref={detailsRef}
         style={{ position: 'relative' }}
-        open={isAdmin}
+        open={isAdminMenuOpen}
+        onToggle={handleAdminToggle}
       >
         <summary
           style={{
