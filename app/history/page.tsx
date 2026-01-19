@@ -140,7 +140,7 @@ export default function HistoryPage() {
         minHeight: '100vh',
       }}
     >
-      <h1 style={{ fontSize: 28, marginBottom: 8, letterSpacing: 0.6 }}>The Anals</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 8, letterSpacing: 0.6 }}>The Annals</h1>
       <Nav />
 
       {/* Tournament navigation */}
