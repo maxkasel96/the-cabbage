@@ -57,6 +57,7 @@ export default function Home() {
   const [teams, setTeams] = useState<Team[]>([])
   const [teamStatus, setTeamStatus] = useState('')
   const [showWinners, setShowWinners] = useState(false)
+  const [winningTeamId, setWinningTeamId] = useState<number | null>(null)
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
@@ -142,6 +143,7 @@ export default function Home() {
   setTeams([])
   setTeamStatus('')
   setShowWinners(false)
+  setWinningTeamId(null)
   setIsRolling(true)
 
   // Let the “rolling” animation be visible before the fetch resolves
@@ -181,6 +183,7 @@ export default function Home() {
     setTeamStatus('')
     setWinnerPlayerIds(new Set())
     setShowWinners(false)
+    setWinningTeamId(null)
   }
 
   function handleTeamModeChange(mode: 'individual' | 'teams') {
@@ -188,6 +191,7 @@ export default function Home() {
     setTeams([])
     setTeamStatus('')
     setShowWinners(false)
+    setWinningTeamId(null)
     if (mode === 'individual') {
       setTeamStatus('Individual play selected. No teams will be generated.')
       setShowWinners(true)
@@ -219,6 +223,13 @@ export default function Home() {
     setTeams(teamList)
     setTeamStatus(`Generated ${count} team${count === 1 ? '' : 's'} from ${players.length} active players.`)
     setShowWinners(true)
+    setWinningTeamId(null)
+  }
+
+  function selectWinningTeam(teamId: number) {
+    const selectedTeam = teams.find((team) => team.id === teamId)
+    setWinningTeamId(teamId)
+    setWinnerPlayerIds(new Set(selectedTeam?.players.map((player) => player.id) ?? []))
   }
 
 
@@ -779,6 +790,30 @@ function openMarkPlayedModal() {
                 {/* Multi-winner picker */}
                 <div style={{ marginTop: 14 }}>
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>Select winner(s):</div>
+
+                  {teamMode === 'teams' && teams.length > 0 && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                        Choose a winning team
+                      </div>
+                      <div style={{ display: 'grid', gap: 6, maxWidth: 320 }}>
+                        {teams.map((team) => (
+                          <label
+                            key={team.id}
+                            style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
+                          >
+                            <input
+                              type="radio"
+                              name="winning-team"
+                              checked={winningTeamId === team.id}
+                              onChange={() => selectWinningTeam(team.id)}
+                            />
+                            <span>Team {team.id}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
                     {players.map((p) => (
