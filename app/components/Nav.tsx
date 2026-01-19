@@ -32,15 +32,15 @@ export default function Nav() {
     return {
       padding: '10px 14px',
       borderRadius: 999,
-      border: isActive ? '1px solid #166534' : '1px solid #86efac',
+      border: isActive ? '1px solid #2f6d4a' : '1px solid #8fb29a',
       textDecoration: 'none',
-      color: isActive ? '#14532d' : '#166534',
-      backgroundColor: isActive ? '#dcfce7' : '#ffffff',
+      color: isActive ? '#1d4732' : '#1f4d3a',
+      backgroundColor: isActive ? '#d7ead3' : '#f5f2e8',
       fontWeight: 600 as const,
       fontSize: 14,
       letterSpacing: 0.2,
       transition: 'all 0.2s ease',
-      boxShadow: isActive ? '0 6px 14px rgba(22, 101, 52, 0.15)' : 'none',
+      boxShadow: isActive ? '0 6px 14px rgba(47, 109, 74, 0.18)' : 'none',
     }
   }
 
@@ -54,8 +54,8 @@ export default function Nav() {
         alignItems: 'center',
         padding: '12px 16px',
         borderRadius: 18,
-        border: '1px solid #e2e8f0',
-        backgroundColor: '#f8fafc',
+        border: '1px solid #cbd5c1',
+        backgroundColor: '#e9f1e5',
         boxShadow: '0 12px 30px rgba(15, 23, 42, 0.18)',
       }}
     >
@@ -78,11 +78,11 @@ export default function Nav() {
             fontWeight: 600,
             padding: '10px 14px',
             borderRadius: 999,
-            border: isAdmin ? '1px solid #166534' : '1px solid #86efac',
-            color: isAdmin ? '#14532d' : '#166534',
-            backgroundColor: isAdmin ? '#dcfce7' : '#ffffff',
+            border: isAdmin ? '1px solid #2f6d4a' : '1px solid #8fb29a',
+            color: isAdmin ? '#1d4732' : '#1f4d3a',
+            backgroundColor: isAdmin ? '#d7ead3' : '#f5f2e8',
             boxShadow: isAdmin
-              ? '0 6px 14px rgba(22, 101, 52, 0.15)'
+              ? '0 6px 14px rgba(47, 109, 74, 0.18)'
               : 'none',
             display: 'flex',
             alignItems: 'center',
@@ -98,9 +98,9 @@ export default function Nav() {
             flexDirection: 'column',
             gap: 8,
             padding: 12,
-            border: '1px solid #e2e8f0',
+            border: '1px solid #e2e8d7',
             borderRadius: 14,
-            backgroundColor: '#fff',
+            backgroundColor: '#f8f7f2',
             width: 'min(240px, calc(100vw - 32px))',
             maxWidth: 'calc(100vw - 32px)',
             position: 'absolute',
