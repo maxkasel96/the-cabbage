@@ -34,8 +34,8 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
   const palette = {
     navBackground: 'var(--nav-surface)',
     navBorder: 'var(--border-strong)',
-    linkIdleBackground: 'transparent',
-    linkIdleBorder: 'transparent',
+    linkIdleBackground: 'rgba(244, 248, 240, 0.14)',
+    linkIdleBorder: 'rgba(244, 248, 240, 0.35)',
     linkIdleText: 'var(--text-inverse)',
     linkActiveBackground: 'var(--primary)',
     linkActiveBorder: 'var(--primary)',
