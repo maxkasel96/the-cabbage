@@ -35,6 +35,7 @@ export default function AdminGamesPage() {
   const [saving, setSaving] = useState(false)
   const [playerDrafts, setPlayerDrafts] = useState<Record<string, { min: string; max: string }>>({})
   const [playersSavingId, setPlayersSavingId] = useState<string | null>(null)
+  const [playerSaveMessages, setPlayerSaveMessages] = useState<Record<string, string>>({})
 
   // Add new game state
   const [newGameName, setNewGameName] = useState('')
@@ -137,11 +138,13 @@ export default function AdminGamesPage() {
 
     if (minPlayers !== null && maxPlayers !== null && minPlayers > maxPlayers) {
       setStatus('Min players must be less than or equal to max players.')
+      setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: '' }))
       return
     }
 
     setPlayersSavingId(game.id)
     setStatus('')
+    setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: '' }))
 
     const res = await fetch(`/api/admin/games/${game.id}`, {
       method: 'PUT',
@@ -164,6 +167,7 @@ export default function AdminGamesPage() {
       )
     )
     setStatus(`Saved player counts for ${game.name}.`)
+    setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: `Saved player counts for ${game.name}.` }))
     setPlayersSavingId(null)
   }
 
@@ -573,6 +577,11 @@ export default function AdminGamesPage() {
               >
                 {playersSavingId === g.id ? 'Saving…' : 'Save players'}
               </button>
+              {playerSaveMessages[g.id] ? (
+                <div style={{ fontSize: 12, fontWeight: 700 }}>
+                  <strong>{playerSaveMessages[g.id]}</strong>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}
