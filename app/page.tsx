@@ -92,12 +92,14 @@ export default function Home() {
   // Random roll animation helper
   const [isRolling, setIsRolling] = useState(false)
   const [rollKey, setRollKey] = useState(0)
+  const [showBounce, setShowBounce] = useState(false)
 
   async function rollRandom() {
   if (isRolling) return
 
   setStatus('')
   setWinnerPlayerIds(new Set())
+  setShowBounce(false)
   setIsRolling(true)
 
   // Let the “rolling” animation be visible before the fetch resolves
@@ -125,6 +127,7 @@ export default function Home() {
 
   setGame(json.game)
   setRollKey((k) => k + 1) // retrigger pop animation
+  setShowBounce(true)
   setIsRolling(false)
 }
 
@@ -382,9 +385,13 @@ function openMarkPlayedModal() {
       {/* Primary actions */}
       <button
         onClick={rollRandom}
+        onAnimationEnd={(event) => {
+          if (event.animationName === 'cabbageBounce') {
+            setShowBounce(false)
+          }
+        }}
         disabled={isRolling}
-        key={rollKey}
-        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''} ${game && !isRolling ? 'rollBtnSelected' : ''}`}
+        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''} ${showBounce ? 'rollBtnSelected' : ''}`}
         style={{
           padding: '16px 26px',
           cursor: isRolling ? 'not-allowed' : 'pointer',
