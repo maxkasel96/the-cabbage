@@ -596,9 +596,9 @@ function openMarkPlayedModal() {
 
         .winnerTeamCard {
           border-radius: 14px;
-          border: 1px solid var(--border-strong);
+          border: 1px solid #9eaa86;
           padding: 10px 12px;
-          background: var(--surface);
+          background: #e7eadb;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -608,13 +608,100 @@ function openMarkPlayedModal() {
 
         .winnerTeamCard:hover {
           transform: translateY(-1px);
+          border-color: #4a5a3c;
           box-shadow: 0 10px 20px rgba(63, 90, 42, 0.18);
+          background: #d5dcc2;
         }
 
         .winnerTeamCardActive {
-          border-color: var(--primary);
-          box-shadow: 0 12px 24px rgba(63, 90, 42, 0.22);
-          background: var(--page-background);
+          border-color: #1c2518;
+          box-shadow: 0 4px 12px rgba(30, 37, 24, 0.25);
+          background: #3f5a32;
+          border-left: 6px solid #d2b45a;
+          padding-left: 6px;
+        }
+
+        .winnerTeamCardActive:hover {
+          border-color: #10160d;
+          background: #2e4526;
+          box-shadow: 0 6px 16px rgba(18, 24, 14, 0.35);
+        }
+
+        .winnerTeamCardDim {
+          opacity: 0.85;
+        }
+
+        .winnerTeamTitle {
+          font-weight: 700;
+          color: #4a5a3c;
+        }
+
+        .winnerTeamTitleActive {
+          color: #f3f5ec;
+        }
+
+        .winnerTeamMeta {
+          font-size: 12px;
+          color: #7a8a67;
+        }
+
+        .winnerTeamMetaActive {
+          color: #dce3d2;
+        }
+
+        .winnerTeamRadio {
+          width: 20px;
+          height: 20px;
+          border-radius: 999px;
+          border: 2px solid #9eaa86;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+        }
+
+        .winnerTeamRadioActive {
+          background: #f3f5ec;
+          border-color: #f3f5ec;
+        }
+
+        .winnerTeamRadioDot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: transparent;
+        }
+
+        .winnerTeamRadioDotActive {
+          background: #2e3f2a;
+        }
+
+        .winnerTeamTrophy {
+          color: #d2b45a;
+          font-size: 18px;
+        }
+
+        .selectedWinnersLabel {
+          color: #5a4a2e;
+        }
+
+        .selectedWinnersNames {
+          color: #1c2518;
+        }
+
+        .clearWinnersButton {
+          margin-top: 6px;
+          font-size: 12px;
+          background: none;
+          border: none;
+          text-decoration: underline;
+          cursor: pointer;
+          padding: 0;
+          color: #4a5a3c;
+        }
+
+        .clearWinnersButton:hover {
+          color: #2e3f2a;
         }
 
       `}</style>
@@ -829,20 +916,32 @@ function openMarkPlayedModal() {
                       <div className="winnerTeamGrid">
                         {teams.map((team) => {
                           const isActive = winningTeamId === team.id
+                          const dimWhenUnselected = winningTeamId !== null && !isActive
                           return (
                             <button
                               key={team.id}
                               type="button"
-                              className={`winnerTeamCard ${isActive ? 'winnerTeamCardActive' : ''}`}
+                              className={`winnerTeamCard ${isActive ? 'winnerTeamCardActive' : ''} ${
+                                dimWhenUnselected ? 'winnerTeamCardDim' : ''
+                              }`}
                               onClick={() => selectWinningTeam(team.id)}
                             >
                               <div>
-                                <div style={{ fontWeight: 700 }}>Team {team.id}</div>
-                                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                                <div className={`winnerTeamTitle ${isActive ? 'winnerTeamTitleActive' : ''}`}>
+                                  Team {team.id}
+                                </div>
+                                <div className={`winnerTeamMeta ${isActive ? 'winnerTeamMetaActive' : ''}`}>
                                   {team.players.length} player{team.players.length === 1 ? '' : 's'}
                                 </div>
                               </div>
-                              <div style={{ fontSize: 18 }}>{isActive ? '🏆' : '○'}</div>
+                              <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+                                {!isActive && (
+                                  <div className="winnerTeamRadio">
+                                    <span className="winnerTeamRadioDot" />
+                                  </div>
+                                )}
+                                {isActive && <div className="winnerTeamTrophy">🏆</div>}
+                              </div>
                             </button>
                           )
                         })}
@@ -866,24 +965,13 @@ function openMarkPlayedModal() {
                     </div>
                   )}
 
-                  <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13, color: 'var(--text-secondary)' }}>
-                    <strong>Selected:</strong> {selectedWinnersLabel}
+                  <div style={{ marginTop: 8, fontSize: 13 }}>
+                    <span className="selectedWinnersLabel">Selected:</span>{' '}
+                    <span className="selectedWinnersNames">{selectedWinnersLabel}</span>
                   </div>
 
                   {winnerPlayerIds.size > 0 && (
-                    <button
-                      onClick={clearWinners}
-                      style={{
-                        marginTop: 6,
-                        fontSize: 12,
-                        background: 'none',
-                        border: 'none',
-                        textDecoration: 'underline',
-                        cursor: 'pointer',
-                        padding: 0,
-                        color: 'var(--text-muted)',
-                      }}
-                    >
+                    <button onClick={clearWinners} className="clearWinnersButton">
                       Clear winners
                     </button>
                   )}
