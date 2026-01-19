@@ -76,7 +76,7 @@ export async function GET(request: Request) {
 
     const filtered =
       shouldFilterByMaxPlayers
-        ? data.filter((game) => game.max_players === null || game.max_players <= maxPlayers)
+        ? data.filter((game) => game.max_players === null || game.max_players >= maxPlayers)
         : data
 
     if (filtered.length === 0) {
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
 
   const filtered =
     shouldFilterByMaxPlayers
-      ? data.filter((game: any) => game.max_players === null || game.max_players <= maxPlayers)
+      ? data.filter((game: any) => game.max_players === null || game.max_players >= maxPlayers)
       : data
 
   if (filtered.length === 0) {
