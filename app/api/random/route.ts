@@ -30,6 +30,10 @@ export async function GET(request: Request) {
         ? [legacyTag]
         : []
 
+  const maxPlayersParam = searchParams.get('maxPlayers')?.trim() || ''
+  const maxPlayers = Number.parseInt(maxPlayersParam, 10)
+  const shouldFilterByMaxPlayers = Number.isFinite(maxPlayers) && maxPlayers > 0
+
   // 3) Get list of *played* game IDs for this tournament (played_at IS NOT NULL)
   const played = await supabaseServer
     .from('plays')
@@ -70,7 +74,19 @@ export async function GET(request: Request) {
       )
     }
 
-    const game = data[Math.floor(Math.random() * data.length)]
+    const filtered =
+      shouldFilterByMaxPlayers
+        ? data.filter((game) => game.max_players === null || game.max_players >= maxPlayers)
+        : data
+
+    if (filtered.length === 0) {
+      return NextResponse.json(
+        { message: 'No unplayed games found for the active tournament.' },
+        { status: 404 }
+      )
+    }
+
+    const game = filtered[Math.floor(Math.random() * filtered.length)]
     return NextResponse.json({ game, tournamentId })
   }
 
@@ -100,6 +116,18 @@ export async function GET(request: Request) {
     )
   }
 
-  const game = data[Math.floor(Math.random() * data.length)]
+  const filtered =
+    shouldFilterByMaxPlayers
+      ? data.filter((game: any) => game.max_players === null || game.max_players >= maxPlayers)
+      : data
+
+  if (filtered.length === 0) {
+    return NextResponse.json(
+      { message: `No unplayed games found for tags: ${tagSlugs.join(', ')}` },
+      { status: 404 }
+    )
+  }
+
+  const game = filtered[Math.floor(Math.random() * filtered.length)]
   return NextResponse.json({ game, tournamentId })
 }
