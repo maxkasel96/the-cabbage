@@ -92,12 +92,14 @@ export default function Home() {
   // Random roll animation helper
   const [isRolling, setIsRolling] = useState(false)
   const [rollKey, setRollKey] = useState(0)
+  const [showBounce, setShowBounce] = useState(false)
 
   async function rollRandom() {
   if (isRolling) return
 
   setStatus('')
   setWinnerPlayerIds(new Set())
+  setShowBounce(false)
   setIsRolling(true)
 
   // Let the “rolling” animation be visible before the fetch resolves
@@ -125,6 +127,7 @@ export default function Home() {
 
   setGame(json.game)
   setRollKey((k) => k + 1) // retrigger pop animation
+  setShowBounce(true)
   setIsRolling(false)
 }
 
@@ -250,14 +253,32 @@ function openMarkPlayedModal() {
           100% { transform: scale(1); opacity: 1; }
         }
 
+        @keyframes cabbageBounce {
+          0% { transform: scale(1) rotate(0deg); }
+          30% { transform: scale(1.08) rotate(-3deg); }
+          55% { transform: scale(0.98) rotate(2deg); }
+          80% { transform: scale(1.04) rotate(-1deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+
         .rollBtn {
           transition: transform 120ms ease, opacity 120ms ease;
+          background: #388e4a;
+          color: #fff;
+          border: none;
+          border-radius: 16px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          box-shadow: 0 10px 16px rgba(56, 142, 74, 0.28);
         }
         .rollBtn:active {
           transform: scale(0.98);
         }
         .rollBtnRolling {
           animation: shake 420ms ease-in-out;
+        }
+        .rollBtnSelected {
+          animation: cabbageBounce 600ms ease-out;
         }
 
         .gameCardPop {
@@ -364,9 +385,19 @@ function openMarkPlayedModal() {
       {/* Primary actions */}
       <button
         onClick={rollRandom}
+        onAnimationEnd={(event) => {
+          if (event.animationName === 'cabbageBounce') {
+            setShowBounce(false)
+          }
+        }}
         disabled={isRolling}
-        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
-        style={{ padding: '10px 14px', cursor: isRolling ? 'not-allowed' : 'pointer', opacity: isRolling ? 0.75 : 1 }}
+        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''} ${showBounce ? 'rollBtnSelected' : ''}`}
+        style={{
+          padding: '16px 26px',
+          cursor: isRolling ? 'not-allowed' : 'pointer',
+          opacity: isRolling ? 0.75 : 1,
+          fontSize: 20,
+        }}
       >
         {isRolling ? 'Choosing from the cabbage… 🥬' : game ? 'Pick another game from the cabbage 🥬' : 'Pick a game from the cabbage 🥬'}
       </button>
