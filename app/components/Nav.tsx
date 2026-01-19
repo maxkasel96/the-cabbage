@@ -65,6 +65,9 @@ export default function Nav() {
       <Link href="/history" style={linkStyle('/history')}>
         The Annals
       </Link>
+      <Link href="/bracket" style={linkStyle('/bracket')}>
+        Bracket Generator
+      </Link>
       <details
         ref={detailsRef}
         style={{ position: 'relative' }}
