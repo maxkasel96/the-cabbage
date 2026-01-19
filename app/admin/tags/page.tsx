@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '@/app/components/Nav'
+import AdminSubNav from '@/app/components/AdminSubNav'
+import PageTitle from '@/app/components/PageTitle'
 
 type Tag = {
   id: string
@@ -99,8 +101,9 @@ export default function AdminTagsPage() {
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-      <Nav />
-      <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Tags</h1>
+      <PageTitle>Admin: Tags</PageTitle>
+      <AdminSubNav />
+      <Nav showAdminMenu={false} />
 
       {/* Create tag */}
       <div

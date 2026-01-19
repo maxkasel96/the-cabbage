@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
+import PageTitle from '../components/PageTitle'
 
 type Player = {
   id: string
@@ -180,7 +181,7 @@ export default function BracketPage() {
         minHeight: '100vh',
       }}
     >
-      <h1 style={{ fontSize: 28, marginBottom: 8, letterSpacing: 0.6 }}>Bracket Generator</h1>
+      <PageTitle>Bracket Generator</PageTitle>
       <Nav />
       <section
         style={{
