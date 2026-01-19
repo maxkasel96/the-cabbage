@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '@/app/components/Nav'
+import AdminSubNav from '@/app/components/AdminSubNav'
+import PageTitle from '@/app/components/PageTitle'
 
 type Tag = {
   id: string
@@ -357,23 +359,23 @@ export default function AdminGamesPage() {
   clearBulkSelection()
 }
 
+  return (
+    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <PageTitle>Admin: Games & Tags</PageTitle>
+      <AdminSubNav />
+      <Nav showAdminMenu={false} />
 
- return (
-  <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-    <Nav />
-    <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Games & Tags</h1>
-
-    {/* Add new game */}
-    <div
-      style={{
-        border: '1px solid #ddd',
-        borderRadius: 10,
-        padding: 14,
-        marginBottom: 16,
-        maxWidth: 720,
-      }}
-    >
-      <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
+      {/* Add new game */}
+      <div
+        style={{
+          border: '1px solid #ddd',
+          borderRadius: 10,
+          padding: 14,
+          marginBottom: 16,
+          maxWidth: 720,
+        }}
+      >
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <input

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '@/app/components/Nav'
+import AdminSubNav from '@/app/components/AdminSubNav'
+import PageTitle from '@/app/components/PageTitle'
 
 type Player = {
   id: string
@@ -75,8 +77,9 @@ export default function AdminPlayersPage() {
 
   return (
     <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-      <Nav />
-      <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Players</h1>
+      <PageTitle>Admin: Players</PageTitle>
+      <AdminSubNav />
+      <Nav showAdminMenu={false} />
 
       <div style={{ marginBottom: 14, opacity: 0.8 }}>
         Active players appear as winner options on the homepage. Inactive players stay in history.

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
+import PageTitle from '../components/PageTitle'
 
 type Winner = {
   id: string
@@ -140,7 +141,7 @@ export default function HistoryPage() {
         minHeight: '100vh',
       }}
     >
-      <h1 style={{ fontSize: 28, marginBottom: 8, letterSpacing: 0.6 }}>The Annals</h1>
+      <PageTitle>The Annals</PageTitle>
       <Nav />
 
       {/* Tournament navigation */}

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Nav from '@/app/components/Nav'
+import AdminSubNav from '@/app/components/AdminSubNav'
+import PageTitle from '@/app/components/PageTitle'
 
 type Tournament = {
   id: string
@@ -20,8 +22,6 @@ export default function AdminTournamentsPage() {
   const [label, setLabel] = useState('Dec 2026 – Jan 2027')
   const [yearStart, setYearStart] = useState<number>(2026)
   const [settingActiveId, setSettingActiveId] = useState<string | null>(null)
-
-
   const yearEnd = yearStart + 1
   const active = tournaments.find((t) => t.is_active)
 
@@ -81,46 +81,48 @@ export default function AdminTournamentsPage() {
 
   // function to allow for setting active tournament from the list
   async function setActiveTournament(t: Tournament) {
-  const ok = window.confirm(`Set "${t.label}" as the active tournament?`)
-  if (!ok) return
+    const ok = window.confirm(`Set "${t.label}" as the active tournament?`)
+    if (!ok) return
 
-  setSettingActiveId(t.id)
-  setStatus('')
+    setSettingActiveId(t.id)
+    setStatus('')
 
-  const res = await fetch('/api/admin/tournaments/set-active', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tournamentId: t.id }),
-  })
+    const res = await fetch('/api/admin/tournaments/set-active', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tournamentId: t.id }),
+    })
 
-  const json = await res.json().catch(() => ({}))
+    const json = await res.json().catch(() => ({}))
 
-  if (!res.ok) {
-    setStatus(json.error || 'Failed to set active tournament')
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to set active tournament')
+      setSettingActiveId(null)
+      return
+    }
+
+    setStatus(
+      `Active tournament set to: ${json.tournament.label} (${json.tournament.year_start}-${json.tournament.year_end})`
+    )
     setSettingActiveId(null)
-    return
+    await loadTournaments()
   }
 
-  setStatus(`Active tournament set to: ${json.tournament.label} (${json.tournament.year_start}-${json.tournament.year_end})`)
-  setSettingActiveId(null)
-  await loadTournaments()
-}
+  return (
+    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <PageTitle>Admin: Tournaments</PageTitle>
+      <AdminSubNav />
+      <Nav showAdminMenu={false} />
 
-
-return (
-  <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-    <Nav />
-    <h1 style={{ fontSize: 26, marginBottom: 8 }}>Admin: Tournaments</h1>
-
-    <div style={{ marginBottom: 16, opacity: 0.85 }}>
-      {active ? (
-        <>
-          <strong>Active:</strong> {active.label} ({active.year_start}-{active.year_end})
-        </>
-      ) : (
-        <strong>No active tournament set</strong>
-      )}
-    </div>
+      <div style={{ marginBottom: 16, opacity: 0.85 }}>
+        {active ? (
+          <>
+            <strong>Active:</strong> {active.label} ({active.year_start}-{active.year_end})
+          </>
+        ) : (
+          <strong>No active tournament set</strong>
+        )}
+      </div>
 
     {/* Start new tournament */}
     <div
@@ -237,7 +239,6 @@ return (
         ))}
       </div>
     )}
-  </main>
-)
-
+    </main>
+  )
 }
