@@ -327,18 +327,19 @@ function openMarkPlayedModal() {
         }
 
         .filtersCard {
-          background: #f4faf5;
-          border: 1px solid #d6ead9;
+          background: #388e4a;
+          border: 1px solid #2e7d32;
           border-radius: 16px;
           padding: 16px;
-          box-shadow: 0 10px 24px rgba(27, 94, 32, 0.08);
+          box-shadow: 0 10px 24px rgba(27, 94, 32, 0.24);
           max-width: 840px;
+          color: #ffffff;
         }
 
         .chip {
           padding: 7px 14px;
           border-radius: 999px;
-          border: 1px solid #c7d9cc;
+          border: 1px solid rgba(255, 255, 255, 0.45);
           cursor: pointer;
           font-size: 13px;
           font-weight: 600;
@@ -346,58 +347,65 @@ function openMarkPlayedModal() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: #ffffff;
-          color: #2b3a2d;
+          background: #388e4a;
+          color: #ffffff;
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
         .chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 12px rgba(27, 94, 32, 0.12);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
         .chipActive {
-          background: linear-gradient(135deg, #3aa85a, #2e7d32);
+          background: #388e4a;
           color: #ffffff;
-          border-color: transparent;
-          box-shadow: 0 8px 16px rgba(46, 125, 50, 0.24);
+          border-color: #ffffff;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
         }
 
         .filtersSummary {
-          background: #ffffff;
+          background: #388e4a;
           border-radius: 12px;
           padding: 10px 12px;
-          border: 1px dashed #c7d9cc;
+          border: 1px dashed rgba(255, 255, 255, 0.6);
           font-size: 13px;
+          color: #ffffff;
         }
 
         .playersInput {
           padding: 8px 12px;
           border-radius: 10px;
-          border: 1px solid #c7d9cc;
+          border: 1px solid rgba(255, 255, 255, 0.6);
           font-size: 14px;
           width: 140px;
-          background: #ffffff;
-          box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+          background: #388e4a;
+          color: #ffffff;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .playersInput::placeholder {
+          color: rgba(255, 255, 255, 0.75);
         }
 
         .resultCard {
           border-radius: 18px;
           padding: 20px;
           max-width: 760px;
-          background: linear-gradient(150deg, #ffffff 0%, #f2fbf5 55%, #e5f6ea 100%);
-          border: 2px solid #cfe8d4;
-          box-shadow: 0 16px 30px rgba(27, 94, 32, 0.16);
+          background: #388e4a;
+          border: 2px solid #2e7d32;
+          box-shadow: 0 16px 30px rgba(27, 94, 32, 0.3);
           position: relative;
           overflow: hidden;
+          color: #ffffff;
         }
 
         .resultCard::after {
           content: '';
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at top right, rgba(255,255,255,0.7), transparent 45%),
-            radial-gradient(circle at 20% 20%, rgba(56,142,74,0.14), transparent 50%);
+          background: radial-gradient(circle at top right, rgba(255,255,255,0.2), transparent 45%),
+            radial-gradient(circle at 20% 20%, rgba(0,0,0,0.2), transparent 50%);
           pointer-events: none;
         }
 
@@ -422,14 +430,15 @@ function openMarkPlayedModal() {
         }
 
         .statPill {
-          background: #ffffff;
-          border: 1px solid #d6ead9;
+          background: #388e4a;
+          border: 1px solid rgba(255, 255, 255, 0.6);
           border-radius: 12px;
           padding: 8px 12px;
           font-weight: 600;
           display: inline-flex;
           gap: 6px;
           align-items: center;
+          color: #ffffff;
         }
 
       `}</style>
