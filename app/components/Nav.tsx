@@ -16,7 +16,15 @@ export default function Nav() {
   })
 
   return (
-    <nav style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
+    <nav
+      style={{
+        display: 'flex',
+        gap: 10,
+        marginBottom: 18,
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+      }}
+    >
       <Link href="/" style={linkStyle('/')}>
         Home
       </Link>
