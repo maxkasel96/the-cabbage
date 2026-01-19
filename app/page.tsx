@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Nav from './components/Nav'
 
 type Game = {
@@ -92,7 +92,23 @@ export default function Home() {
   // Random roll animation helper
   const [isRolling, setIsRolling] = useState(false)
   const [rollKey, setRollKey] = useState(0)
-  const [showBounce, setShowBounce] = useState(false)
+  const rollButtonRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (!game || isRolling) return
+    const button = rollButtonRef.current
+    if (!button) return
+    button.animate(
+      [
+        { transform: 'scale(1) rotate(0deg)' },
+        { transform: 'scale(1.08) rotate(-3deg)' },
+        { transform: 'scale(0.98) rotate(2deg)' },
+        { transform: 'scale(1.04) rotate(-1deg)' },
+        { transform: 'scale(1) rotate(0deg)' },
+      ],
+      { duration: 600, easing: 'ease-out' }
+    )
+  }, [game, isRolling])
 
   async function rollRandom() {
   if (isRolling) return
@@ -385,13 +401,9 @@ function openMarkPlayedModal() {
       {/* Primary actions */}
       <button
         onClick={rollRandom}
-        onAnimationEnd={(event) => {
-          if (event.animationName === 'cabbageBounce') {
-            setShowBounce(false)
-          }
-        }}
+        ref={rollButtonRef}
         disabled={isRolling}
-        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''} ${showBounce ? 'rollBtnSelected' : ''}`}
+        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
         style={{
           padding: '16px 26px',
           cursor: isRolling ? 'not-allowed' : 'pointer',
