@@ -21,6 +21,8 @@ type GameRow = {
   name: string
   is_active: boolean
   played_at: string | null
+  min_players: number | null
+  max_players: number | null
   game_tags: GameTagRow[] | null
 }
 
@@ -36,6 +38,8 @@ export async function GET() {
       name,
       is_active,
       played_at,
+      min_players,
+      max_players,
       game_tags (
         tags ( id, slug, label, sort_order )
       )
@@ -52,6 +56,8 @@ export async function GET() {
     name: g.name,
     is_active: g.is_active,
     played_at: g.played_at,
+    min_players: g.min_players ?? null,
+    max_players: g.max_players ?? null,
     tags: (g.game_tags ?? [])
       .map((gt) => gt.tags)
       .filter((t): t is TagRow => Boolean(t))
@@ -78,7 +84,7 @@ export async function POST(req: Request) {
   const ins = await supabaseServer
     .from('games')
     .insert([{ name, is_active }])
-    .select('id, name, is_active, played_at')
+    .select('id, name, is_active, played_at, min_players, max_players')
     .single()
 
   if (ins.error) {
@@ -87,4 +93,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ game: { ...ins.data, tags: [] } }, { status: 201 })
 }
-
