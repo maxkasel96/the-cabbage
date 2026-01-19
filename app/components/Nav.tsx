@@ -2,10 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useRef } from 'react'
 
 export default function Nav() {
   const pathname = usePathname()
   const isAdmin = pathname.startsWith('/admin')
+  const detailsRef = useRef<HTMLDetailsElement>(null)
+
+  const handleAdminItemClick = () => {
+    if (detailsRef.current) {
+      detailsRef.current.open = false
+    }
+  }
 
   const linkStyle = (href: string) => {
     const isActive = pathname === href
@@ -46,6 +54,7 @@ export default function Nav() {
         The Anals
       </Link>
       <details
+        ref={detailsRef}
         style={{ position: 'relative' }}
         open={isAdmin}
       >
@@ -79,24 +88,42 @@ export default function Nav() {
             border: '1px solid #e2e8f0',
             borderRadius: 14,
             backgroundColor: '#fff',
-            minWidth: 200,
+            width: 'min(240px, calc(100vw - 32px))',
+            maxWidth: 'calc(100vw - 32px)',
             position: 'absolute',
             top: 'calc(100% + 8px)',
             right: 0,
             zIndex: 10,
             boxShadow: '0 16px 28px rgba(15, 23, 42, 0.14)',
+            boxSizing: 'border-box',
           }}
         >
-          <Link href="/admin/games" style={linkStyle('/admin/games')}>
+          <Link
+            href="/admin/games"
+            style={linkStyle('/admin/games')}
+            onClick={handleAdminItemClick}
+          >
             Games
           </Link>
-          <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
+          <Link
+            href="/admin/tags"
+            style={linkStyle('/admin/tags')}
+            onClick={handleAdminItemClick}
+          >
             Tags
           </Link>
-          <Link href="/admin/players" style={linkStyle('/admin/players')}>
+          <Link
+            href="/admin/players"
+            style={linkStyle('/admin/players')}
+            onClick={handleAdminItemClick}
+          >
             Players
           </Link>
-          <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
+          <Link
+            href="/admin/tournaments"
+            style={linkStyle('/admin/tournaments')}
+            onClick={handleAdminItemClick}
+          >
             Tournaments
           </Link>
         </div>
