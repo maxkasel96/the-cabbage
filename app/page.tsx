@@ -587,6 +587,36 @@ function openMarkPlayedModal() {
           background: var(--surface);
         }
 
+        .winnerTeamGrid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 10px;
+          margin-top: 8px;
+        }
+
+        .winnerTeamCard {
+          border-radius: 14px;
+          border: 1px solid var(--border-strong);
+          padding: 10px 12px;
+          background: var(--surface);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+        }
+
+        .winnerTeamCard:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 20px rgba(63, 90, 42, 0.18);
+        }
+
+        .winnerTeamCardActive {
+          border-color: var(--primary);
+          box-shadow: 0 12px 24px rgba(63, 90, 42, 0.22);
+          background: var(--page-background);
+        }
+
       `}</style>
 
 
@@ -791,45 +821,50 @@ function openMarkPlayedModal() {
                 <div style={{ marginTop: 14 }}>
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>Select winner(s):</div>
 
-                  {teamMode === 'teams' && teams.length > 0 && (
+                  {teamMode === 'teams' && teams.length > 0 ? (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
                         Choose a winning team
                       </div>
-                      <div style={{ display: 'grid', gap: 6, maxWidth: 320 }}>
-                        {teams.map((team) => (
-                          <label
-                            key={team.id}
-                            style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
-                          >
-                            <input
-                              type="radio"
-                              name="winning-team"
-                              checked={winningTeamId === team.id}
-                              onChange={() => selectWinningTeam(team.id)}
-                            />
-                            <span>Team {team.id}</span>
-                          </label>
-                        ))}
+                      <div className="winnerTeamGrid">
+                        {teams.map((team) => {
+                          const isActive = winningTeamId === team.id
+                          return (
+                            <button
+                              key={team.id}
+                              type="button"
+                              className={`winnerTeamCard ${isActive ? 'winnerTeamCardActive' : ''}`}
+                              onClick={() => selectWinningTeam(team.id)}
+                            >
+                              <div>
+                                <div style={{ fontWeight: 700 }}>Team {team.id}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                                  {team.players.length} player{team.players.length === 1 ? '' : 's'}
+                                </div>
+                              </div>
+                              <div style={{ fontSize: 18 }}>{isActive ? '🏆' : '○'}</div>
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
+                  ) : (
+                    <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
+                      {players.map((p) => (
+                        <label
+                          key={p.id}
+                          style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={winnerPlayerIds.has(p.id)}
+                            onChange={() => toggleWinner(p.id)}
+                          />
+                          <span>{p.display_name}</span>
+                        </label>
+                      ))}
+                    </div>
                   )}
-
-                  <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
-                    {players.map((p) => (
-                      <label
-                        key={p.id}
-                        style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={winnerPlayerIds.has(p.id)}
-                          onChange={() => toggleWinner(p.id)}
-                        />
-                        <span>{p.display_name}</span>
-                      </label>
-                    ))}
-                  </div>
 
                   <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13, color: 'var(--text-secondary)' }}>
                     <strong>Selected:</strong> {selectedWinnersLabel}
