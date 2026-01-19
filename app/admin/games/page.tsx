@@ -360,7 +360,15 @@ export default function AdminGamesPage() {
 }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+    <main
+      style={{
+        padding: 24,
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        backgroundColor: 'var(--pale-celery)',
+        color: 'var(--deep-stem-green)',
+        minHeight: '100vh',
+      }}
+    >
       <PageTitle>Admin: Games & Tags</PageTitle>
       <AdminSubNav />
       <Nav showAdminMenu={false} />
@@ -368,11 +376,12 @@ export default function AdminGamesPage() {
       {/* Add new game */}
       <div
         style={{
-          border: '1px solid #ddd',
+          border: '1px solid var(--gloss-highlight)',
           borderRadius: 10,
           padding: 14,
           marginBottom: 16,
           maxWidth: 720,
+          background: 'var(--ceramic-sage)',
         }}
       >
         <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
@@ -432,7 +441,7 @@ export default function AdminGamesPage() {
           </option>
         ))}
       </select>
-      <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+      <button onClick={loadAll} style={{ padding: '10px 14px' }}>
         Refresh
       </button>
     </div>
@@ -440,7 +449,7 @@ export default function AdminGamesPage() {
     {/* Bulk actions */}
     <div
       style={{
-        border: '1px solid #ddd',
+        border: '1px solid var(--gloss-highlight)',
         borderRadius: 10,
         padding: 12,
         marginBottom: 16,
@@ -449,6 +458,7 @@ export default function AdminGamesPage() {
         gap: 12,
         alignItems: 'center',
         flexWrap: 'wrap',
+        background: 'var(--ceramic-sage)',
       }}
     >
       <div style={{ fontWeight: 800 }}>Bulk:</div>
@@ -489,7 +499,14 @@ export default function AdminGamesPage() {
         {filteredGames.map((g) => (
           <div
             key={g.id}
-            style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, display: 'grid', gap: 10 }}
+            style={{
+              border: '1px solid var(--gloss-highlight)',
+              borderRadius: 10,
+              padding: 14,
+              display: 'grid',
+              gap: 10,
+              background: 'var(--ceramic-sage)',
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               {/* Left: checkbox + name */}
@@ -545,10 +562,11 @@ export default function AdminGamesPage() {
                   <span
                     key={t.id}
                     style={{
-                      border: '1px solid #ccc',
+                      border: '1px solid var(--gloss-highlight)',
                       borderRadius: 999,
                       padding: '4px 10px',
                       fontSize: 13,
+                      background: 'var(--pale-celery)',
                     }}
                     title={t.slug}
                   >
@@ -607,13 +625,22 @@ export default function AdminGamesPage() {
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0,0,0,0.35)',
+          background: 'rgba(31, 42, 26, 0.45)',
           display: 'grid',
           placeItems: 'center',
           padding: 16,
         }}
       >
-        <div style={{ background: '#388e4a', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
+        <div
+          style={{
+            background: 'var(--ceramic-sage)',
+            borderRadius: 12,
+            width: 'min(720px, 95vw)',
+            padding: 16,
+            border: '1px solid var(--gloss-highlight)',
+            boxShadow: '0 18px 40px rgba(63, 90, 42, 0.25)',
+          }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>

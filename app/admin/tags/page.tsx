@@ -100,7 +100,15 @@ export default function AdminTagsPage() {
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+    <main
+      style={{
+        padding: 24,
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        backgroundColor: 'var(--pale-celery)',
+        color: 'var(--deep-stem-green)',
+        minHeight: '100vh',
+      }}
+    >
       <PageTitle>Admin: Tags</PageTitle>
       <AdminSubNav />
       <Nav showAdminMenu={false} />
@@ -108,11 +116,12 @@ export default function AdminTagsPage() {
       {/* Create tag */}
       <div
         style={{
-          border: '1px solid #ddd',
+          border: '1px solid var(--gloss-highlight)',
           borderRadius: 10,
           padding: 14,
           marginBottom: 16,
           maxWidth: 820,
+          background: 'var(--ceramic-sage)',
         }}
       >
         <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new tag</div>
@@ -171,7 +180,7 @@ export default function AdminTagsPage() {
           placeholder="Search tags…"
           style={{ padding: 10, minWidth: 260 }}
         />
-        <button onClick={loadTags} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+        <button onClick={loadTags} style={{ padding: '10px 14px' }}>
           Refresh
         </button>
       </div>
@@ -182,14 +191,23 @@ export default function AdminTagsPage() {
       ) : filtered.length === 0 ? (
         <p>No tags found.</p>
       ) : (
-        <div style={{ border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden', maxWidth: 820 }}>
+        <div
+          style={{
+            border: '1px solid var(--gloss-highlight)',
+            borderRadius: 10,
+            overflow: 'hidden',
+            maxWidth: 820,
+            background: 'var(--ceramic-sage)',
+          }}
+        >
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '2fr 2fr 1fr',
-              background: '#388e4a',
+              background: 'var(--cabbage-green)',
               padding: 10,
               fontWeight: 700,
+              color: 'var(--pale-celery)',
             }}
           >
             <div>Label</div>
@@ -207,7 +225,8 @@ export default function AdminTagsPage() {
                   display: 'grid',
                   gridTemplateColumns: '2fr 2fr 1fr',
                   padding: 10,
-                  borderTop: '1px solid #eee',
+                  borderTop: '1px solid var(--gloss-highlight)',
+                  background: 'rgba(230, 239, 224, 0.7)',
                 }}
               >
                 <div style={{ fontWeight: 700 }}>{t.label}</div>
