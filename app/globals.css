@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e6efe0;
-  --foreground: #3f5a2a;
-  --cabbage-green: #6f8f4a;
-  --leaf-green: #8fb07a;
-  --ceramic-sage: #c9d8bf;
-  --pale-celery: #e6efe0;
-  --deep-stem-green: #3f5a2a;
-  --soil-charcoal: #1f2a1a;
-  --gloss-highlight: #a6c38b;
-  --muted-text: #6f8f4a;
-  --surface: #c9d8bf;
-  --border-subtle: #a6c38b;
+  --background: #f1f6ed;
+  --foreground: #1e2b18;
+  --page-background: #f1f6ed;
+  --surface: #d8e4cc;
+  --surface-alt: #c7d6b6;
+  --nav-surface: #2f4a1e;
+  --primary: #5e7f3a;
+  --primary-hover: #4c6a2e;
+  --secondary: #8fae72;
+  --text-primary: #1e2b18;
+  --text-secondary: #4e6a3b;
+  --text-muted: #6f8f5a;
+  --text-inverse: #f4f8f0;
+  --border-strong: #8fae72;
+  --divider-soft: #b6c9a3;
 }
 
 @theme inline {
@@ -33,22 +36,22 @@ input,
 select,
 textarea {
   font: inherit;
-  color: var(--deep-stem-green);
+  color: var(--text-primary);
 }
 
 input,
 select,
 textarea {
-  background: var(--pale-celery);
-  border: 1px solid var(--gloss-highlight);
+  background: var(--page-background);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
 }
 
 button {
-  background: var(--cabbage-green);
-  border: 1px solid var(--leaf-green);
+  background: var(--primary);
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  color: var(--pale-celery);
+  color: var(--text-inverse);
   cursor: pointer;
   padding: 8px 14px;
 }

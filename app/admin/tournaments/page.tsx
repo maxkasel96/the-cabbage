@@ -113,8 +113,8 @@ export default function AdminTournamentsPage() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: 'var(--pale-celery)',
-        color: 'var(--deep-stem-green)',
+        backgroundColor: 'var(--page-background)',
+        color: 'var(--text-primary)',
         minHeight: '100vh',
       }}
     >
@@ -135,14 +135,14 @@ export default function AdminTournamentsPage() {
     {/* Start new tournament */}
     <div
       style={{
-        border: '1px solid var(--gloss-highlight)',
+        border: '1px solid var(--border-strong)',
         borderRadius: 10,
         padding: 14,
         marginBottom: 18,
         maxWidth: 760,
         display: 'grid',
         gap: 12,
-        background: 'var(--ceramic-sage)',
+        background: 'var(--surface)',
       }}
     >
       <div style={{ fontSize: 16, fontWeight: 800 }}>Start new tournament</div>
@@ -198,21 +198,21 @@ export default function AdminTournamentsPage() {
     ) : (
       <div
         style={{
-          border: '1px solid var(--gloss-highlight)',
+          border: '1px solid var(--border-strong)',
           borderRadius: 10,
           overflow: 'hidden',
           maxWidth: 900,
-          background: 'var(--ceramic-sage)',
+          background: 'var(--surface)',
         }}
       >
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-            background: 'var(--cabbage-green)',
+            background: 'var(--primary)',
             padding: 10,
             fontWeight: 700,
-            color: 'var(--pale-celery)',
+            color: 'var(--text-inverse)',
           }}
         >
           <div>Label</div>
@@ -229,7 +229,7 @@ export default function AdminTournamentsPage() {
               display: 'grid',
               gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
               padding: 10,
-              borderTop: '1px solid var(--gloss-highlight)',
+              borderTop: '1px solid var(--divider-soft)',
               alignItems: 'center',
               background: 'rgba(230, 239, 224, 0.7)',
             }}

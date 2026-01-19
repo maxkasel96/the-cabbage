@@ -176,8 +176,8 @@ export default function BracketPage() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: 'var(--pale-celery)',
-        color: 'var(--deep-stem-green)',
+        backgroundColor: 'var(--page-background)',
+        color: 'var(--text-primary)',
         minHeight: '100vh',
       }}
     >
@@ -193,7 +193,7 @@ export default function BracketPage() {
         }}
       >
         <header style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <p style={{ margin: 0, color: 'var(--muted-text)' }}>
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
             Shuffle active players into a single-elimination bracket with automatic byes.
           </p>
           <div
@@ -204,15 +204,15 @@ export default function BracketPage() {
               alignItems: 'center',
               padding: 12,
               borderRadius: 12,
-              background: 'var(--ceramic-sage)',
-              border: '1px solid var(--gloss-highlight)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-strong)',
             }}
           >
-            <span style={{ fontWeight: 700, color: 'var(--deep-stem-green)' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
               Active players: {isLoadingPlayers ? '…' : playerCount}
             </span>
             {playerCount < 2 && !isLoadingPlayers ? (
-              <span style={{ color: 'var(--cabbage-green)', fontWeight: 700 }}>
+              <span style={{ color: 'var(--primary)', fontWeight: 700 }}>
                 Need at least 2 active players to generate a bracket.
               </span>
             ) : null}
@@ -227,8 +227,8 @@ export default function BracketPage() {
           alignItems: 'center',
           padding: 12,
           borderRadius: 12,
-          background: 'var(--ceramic-sage)',
-          border: '1px solid var(--gloss-highlight)',
+          background: 'var(--surface)',
+          border: '1px solid var(--border-strong)',
         }}
       >
           <button
@@ -239,8 +239,8 @@ export default function BracketPage() {
               padding: '10px 18px',
               borderRadius: 999,
               border: 'none',
-              background: isGenerateDisabled ? 'rgba(63, 90, 42, 0.2)' : 'var(--cabbage-green)',
-              color: isGenerateDisabled ? 'rgba(63, 90, 42, 0.6)' : 'var(--pale-celery)',
+              background: isGenerateDisabled ? 'rgba(47, 74, 30, 0.2)' : 'var(--primary)',
+              color: isGenerateDisabled ? 'rgba(30, 43, 24, 0.6)' : 'var(--text-inverse)',
               fontWeight: 700,
               fontSize: 15,
               cursor: isGenerateDisabled ? 'not-allowed' : 'pointer',
@@ -249,7 +249,7 @@ export default function BracketPage() {
           >
             {bracket ? 'Regenerate Bracket' : 'Generate Bracket'}
           </button>
-          <span style={{ color: 'var(--muted-text)', opacity: 0.8 }}>
+          <span style={{ color: 'var(--text-secondary)', opacity: 0.8 }}>
             {bracket ? `Generated ${new Date(bracket.generatedAt).toLocaleString()}` : 'No bracket yet.'}
           </span>
         </div>
@@ -261,8 +261,8 @@ export default function BracketPage() {
               padding: '12px 14px',
               borderRadius: 12,
               border: '1px solid rgba(111, 143, 74, 0.45)',
-              backgroundColor: 'var(--pale-celery)',
-              color: 'var(--deep-stem-green)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-primary)',
               fontWeight: 700,
             }}
           >
@@ -284,15 +284,15 @@ export default function BracketPage() {
                 style={{
                   padding: 16,
                   borderRadius: 16,
-                  border: '2px solid var(--gloss-highlight)',
-                  background: 'var(--ceramic-sage)',
+                  border: '2px solid var(--border-strong)',
+                  background: 'var(--surface)',
                   boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 12,
                 }}
               >
-                <h2 style={{ margin: 0, fontSize: 18, color: 'var(--deep-stem-green)', letterSpacing: 0.6 }}>
+                <h2 style={{ margin: 0, fontSize: 18, color: 'var(--text-primary)', letterSpacing: 0.6 }}>
                   Round {round.roundNumber}
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -307,18 +307,15 @@ export default function BracketPage() {
                         style={{
                           padding: '10px 12px',
                           borderRadius: 12,
-                          border: '1px solid var(--gloss-highlight)',
-                          background:
-                            index % 2 === 0
-                              ? 'linear-gradient(90deg, rgba(230, 239, 224, 0.85), rgba(201, 216, 191, 0.7))'
-                              : 'linear-gradient(90deg, rgba(201, 216, 191, 0.9), rgba(230, 239, 224, 0.7))',
+                          border: '1px solid var(--divider-soft)',
+                          background: index % 2 === 0 ? 'var(--surface)' : 'var(--surface-alt)',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: 6,
                         }}
                       >
                         <span
-                          style={{ fontSize: 12, color: 'var(--muted-text)', fontWeight: 700, letterSpacing: 0.6 }}
+                          style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: 0.6 }}
                         >
                           Match {index + 1}
                         </span>
@@ -327,10 +324,10 @@ export default function BracketPage() {
                             style={{
                               padding: '8px 10px',
                               borderRadius: 10,
-                              backgroundColor: slotAName ? 'var(--pale-celery)' : 'rgba(230, 239, 224, 0.6)',
-                              border: '1px dashed var(--gloss-highlight)',
+                              backgroundColor: slotAName ? 'var(--page-background)' : 'rgba(241, 246, 237, 0.7)',
+                              border: '1px dashed var(--divider-soft)',
                               fontWeight: 700,
-                              color: slotAName ? 'var(--deep-stem-green)' : 'rgba(63, 90, 42, 0.6)',
+                              color: slotAName ? 'var(--text-primary)' : 'rgba(30, 43, 24, 0.6)',
                             }}
                           >
                             {slotAName ?? 'Bye'}
@@ -342,10 +339,10 @@ export default function BracketPage() {
                             style={{
                               padding: '8px 10px',
                               borderRadius: 10,
-                              backgroundColor: slotBName ? 'var(--pale-celery)' : 'rgba(230, 239, 224, 0.6)',
-                              border: '1px dashed var(--gloss-highlight)',
+                              backgroundColor: slotBName ? 'var(--page-background)' : 'rgba(241, 246, 237, 0.7)',
+                              border: '1px dashed var(--divider-soft)',
                               fontWeight: 700,
-                              color: slotBName ? 'var(--deep-stem-green)' : 'rgba(63, 90, 42, 0.6)',
+                              color: slotBName ? 'var(--text-primary)' : 'rgba(30, 43, 24, 0.6)',
                             }}
                           >
                             {slotBName ?? 'Bye'}
@@ -363,9 +360,9 @@ export default function BracketPage() {
             style={{
               padding: 16,
               borderRadius: 16,
-              border: '1px dashed var(--gloss-highlight)',
-              backgroundColor: 'var(--pale-celery)',
-              color: 'var(--muted-text)',
+              border: '1px dashed var(--divider-soft)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-secondary)',
             }}
           >
             Generate a bracket to see the round-by-round layout.

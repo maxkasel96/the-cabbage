@@ -266,8 +266,8 @@ function openMarkPlayedModal() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: 'var(--pale-celery)',
-        color: 'var(--deep-stem-green)',
+        backgroundColor: 'var(--page-background)',
+        color: 'var(--text-primary)',
         minHeight: '100vh',
       }}
     >
@@ -299,8 +299,8 @@ function openMarkPlayedModal() {
 
         .rollBtn {
           transition: transform 120ms ease, opacity 120ms ease;
-          background: var(--cabbage-green);
-          color: var(--pale-celery);
+          background: var(--primary);
+          color: var(--text-inverse);
           border: none;
           border-radius: 16px;
           font-weight: 700;
@@ -332,23 +332,23 @@ function openMarkPlayedModal() {
         }
         
         .noteTextarea {
-          color: var(--deep-stem-green);
+          color: var(--text-primary);
         }
 
         .filtersCard {
-          background: var(--ceramic-sage);
-          border: 1px solid var(--gloss-highlight);
+          background: var(--surface);
+          border: 1px solid var(--border-strong);
           border-radius: 16px;
           padding: 16px;
           box-shadow: 0 16px 34px rgba(63, 90, 42, 0.2);
           max-width: 840px;
-          color: var(--deep-stem-green);
+          color: var(--text-primary);
         }
 
         .chip {
           padding: 7px 14px;
           border-radius: 999px;
-          border: 1px solid var(--gloss-highlight);
+          border: 1px solid var(--border-strong);
           cursor: pointer;
           font-size: 13px;
           font-weight: 600;
@@ -356,8 +356,8 @@ function openMarkPlayedModal() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: var(--pale-celery);
-          color: var(--deep-stem-green);
+          background: var(--page-background);
+          color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
@@ -367,29 +367,29 @@ function openMarkPlayedModal() {
         }
 
         .chipActive {
-          background: var(--leaf-green);
-          color: var(--soil-charcoal);
-          border-color: var(--cabbage-green);
+          background: var(--secondary);
+          color: var(--text-primary);
+          border-color: var(--primary);
           box-shadow: 0 8px 16px rgba(63, 90, 42, 0.2);
         }
 
         .filtersSummary {
-          background: var(--pale-celery);
+          background: var(--page-background);
           border-radius: 12px;
           padding: 10px 12px;
-          border: 1px dashed var(--gloss-highlight);
+          border: 1px dashed var(--divider-soft);
           font-size: 13px;
-          color: var(--deep-stem-green);
+          color: var(--text-primary);
         }
 
         .playersInput {
           padding: 8px 12px;
           border-radius: 10px;
-          border: 1px solid var(--gloss-highlight);
+          border: 1px solid var(--border-strong);
           font-size: 14px;
           width: 140px;
-          background: var(--pale-celery);
-          color: var(--deep-stem-green);
+          background: var(--page-background);
+          color: var(--text-primary);
           box-shadow: inset 0 1px 2px rgba(63, 90, 42, 0.2);
         }
 
@@ -401,12 +401,12 @@ function openMarkPlayedModal() {
           border-radius: 18px;
           padding: 20px;
           max-width: 760px;
-          background: var(--ceramic-sage);
-          border: 2px solid var(--gloss-highlight);
+          background: var(--surface);
+          border: 2px solid var(--border-strong);
           box-shadow: 0 18px 40px rgba(63, 90, 42, 0.25);
           position: relative;
           overflow: hidden;
-          color: var(--deep-stem-green);
+          color: var(--text-primary);
         }
 
         .resultCard::after {
@@ -424,8 +424,8 @@ function openMarkPlayedModal() {
           gap: 6px;
           padding: 6px 10px;
           border-radius: 999px;
-          background: var(--cabbage-green);
-          color: var(--pale-celery);
+          background: var(--primary);
+          color: var(--text-inverse);
           font-size: 12px;
           font-weight: 700;
           letter-spacing: 0.3px;
@@ -439,20 +439,20 @@ function openMarkPlayedModal() {
         }
 
         .statPill {
-          background: var(--pale-celery);
-          border: 1px solid var(--gloss-highlight);
+          background: var(--page-background);
+          border: 1px solid var(--border-strong);
           border-radius: 12px;
           padding: 8px 12px;
           font-weight: 600;
           display: inline-flex;
           gap: 6px;
           align-items: center;
-          color: var(--deep-stem-green);
+          color: var(--text-primary);
         }
 
         .markPlayedButton {
-          background: linear-gradient(135deg, var(--cabbage-green), var(--leaf-green));
-          color: var(--pale-celery);
+          background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+          color: var(--text-inverse);
           border: none;
           border-radius: 999px;
           padding: 12px 20px;
@@ -531,7 +531,7 @@ function openMarkPlayedModal() {
                   textDecoration: 'underline',
                   cursor: 'pointer',
                   padding: 0,
-                  color: 'var(--muted-text)',
+                  color: 'var(--text-muted)',
                 }}
               >
                 Clear filters
@@ -562,14 +562,14 @@ function openMarkPlayedModal() {
       {status && (
         <p style={{ marginBottom: 16 }}>
           <strong>{status}</strong>{' '}
-          <a href="/history" style={{ color: 'var(--cabbage-green)' }}>
+          <a href="/history" style={{ color: 'var(--primary)' }}>
             Open History
           </a>
         </p>
       )}
 
       {!game ? (
-        <p style={{ color: 'var(--muted-text)' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>
           Let the cabbage take the guessing out of things. Select Pick a game from the cabbage to get rolling.
         </p>
       ) : (
@@ -577,7 +577,7 @@ function openMarkPlayedModal() {
           <div className="resultCard">
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div className="resultBadge">✨ Fresh from the cabbage</div>
-              <div style={{ fontSize: 12, opacity: 0.7, color: 'var(--muted-text)' }}>Ready when you are</div>
+              <div style={{ fontSize: 12, opacity: 0.7, color: 'var(--text-secondary)' }}>Ready when you are</div>
             </div>
             <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{game.name}</h2>
 
@@ -589,7 +589,7 @@ function openMarkPlayedModal() {
             </div>
 
             {game.notes && (
-              <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--muted-text)' }}>{game.notes}</p>
+              <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--text-secondary)' }}>{game.notes}</p>
             )}
 
           {/* Multi-winner picker */}
@@ -600,7 +600,7 @@ function openMarkPlayedModal() {
               {players.map((p) => (
                 <label
                   key={p.id}
-                  style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--deep-stem-green)' }}
+                  style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
                 >
                   <input
                     type="checkbox"
@@ -612,7 +612,7 @@ function openMarkPlayedModal() {
               ))}
             </div>
 
-            <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13, color: 'var(--muted-text)' }}>
+            <div style={{ marginTop: 8, opacity: 0.8, fontSize: 13, color: 'var(--text-secondary)' }}>
               <strong>Selected:</strong> {selectedWinnersLabel}
             </div>
 
@@ -627,7 +627,7 @@ function openMarkPlayedModal() {
                   textDecoration: 'underline',
                   cursor: 'pointer',
                   padding: 0,
-                  color: 'var(--muted-text)',
+                  color: 'var(--text-muted)',
                 }}
               >
                 Clear winners
@@ -661,22 +661,22 @@ function openMarkPlayedModal() {
         >
           <div
             style={{
-              background: 'var(--ceramic-sage)',
-              color: 'var(--deep-stem-green)',
+              background: 'var(--surface)',
+              color: 'var(--text-primary)',
               borderRadius: 16,
               width: 'min(720px, 94vw)',
               padding: 24,
               boxShadow: '0 18px 50px rgba(63, 90, 42, 0.2)',
               textAlign: 'center',
-              border: '1px solid var(--gloss-highlight)',
+              border: '1px solid var(--border-strong)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 onClick={closeWelcomeModal}
                 style={{
-                  background: 'var(--cabbage-green)',
-                  color: 'var(--pale-celery)',
+                  background: 'var(--primary)',
+                  color: 'var(--text-inverse)',
                   border: 'none',
                   borderRadius: 999,
                   padding: '8px 14px',
@@ -711,17 +711,17 @@ function openMarkPlayedModal() {
         >
           <div
             style={{
-              background: 'var(--ceramic-sage)',
+              background: 'var(--surface)',
               borderRadius: 12,
               width: 'min(720px, 95vw)',
               padding: 16,
-              border: '1px solid var(--gloss-highlight)',
+              border: '1px solid var(--border-strong)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 800 }}>Add a note</div>
-                <div style={{ opacity: 0.8, color: 'var(--muted-text)' }}>{game.name}</div>
+                <div style={{ opacity: 0.8, color: 'var(--text-secondary)' }}>{game.name}</div>
               </div>
               <button
                 onClick={() => setNoteModalOpen(false)}
@@ -729,9 +729,9 @@ function openMarkPlayedModal() {
                   padding: '8px 12px',
                   cursor: 'pointer',
                   borderRadius: 999,
-                  border: '1px solid var(--gloss-highlight)',
-                  background: 'var(--pale-celery)',
-                  color: 'var(--deep-stem-green)',
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--page-background)',
+                  color: 'var(--text-primary)',
                 }}
                 disabled={marking}
               >
@@ -750,12 +750,12 @@ function openMarkPlayedModal() {
                   width: '100%',
                   padding: 10,
                   borderRadius: 10,
-                  border: '1px solid var(--gloss-highlight)',
-                  background: 'var(--pale-celery)',
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--page-background)',
                 }}
                 disabled={marking}
               />
-              <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12, color: 'var(--muted-text)' }}>
+              <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12, color: 'var(--text-muted)' }}>
                 This note will appear in History under “Notes”.
               </div>
             </div>
@@ -768,8 +768,8 @@ function openMarkPlayedModal() {
                   cursor: marking ? 'not-allowed' : 'pointer',
                   borderRadius: 999,
                   border: 'none',
-                  background: 'var(--cabbage-green)',
-                  color: 'var(--pale-celery)',
+                  background: 'var(--primary)',
+                  color: 'var(--text-inverse)',
                   fontWeight: 700,
                 }}
                 disabled={marking}
@@ -783,9 +783,9 @@ function openMarkPlayedModal() {
                   padding: '10px 14px',
                   cursor: marking ? 'not-allowed' : 'pointer',
                   borderRadius: 999,
-                  border: '1px solid var(--gloss-highlight)',
-                  background: 'var(--pale-celery)',
-                  color: 'var(--deep-stem-green)',
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--page-background)',
+                  color: 'var(--text-primary)',
                 }}
                 disabled={marking}
               >

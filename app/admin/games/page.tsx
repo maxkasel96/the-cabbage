@@ -364,8 +364,8 @@ export default function AdminGamesPage() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: 'var(--pale-celery)',
-        color: 'var(--deep-stem-green)',
+        backgroundColor: 'var(--page-background)',
+        color: 'var(--text-primary)',
         minHeight: '100vh',
       }}
     >
@@ -376,12 +376,12 @@ export default function AdminGamesPage() {
       {/* Add new game */}
       <div
         style={{
-          border: '1px solid var(--gloss-highlight)',
+          border: '1px solid var(--border-strong)',
           borderRadius: 10,
           padding: 14,
           marginBottom: 16,
           maxWidth: 720,
-          background: 'var(--ceramic-sage)',
+          background: 'var(--surface)',
         }}
       >
         <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 10 }}>Add a new game</div>
@@ -449,7 +449,7 @@ export default function AdminGamesPage() {
     {/* Bulk actions */}
     <div
       style={{
-        border: '1px solid var(--gloss-highlight)',
+        border: '1px solid var(--border-strong)',
         borderRadius: 10,
         padding: 12,
         marginBottom: 16,
@@ -458,7 +458,7 @@ export default function AdminGamesPage() {
         gap: 12,
         alignItems: 'center',
         flexWrap: 'wrap',
-        background: 'var(--ceramic-sage)',
+        background: 'var(--surface)',
       }}
     >
       <div style={{ fontWeight: 800 }}>Bulk:</div>
@@ -500,12 +500,12 @@ export default function AdminGamesPage() {
           <div
             key={g.id}
             style={{
-              border: '1px solid var(--gloss-highlight)',
+              border: '1px solid var(--border-strong)',
               borderRadius: 10,
               padding: 14,
               display: 'grid',
               gap: 10,
-              background: 'var(--ceramic-sage)',
+              background: 'var(--surface)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -562,11 +562,11 @@ export default function AdminGamesPage() {
                   <span
                     key={t.id}
                     style={{
-                      border: '1px solid var(--gloss-highlight)',
+                      border: '1px solid var(--divider-soft)',
                       borderRadius: 999,
                       padding: '4px 10px',
                       fontSize: 13,
-                      background: 'var(--pale-celery)',
+                      background: 'var(--page-background)',
                     }}
                     title={t.slug}
                   >
@@ -633,11 +633,11 @@ export default function AdminGamesPage() {
       >
         <div
           style={{
-            background: 'var(--ceramic-sage)',
+            background: 'var(--surface)',
             borderRadius: 12,
             width: 'min(720px, 95vw)',
             padding: 16,
-            border: '1px solid var(--gloss-highlight)',
+            border: '1px solid var(--border-strong)',
             boxShadow: '0 18px 40px rgba(63, 90, 42, 0.25)',
           }}
         >

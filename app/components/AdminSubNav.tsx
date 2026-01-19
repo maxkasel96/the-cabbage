@@ -7,15 +7,15 @@ export default function AdminSubNav() {
   const pathname = usePathname()
 
   const palette = {
-    background: 'rgba(31, 42, 26, 0.95)',
-    border: 'rgba(166, 195, 139, 0.6)',
-    linkIdleBackground: 'rgba(201, 216, 191, 0.2)',
-    linkIdleBorder: 'var(--gloss-highlight)',
-    linkIdleText: 'var(--pale-celery)',
-    linkActiveBackground: 'var(--cabbage-green)',
-    linkActiveBorder: 'var(--leaf-green)',
-    linkActiveText: 'var(--pale-celery)',
-    shadowSoft: '0 8px 18px rgba(31, 42, 26, 0.28)',
+    background: 'var(--nav-surface)',
+    border: 'var(--border-strong)',
+    linkIdleBackground: 'transparent',
+    linkIdleBorder: 'transparent',
+    linkIdleText: 'var(--text-inverse)',
+    linkActiveBackground: 'var(--primary)',
+    linkActiveBorder: 'var(--primary)',
+    linkActiveText: 'var(--text-inverse)',
+    shadowSoft: '0 8px 18px rgba(30, 43, 24, 0.28)',
   }
 
   const linkStyle = (href: string) => {
@@ -48,7 +48,7 @@ export default function AdminSubNav() {
         border: `1px solid ${palette.border}`,
       }}
     >
-      <span style={{ fontWeight: 700, letterSpacing: 0.6, color: 'var(--pale-celery)' }}>Admin pages</span>
+      <span style={{ fontWeight: 700, letterSpacing: 0.6, color: 'var(--text-inverse)' }}>Admin pages</span>
       <Link href="/admin/games" style={linkStyle('/admin/games')}>
         Games
       </Link>

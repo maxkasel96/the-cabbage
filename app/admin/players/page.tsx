@@ -80,8 +80,8 @@ export default function AdminPlayersPage() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: 'var(--pale-celery)',
-        color: 'var(--deep-stem-green)',
+        backgroundColor: 'var(--page-background)',
+        color: 'var(--text-primary)',
         minHeight: '100vh',
       }}
     >
@@ -123,7 +123,7 @@ export default function AdminPlayersPage() {
             <div
               key={player.id}
               style={{
-                border: '1px solid var(--gloss-highlight)',
+                border: '1px solid var(--border-strong)',
                 borderRadius: 10,
                 padding: 12,
                 display: 'flex',
@@ -131,7 +131,7 @@ export default function AdminPlayersPage() {
                 gap: 12,
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                background: 'var(--ceramic-sage)',
+                background: 'var(--surface)',
               }}
             >
               <div>

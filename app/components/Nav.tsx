@@ -32,18 +32,18 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
   }
 
   const palette = {
-    navBackground: 'linear-gradient(135deg, var(--soil-charcoal) 0%, var(--deep-stem-green) 100%)',
-    navBorder: 'var(--gloss-highlight)',
-    linkIdleBackground: 'rgba(201, 216, 191, 0.18)',
-    linkIdleBorder: 'var(--gloss-highlight)',
-    linkIdleText: 'var(--pale-celery)',
-    linkActiveBackground: 'var(--cabbage-green)',
-    linkActiveBorder: 'var(--leaf-green)',
-    linkActiveText: 'var(--pale-celery)',
-    dropdownBackground: 'var(--soil-charcoal)',
-    dropdownBorder: 'var(--gloss-highlight)',
-    shadowStrong: '0 16px 30px rgba(31, 42, 26, 0.35)',
-    shadowSoft: '0 10px 22px rgba(31, 42, 26, 0.25)',
+    navBackground: 'var(--nav-surface)',
+    navBorder: 'var(--border-strong)',
+    linkIdleBackground: 'transparent',
+    linkIdleBorder: 'transparent',
+    linkIdleText: 'var(--text-inverse)',
+    linkActiveBackground: 'var(--primary)',
+    linkActiveBorder: 'var(--primary)',
+    linkActiveText: 'var(--text-inverse)',
+    dropdownBackground: 'var(--nav-surface)',
+    dropdownBorder: 'var(--border-strong)',
+    shadowStrong: '0 16px 30px rgba(30, 43, 24, 0.35)',
+    shadowSoft: '0 10px 22px rgba(30, 43, 24, 0.25)',
   }
 
   const linkStyle = (href: string) => {
