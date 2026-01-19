@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Nav from './components/Nav'
 
 type Game = {
@@ -92,6 +92,23 @@ export default function Home() {
   // Random roll animation helper
   const [isRolling, setIsRolling] = useState(false)
   const [rollKey, setRollKey] = useState(0)
+  const rollButtonRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (!game || isRolling) return
+    const button = rollButtonRef.current
+    if (!button) return
+    button.animate(
+      [
+        { transform: 'scale(1) rotate(0deg)' },
+        { transform: 'scale(1.08) rotate(-3deg)' },
+        { transform: 'scale(0.98) rotate(2deg)' },
+        { transform: 'scale(1.04) rotate(-1deg)' },
+        { transform: 'scale(1) rotate(0deg)' },
+      ],
+      { duration: 600, easing: 'ease-out' }
+    )
+  }, [game, isRolling])
 
   async function rollRandom() {
   if (isRolling) return
@@ -252,6 +269,13 @@ function openMarkPlayedModal() {
 
         .rollBtn {
           transition: transform 120ms ease, opacity 120ms ease;
+          background: #388e4a;
+          color: #fff;
+          border: none;
+          border-radius: 16px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          box-shadow: 0 10px 16px rgba(56, 142, 74, 0.28);
         }
         .rollBtn:active {
           transform: scale(0.98);
@@ -364,9 +388,15 @@ function openMarkPlayedModal() {
       {/* Primary actions */}
       <button
         onClick={rollRandom}
+        ref={rollButtonRef}
         disabled={isRolling}
         className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
-        style={{ padding: '10px 14px', cursor: isRolling ? 'not-allowed' : 'pointer', opacity: isRolling ? 0.75 : 1 }}
+        style={{
+          padding: '16px 26px',
+          cursor: isRolling ? 'not-allowed' : 'pointer',
+          opacity: isRolling ? 0.75 : 1,
+          fontSize: 20,
+        }}
       >
         {isRolling ? 'Choosing from the cabbage… 🥬' : game ? 'Pick another game from the cabbage 🥬' : 'Pick a game from the cabbage 🥬'}
       </button>
