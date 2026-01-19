@@ -5,24 +5,38 @@ import { usePathname } from 'next/navigation'
 
 export default function Nav() {
   const pathname = usePathname()
+  const isAdmin = pathname.startsWith('/admin')
 
-  const linkStyle = (href: string) => ({
-    padding: '8px 12px',
-    borderRadius: 8,
-    border: pathname === href ? '2px solid #000' : '1px solid #ddd',
-    textDecoration: 'none',
-    color: '#388e4a',
-    fontWeight: 600 as const,
-  })
+  const linkStyle = (href: string) => {
+    const isActive = pathname === href
+    return {
+      padding: '10px 14px',
+      borderRadius: 999,
+      border: isActive ? '1px solid #f1f8e9' : '1px solid #4caf50',
+      textDecoration: 'none',
+      color: isActive ? '#1b5e20' : '#f1f8e9',
+      backgroundColor: isActive ? '#f1f8e9' : '#2e7d32',
+      fontWeight: 600 as const,
+      fontSize: 14,
+      letterSpacing: 0.2,
+      transition: 'all 0.2s ease',
+      boxShadow: isActive ? '0 6px 14px rgba(241, 248, 233, 0.35)' : 'none',
+    }
+  }
 
   return (
     <nav
       style={{
         display: 'flex',
-        gap: 10,
-        marginBottom: 18,
+        gap: 12,
+        marginBottom: 20,
         flexWrap: 'wrap',
-        alignItems: 'flex-start',
+        alignItems: 'center',
+        padding: '12px 16px',
+        borderRadius: 18,
+        border: '1px solid #1b5e20',
+        backgroundColor: '#1b5e20',
+        boxShadow: '0 12px 30px rgba(15, 23, 42, 0.18)',
       }}
     >
       <Link href="/" style={linkStyle('/')}>
@@ -33,17 +47,24 @@ export default function Nav() {
       </Link>
       <details
         style={{ position: 'relative' }}
-        open={pathname.startsWith('/admin')}
+        open={isAdmin}
       >
         <summary
           style={{
             listStyle: 'none',
             cursor: 'pointer',
             fontWeight: 600,
-            padding: '8px 12px',
-            borderRadius: 8,
-            border: '1px solid #ddd',
-            color: '#388e4a',
+            padding: '10px 14px',
+            borderRadius: 999,
+            border: isAdmin ? '1px solid #f1f8e9' : '1px solid #4caf50',
+            color: isAdmin ? '#1b5e20' : '#f1f8e9',
+            backgroundColor: isAdmin ? '#f1f8e9' : '#2e7d32',
+            boxShadow: isAdmin
+              ? '0 6px 14px rgba(241, 248, 233, 0.35)'
+              : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
           }}
         >
           Admin pages
@@ -54,11 +75,16 @@ export default function Nav() {
             display: 'flex',
             flexDirection: 'column',
             gap: 8,
-            padding: 10,
-            border: '1px solid #ddd',
-            borderRadius: 10,
+            padding: 12,
+            border: '1px solid #e2e8f0',
+            borderRadius: 14,
             backgroundColor: '#fff',
-            minWidth: 180,
+            minWidth: 200,
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: 0,
+            zIndex: 10,
+            boxShadow: '0 16px 28px rgba(15, 23, 42, 0.14)',
           }}
         >
           <Link href="/admin/games" style={linkStyle('/admin/games')}>
