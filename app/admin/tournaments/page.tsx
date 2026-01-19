@@ -109,7 +109,15 @@ export default function AdminTournamentsPage() {
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+    <main
+      style={{
+        padding: 24,
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        backgroundColor: 'var(--ceramic-sage)',
+        color: 'var(--deep-stem-green)',
+        minHeight: '100vh',
+      }}
+    >
       <PageTitle>Admin: Tournaments</PageTitle>
       <AdminSubNav />
       <Nav showAdminMenu={false} />
@@ -127,13 +135,14 @@ export default function AdminTournamentsPage() {
     {/* Start new tournament */}
     <div
       style={{
-        border: '1px solid #ddd',
+        border: '1px solid var(--gloss-highlight)',
         borderRadius: 10,
         padding: 14,
         marginBottom: 18,
         maxWidth: 760,
         display: 'grid',
         gap: 12,
+        background: 'var(--pale-celery)',
       }}
     >
       <div style={{ fontSize: 16, fontWeight: 800 }}>Start new tournament</div>
@@ -163,11 +172,11 @@ export default function AdminTournamentsPage() {
       </div>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={startNewTournament} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+        <button onClick={startNewTournament} style={{ padding: '10px 14px' }}>
           Start new tournament (set active)
         </button>
 
-        <button onClick={loadTournaments} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+        <button onClick={loadTournaments} style={{ padding: '10px 14px' }}>
           Refresh
         </button>
 
@@ -187,14 +196,23 @@ export default function AdminTournamentsPage() {
     ) : tournaments.length === 0 ? (
       <p style={{ opacity: 0.8 }}>No tournaments found.</p>
     ) : (
-      <div style={{ border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden', maxWidth: 900 }}>
+      <div
+        style={{
+          border: '1px solid var(--gloss-highlight)',
+          borderRadius: 10,
+          overflow: 'hidden',
+          maxWidth: 900,
+          background: 'var(--pale-celery)',
+        }}
+      >
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-            background: '#388e4a',
+            background: 'var(--cabbage-green)',
             padding: 10,
             fontWeight: 700,
+            color: 'var(--pale-celery)',
           }}
         >
           <div>Label</div>
@@ -211,8 +229,9 @@ export default function AdminTournamentsPage() {
               display: 'grid',
               gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
               padding: 10,
-              borderTop: '1px solid #eee',
+              borderTop: '1px solid var(--gloss-highlight)',
               alignItems: 'center',
+              background: 'rgba(230, 239, 224, 0.7)',
             }}
           >
             <div>{t.label}</div>

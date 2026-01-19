@@ -136,8 +136,8 @@ export default function HistoryPage() {
       style={{
         padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-        backgroundColor: '#061a12',
-        color: '#f4f7fb',
+        backgroundColor: 'var(--ceramic-sage)',
+        color: 'var(--deep-stem-green)',
         minHeight: '100vh',
       }}
     >
@@ -156,20 +156,22 @@ export default function HistoryPage() {
             flexWrap: 'wrap',
             padding: 12,
             borderRadius: 12,
-            background: '#0f2a1f',
-            border: '1px solid rgba(74, 222, 128, 0.2)',
+            background: 'var(--pale-celery)',
+            border: '1px solid var(--gloss-highlight)',
           }}
         >
-          <div style={{ fontWeight: 800, color: '#e6edf8', flex: '0 0 auto' }}>Tournament year:</div>
+          <div style={{ fontWeight: 800, color: 'var(--deep-stem-green)', flex: '0 0 auto' }}>
+            Tournament year:
+          </div>
 
           <select
             value={selectedTournamentId}
             onChange={(e) => setSelectedTournamentId(e.target.value)}
             style={{
               padding: '8px 12px',
-              background: '#0b1f16',
-              color: '#f4f7fb',
-              border: '1px solid rgba(255,255,255,0.15)',
+              background: 'var(--pale-celery)',
+              color: 'var(--deep-stem-green)',
+              border: '1px solid var(--gloss-highlight)',
               borderRadius: 8,
               flex: '1 1 220px',
               minWidth: 0,
@@ -184,7 +186,7 @@ export default function HistoryPage() {
             ))}
           </select>
 
-          <div style={{ opacity: 0.75, fontSize: 13, color: '#cfe8d6' }}>
+          <div style={{ opacity: 0.75, fontSize: 13, color: 'var(--muted-text)' }}>
             Viewing: <strong>{selectedTournamentLabel}</strong>
           </div>
         </div>
@@ -204,22 +206,22 @@ export default function HistoryPage() {
               borderRadius: 16,
               overflow: 'hidden',
               maxWidth: 620,
-              border: '2px solid #14532d',
-              background: '#0a2016',
-              boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+              border: '2px solid var(--gloss-highlight)',
+              background: 'var(--pale-celery)',
+              boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
             }}
           >
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '2fr 1fr',
-                background: 'linear-gradient(90deg, #14532d, #0a2016)',
+                background: 'linear-gradient(90deg, var(--cabbage-green), var(--leaf-green))',
                 padding: '12px 16px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: 1,
-                color: '#e7f8ed',
-                borderBottom: '2px solid #4ade80',
+                color: 'var(--pale-celery)',
+                borderBottom: '2px solid var(--gloss-highlight)',
               }}
             >
               <div>Player</div>
@@ -233,15 +235,15 @@ export default function HistoryPage() {
                   display: 'grid',
                   gridTemplateColumns: '2fr 1fr',
                   padding: '12px 16px',
-                  borderTop: '1px solid rgba(74, 222, 128, 0.2)',
-                  background: 'linear-gradient(90deg, rgba(6,26,18,0.95), rgba(8,32,22,0.85))',
+                  borderTop: '1px solid var(--gloss-highlight)',
+                  background: 'linear-gradient(90deg, rgba(230, 239, 224, 0.85), rgba(201, 216, 191, 0.7))',
                   fontFamily:
                     'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                  color: '#f8fafc',
+                  color: 'var(--deep-stem-green)',
                 }}
               >
                 <div>{s.display_name}</div>
-                <div style={{ fontWeight: 700, color: '#4ade80' }}>{s.wins}</div>
+                <div style={{ fontWeight: 700, color: 'var(--cabbage-green)' }}>{s.wins}</div>
               </div>
             ))}
           </div>
@@ -258,8 +260,8 @@ export default function HistoryPage() {
           flexWrap: 'wrap',
           padding: 12,
           borderRadius: 12,
-          background: '#0f2a1f',
-          border: '1px solid rgba(74, 222, 128, 0.2)',
+          background: 'var(--pale-celery)',
+          border: '1px solid var(--gloss-highlight)',
         }}
       >
         <input
@@ -269,9 +271,9 @@ export default function HistoryPage() {
           style={{
             padding: 10,
             minWidth: 260,
-            background: '#0b1f16',
-            color: '#f4f7fb',
-            border: '1px solid rgba(74, 222, 128, 0.3)',
+            background: 'var(--pale-celery)',
+            color: 'var(--deep-stem-green)',
+            border: '1px solid var(--gloss-highlight)',
             borderRadius: 8,
           }}
         />
@@ -286,8 +288,8 @@ export default function HistoryPage() {
           style={{
             padding: '10px 16px',
             cursor: 'pointer',
-            background: '#4ade80',
-            color: '#062314',
+            background: 'var(--cabbage-green)',
+            color: 'var(--pale-celery)',
             border: 'none',
             borderRadius: 999,
             fontWeight: 700,
@@ -315,9 +317,9 @@ export default function HistoryPage() {
             borderRadius: 16,
             overflow: 'hidden',
             maxWidth: 960,
-            border: '2px solid #14532d',
-            background: '#0a2016',
-            boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+            border: '2px solid var(--gloss-highlight)',
+            background: 'var(--pale-celery)',
+            boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
           }}
         >
           <div
@@ -325,13 +327,13 @@ export default function HistoryPage() {
               display: 'grid',
               gridTemplateColumns: '2fr 1fr 2fr 1fr',
               gap: 0,
-              background: 'linear-gradient(90deg, #14532d, #0a2016)',
+              background: 'linear-gradient(90deg, var(--cabbage-green), var(--leaf-green))',
               padding: '12px 16px',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: 1,
-              color: '#e7f8ed',
-              borderBottom: '2px solid #4ade80',
+              color: 'var(--pale-celery)',
+              borderBottom: '2px solid var(--gloss-highlight)',
             }}
           >
             <div>Game</div>
@@ -352,12 +354,12 @@ export default function HistoryPage() {
                   gridTemplateColumns: '2fr 1fr 2fr 1fr',
                   gap: 0,
                   padding: '12px 16px',
-                  borderTop: '1px solid rgba(74, 222, 128, 0.2)',
+                  borderTop: '1px solid var(--gloss-highlight)',
                   alignItems: 'start',
                   background:
                     index % 2 === 0
-                      ? 'linear-gradient(90deg, rgba(6,26,18,0.95), rgba(8,32,22,0.85))'
-                      : 'linear-gradient(90deg, rgba(8,32,22,0.95), rgba(10,40,26,0.85))',
+                      ? 'linear-gradient(90deg, rgba(230, 239, 224, 0.85), rgba(201, 216, 191, 0.7))'
+                      : 'linear-gradient(90deg, rgba(201, 216, 191, 0.9), rgba(230, 239, 224, 0.7))',
                 }}
               >
                 <div style={{ fontWeight: 600 }}>{h.name}</div>

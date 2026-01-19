@@ -76,7 +76,15 @@ export default function AdminPlayersPage() {
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+    <main
+      style={{
+        padding: 24,
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        backgroundColor: 'var(--ceramic-sage)',
+        color: 'var(--deep-stem-green)',
+        minHeight: '100vh',
+      }}
+    >
       <PageTitle>Admin: Players</PageTitle>
       <AdminSubNav />
       <Nav showAdminMenu={false} />
@@ -92,7 +100,7 @@ export default function AdminPlayersPage() {
           placeholder="Search players…"
           style={{ padding: 10, minWidth: 260 }}
         />
-        <button onClick={loadPlayers} style={{ padding: '10px 14px', cursor: 'pointer' }}>
+        <button onClick={loadPlayers} style={{ padding: '10px 14px' }}>
           Refresh
         </button>
         <div style={{ fontSize: 12, opacity: 0.7 }}>
@@ -115,7 +123,7 @@ export default function AdminPlayersPage() {
             <div
               key={player.id}
               style={{
-                border: '1px solid #ddd',
+                border: '1px solid var(--gloss-highlight)',
                 borderRadius: 10,
                 padding: 12,
                 display: 'flex',
@@ -123,6 +131,7 @@ export default function AdminPlayersPage() {
                 gap: 12,
                 alignItems: 'center',
                 flexWrap: 'wrap',
+                background: 'var(--pale-celery)',
               }}
             >
               <div>
