@@ -27,6 +27,7 @@ export default function AdminGamesPage() {
   const [status, setStatus] = useState<string>('')
 
   const [search, setSearch] = useState('')
+  const [tagFilterId, setTagFilterId] = useState('')
 
   // Editor state
   const [editingGame, setEditingGame] = useState<Game | null>(null)
@@ -81,15 +82,14 @@ export default function AdminGamesPage() {
   }, [])
 
   const filteredGames = useMemo(() => {
-  const q = search.trim().toLowerCase()
-  const base = !q
-    ? games
-    : games.filter((g) => g.name.toLowerCase().includes(q))
+    const q = search.trim().toLowerCase()
+    const base = !q ? games : games.filter((g) => g.name.toLowerCase().includes(q))
+    const tagFiltered = tagFilterId ? base.filter((g) => g.tags?.some((t) => t.id === tagFilterId)) : base
 
-  return [...base].sort((a, b) =>
-    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-  )
-  }, [games, search])
+    return [...tagFiltered].sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    )
+  }, [games, search, tagFilterId])
 
   function openEditor(game: Game) {
     if (!game?.id) {
@@ -418,6 +418,18 @@ export default function AdminGamesPage() {
         placeholder="Search games…"
         style={{ padding: 10, minWidth: 260 }}
       />
+      <select
+        value={tagFilterId}
+        onChange={(e) => setTagFilterId(e.target.value)}
+        style={{ padding: 10, minWidth: 200 }}
+      >
+        <option value="">All tags</option>
+        {tags.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.label}
+          </option>
+        ))}
+      </select>
       <button onClick={loadAll} style={{ padding: '10px 14px', cursor: 'pointer' }}>
         Refresh
       </button>
