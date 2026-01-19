@@ -259,15 +259,17 @@ export default function HistoryPage() {
                 key={h.id}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr',
+                  gridTemplateColumns: '2fr 1fr 2fr 1fr', // ✅ match header
+                  gap: 0,
                   padding: 10,
                   borderTop: '1px solid #eee',
+                  alignItems: 'start',
                 }}
               >
-              <div>{h.name}</div>
+                <div>{h.name}</div>
                 <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
                 <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
-                <div style={{ opacity: 0.75 }}>{new Date(h.played_at).toLocaleString()}</div>
+                <div style={{ opacity: 0.75 }}>{h.played_at ? new Date(h.played_at).toLocaleString() : '—'}</div>
               </div>
             )
           })}

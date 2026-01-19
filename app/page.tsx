@@ -163,7 +163,7 @@ export default function Home() {
     // Auto-roll again with current filters
     await rollRandom()
   }
-  
+
 function openMarkPlayedModal() {
   if (!game) return
   setStatus('')
@@ -263,6 +263,15 @@ function openMarkPlayedModal() {
           filter: blur(0.6px);
           opacity: 0.85;
         }
+
+        .noteTextarea::placeholder {
+          color: #6b6e6a;
+        }
+        
+        .noteTextarea {
+          color: #000;
+        }
+
       `}</style>
 
 
@@ -415,7 +424,7 @@ function openMarkPlayedModal() {
       zIndex: 50,
     }}
   >
-    <div style={{ background: '#fff', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
+    <div style={{ background: '#388e4a', borderRadius: 12, width: 'min(720px, 95vw)', padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800 }}>Add a note</div>
@@ -432,12 +441,19 @@ function openMarkPlayedModal() {
 
       <div style={{ marginTop: 12 }}>
         <textarea
-          value={noteDraft}
-          onChange={(e) => setNoteDraft(e.target.value)}
-          placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
-          rows={5}
-          style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid #ddd' }}
-          disabled={marking}
+          className="noteTextarea"
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
+            rows={5}
+            style={{
+              width: '100%',
+              padding: 10,
+              borderRadius: 10,
+              border: '1px solid #ddd',
+              background: '#ffffff'
+            }}
+            disabled={marking}
         />
         <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12 }}>
           This note will appear in History under “Notes”.
