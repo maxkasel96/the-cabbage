@@ -63,7 +63,7 @@ export default function Nav() {
         The Game Cabbage
       </Link>
       <Link href="/history" style={linkStyle('/history')}>
-        The Anals
+        The Annals
       </Link>
       <details
         ref={detailsRef}
