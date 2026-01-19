@@ -15,6 +15,8 @@ type Game = {
   name: string
   is_active: boolean
   played_at: string | null
+  min_players: number | null
+  max_players: number | null
   tags: Tag[]
 }
 
@@ -31,6 +33,9 @@ export default function AdminGamesPage() {
   const [editingGameId, setEditingGameId] = useState<string | null>(null)
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [playerDrafts, setPlayerDrafts] = useState<Record<string, { min: string; max: string }>>({})
+  const [playersSavingId, setPlayersSavingId] = useState<string | null>(null)
+  const [playerSaveMessages, setPlayerSaveMessages] = useState<Record<string, string>>({})
 
   // Add new game state
   const [newGameName, setNewGameName] = useState('')
@@ -95,6 +100,74 @@ export default function AdminGamesPage() {
     setEditingGame(game)
     setEditingGameId(game.id)
     setSelectedTagIds(new Set((game.tags ?? []).map((t) => t.id).filter(Boolean)))
+  }
+
+  function getPlayerDraft(game: Game) {
+    const draft = playerDrafts[game.id]
+    if (draft) return draft
+    return {
+      min: game.min_players === null ? '' : String(game.min_players),
+      max: game.max_players === null ? '' : String(game.max_players),
+    }
+  }
+
+  function updatePlayerDraft(gameId: string, field: 'min' | 'max', value: string) {
+    setPlayerDrafts((prev) => ({
+      ...prev,
+      [gameId]: {
+        min: field === 'min' ? value : prev[gameId]?.min ?? '',
+        max: field === 'max' ? value : prev[gameId]?.max ?? '',
+      },
+    }))
+  }
+
+  function parseNullableInt(value: string) {
+    const trimmed = value.trim()
+    if (!trimmed) return null
+    const parsed = Number.parseInt(trimmed, 10)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+
+  async function savePlayerCounts(game: Game) {
+    if (!game?.id) return
+    if (playersSavingId) return
+
+    const draft = getPlayerDraft(game)
+    const minPlayers = parseNullableInt(draft.min)
+    const maxPlayers = parseNullableInt(draft.max)
+
+    if (minPlayers !== null && maxPlayers !== null && minPlayers > maxPlayers) {
+      setStatus('Min players must be less than or equal to max players.')
+      setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: '' }))
+      return
+    }
+
+    setPlayersSavingId(game.id)
+    setStatus('')
+    setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: '' }))
+
+    const res = await fetch(`/api/admin/games/${game.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ min_players: minPlayers, max_players: maxPlayers }),
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to save player counts')
+      setPlayersSavingId(null)
+      return
+    }
+
+    setGames((prev) =>
+      prev.map((g) =>
+        g.id === game.id
+          ? { ...g, min_players: json.game?.min_players ?? minPlayers, max_players: json.game?.max_players ?? maxPlayers }
+          : g
+      )
+    )
+    setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: `Saved player counts for ${game.name}.` }))
+    setPlayersSavingId(null)
   }
 
   function closeEditor() {
@@ -420,6 +493,16 @@ export default function AdminGamesPage() {
                     {g.is_active ? 'Active' : 'Inactive'}
                     {g.played_at ? ` • Played` : ''}
                   </div>
+                  <div style={{ opacity: 0.75, fontSize: 13 }}>
+                    Players:{' '}
+                    {g.min_players && g.max_players
+                      ? `${g.min_players}–${g.max_players}`
+                      : g.min_players !== null
+                        ? `Min ${g.min_players}`
+                        : g.max_players !== null
+                          ? `Max ${g.max_players}`
+                          : '—'}
+                  </div>
                 </div>
               </div>
 
@@ -459,6 +542,45 @@ export default function AdminGamesPage() {
                   </span>
                 ))
               )}
+            </div>
+
+            {/* Player counts */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600 }}>Players:</div>
+              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span style={{ opacity: 0.8 }}>Min</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={getPlayerDraft(g).min}
+                  onChange={(e) => updatePlayerDraft(g.id, 'min', e.target.value)}
+                  style={{ width: 80, padding: '6px 8px' }}
+                />
+              </label>
+              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span style={{ opacity: 0.8 }}>Max</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={getPlayerDraft(g).max}
+                  onChange={(e) => updatePlayerDraft(g.id, 'max', e.target.value)}
+                  style={{ width: 80, padding: '6px 8px' }}
+                />
+              </label>
+              <button
+                onClick={() => savePlayerCounts(g)}
+                style={{ padding: '6px 12px', cursor: playersSavingId === g.id ? 'not-allowed' : 'pointer' }}
+                disabled={playersSavingId === g.id}
+              >
+                {playersSavingId === g.id ? 'Saving…' : 'Save players'}
+              </button>
+              {playerSaveMessages[g.id] ? (
+                <div style={{ fontSize: 12, fontWeight: 700 }}>
+                  <strong>{playerSaveMessages[g.id]}</strong>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}
@@ -526,4 +648,3 @@ export default function AdminGamesPage() {
   </main>
 )
 }
-
