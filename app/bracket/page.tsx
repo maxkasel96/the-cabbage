@@ -182,10 +182,10 @@ export default function BracketPage() {
       }}
     >
       <div className="pageShell">
-        <PageTitle>Bracket Generator</PageTitle>
         <div className="stickyHeader">
           <Nav />
         </div>
+        <PageTitle>Bracket Generator</PageTitle>
         <section
           style={{
             maxWidth: 1100,

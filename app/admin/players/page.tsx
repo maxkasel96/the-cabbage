@@ -86,10 +86,10 @@ export default function AdminPlayersPage() {
       }}
     >
       <div className="pageShell">
-        <PageTitle>Admin: Players</PageTitle>
         <div className="stickyHeader">
           <Nav showAdminMenu={false} />
         </div>
+        <PageTitle>Admin: Players</PageTitle>
         <AdminSubNav />
 
       <div style={{ marginBottom: 14, opacity: 0.8 }}>

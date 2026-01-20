@@ -142,10 +142,10 @@ export default function HistoryPage() {
       }}
     >
       <div className="pageShell">
-        <PageTitle>The Annals</PageTitle>
         <div className="stickyHeader">
           <Nav />
         </div>
+        <PageTitle>The Annals</PageTitle>
 
       {/* Tournament navigation */}
       {tournaments.length > 0 && (
