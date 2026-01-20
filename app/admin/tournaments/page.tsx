@@ -200,18 +200,19 @@ export default function AdminTournamentsPage() {
           <p style={{ opacity: 0.8 }}>No tournaments found.</p>
         ) : (
           <div
+            className="table-scroll"
             style={{
               border: '1px solid var(--border-strong)',
               borderRadius: 10,
-              overflow: 'hidden',
+              overflowX: 'auto',
+              overflowY: 'hidden',
               maxWidth: 900,
               background: 'var(--surface)',
             }}
           >
             <div
+              className="table-grid table-grid--tournaments table-grid--header"
               style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
                 background: 'var(--primary)',
                 padding: 10,
                 fontWeight: 700,
@@ -228,9 +229,8 @@ export default function AdminTournamentsPage() {
             {tournaments.map((t) => (
               <div
                 key={t.id}
+                className="table-grid table-grid--tournaments"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
                   padding: 10,
                   borderTop: '1px solid var(--divider-soft)',
                   alignItems: 'center',

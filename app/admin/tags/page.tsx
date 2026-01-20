@@ -195,18 +195,19 @@ export default function AdminTagsPage() {
         <p>No tags found.</p>
       ) : (
         <div
+          className="table-scroll"
           style={{
             border: '1px solid var(--border-strong)',
             borderRadius: 10,
-            overflow: 'hidden',
+            overflowX: 'auto',
+            overflowY: 'hidden',
             maxWidth: 820,
             background: 'var(--surface)',
           }}
         >
           <div
+            className="table-grid table-grid--tags table-grid--header"
             style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 2fr 1fr',
               background: 'var(--primary)',
               padding: 10,
               fontWeight: 700,
@@ -224,9 +225,8 @@ export default function AdminTagsPage() {
             .map((t) => (
               <div
                 key={t.id}
+                className="table-grid table-grid--tags"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 2fr 1fr',
                   padding: 10,
                   borderTop: '1px solid var(--divider-soft)',
                   background: 'rgba(230, 239, 224, 0.7)',

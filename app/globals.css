@@ -97,6 +97,36 @@ button:disabled {
   box-shadow: none;
 }
 
+.table-scroll {
+  width: 100%;
+}
+
+.table-grid {
+  display: grid;
+  column-gap: 12px;
+}
+
+.table-grid > div {
+  min-width: 0;
+}
+
+.table-grid--history {
+  grid-template-columns: 2fr 1fr 2fr 1fr;
+}
+
+.table-grid--tags {
+  grid-template-columns: 2fr 2fr 1fr;
+}
+
+.table-grid--tournaments {
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+}
+
+.table-grid--header {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .main-nav__bar {
   display: none;
   align-items: center;
@@ -330,5 +360,30 @@ button:disabled {
 
   .main-nav__desktop {
     display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-grid {
+    column-gap: 16px;
+    row-gap: 8px;
+    font-size: 13px;
+  }
+
+  .table-grid--history {
+    min-width: 720px;
+  }
+
+  .table-grid--tags {
+    min-width: 420px;
+  }
+
+  .table-grid--tournaments {
+    min-width: 860px;
   }
 }
