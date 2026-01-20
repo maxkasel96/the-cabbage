@@ -363,29 +363,6 @@ function openMarkPlayedModal() {
 
       {/* rolling an animation */}
       <style>{`
-        .pageShell {
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .stickyHeader {
-          position: sticky;
-          top: 16px;
-          z-index: 20;
-          background: var(--page-background);
-          border-radius: 22px;
-          padding: 12px;
-          box-shadow: 0 16px 30px rgba(30, 43, 24, 0.35);
-          border: 1px solid var(--border-strong);
-        }
-
-        .stickyHeader .main-nav {
-          margin-bottom: 0;
-          background: transparent;
-          border-bottom: none;
-          box-shadow: none;
-        }
-
         .mainLayout {
           display: grid;
           gap: 24px;

@@ -141,8 +141,11 @@ export default function HistoryPage() {
         minHeight: '100vh',
       }}
     >
-      <PageTitle>The Annals</PageTitle>
-      <Nav />
+      <div className="pageShell">
+        <PageTitle>The Annals</PageTitle>
+        <div className="stickyHeader">
+          <Nav />
+        </div>
 
       {/* Tournament navigation */}
       {tournaments.length > 0 && (
@@ -368,6 +371,7 @@ export default function HistoryPage() {
           })}
         </div>
       )}
+      </div>
     </main>
   )
 }
