@@ -199,67 +199,73 @@ export default function AdminTournamentsPage() {
         ) : tournaments.length === 0 ? (
           <p style={{ opacity: 0.8 }}>No tournaments found.</p>
         ) : (
-          <div
-            style={{
-              border: '1px solid var(--border-strong)',
-              borderRadius: 10,
-              overflow: 'hidden',
-              maxWidth: 900,
-              background: 'var(--surface)',
-            }}
-          >
+          <>
+            <div className="table-scroll-hint">
+              <span className="table-scroll-hint__icon">↔</span>
+              <span>Swipe to scroll the table</span>
+            </div>
             <div
+              className="table-scroll table-scroll-indicator"
               style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-                background: 'var(--primary)',
-                padding: 10,
-                fontWeight: 700,
-                color: 'var(--text-inverse)',
+                border: '1px solid var(--border-strong)',
+                borderRadius: 10,
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                maxWidth: 900,
+                background: 'var(--surface)',
               }}
             >
-              <div>Label</div>
-              <div>Years</div>
-              <div>Status</div>
-              <div>Created</div>
-              <div>Actions</div>
-            </div>
-
-            {tournaments.map((t) => (
               <div
-                key={t.id}
+                className="table-grid table-grid--tournaments table-grid--header"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+                  background: 'var(--primary)',
                   padding: 10,
-                  borderTop: '1px solid var(--divider-soft)',
-                  alignItems: 'center',
-                  background: 'rgba(230, 239, 224, 0.7)',
+                  fontWeight: 700,
+                  color: 'var(--text-inverse)',
                 }}
               >
-                <div>{t.label}</div>
-                <div>
-                  {t.year_start}-{t.year_end}
-                </div>
-                <div style={{ fontWeight: 700 }}>{t.is_active ? 'Active' : '—'}</div>
-                <div style={{ opacity: 0.75 }}>{new Date(t.created_at).toLocaleString()}</div>
-
-                <div>
-                  <button
-                    onClick={() => setActiveTournament(t)}
-                    disabled={t.is_active || settingActiveId === t.id}
-                    style={{
-                      padding: '6px 10px',
-                      cursor: t.is_active || settingActiveId === t.id ? 'not-allowed' : 'pointer',
-                      opacity: t.is_active ? 0.6 : 1,
-                    }}
-                  >
-                    {t.is_active ? 'Active' : settingActiveId === t.id ? 'Setting…' : 'Set active'}
-                  </button>
-                </div>
+                <div>Label</div>
+                <div>Years</div>
+                <div>Status</div>
+                <div>Created</div>
+                <div>Actions</div>
               </div>
-            ))}
-          </div>
+
+              {tournaments.map((t) => (
+                <div
+                  key={t.id}
+                  className="table-grid table-grid--tournaments table-grid--body"
+                  style={{
+                    padding: 10,
+                    borderTop: '1px solid var(--divider-soft)',
+                    alignItems: 'center',
+                    background: 'rgba(230, 239, 224, 0.7)',
+                  }}
+                >
+                  <div>{t.label}</div>
+                  <div>
+                    {t.year_start}-{t.year_end}
+                  </div>
+                  <div style={{ fontWeight: 700 }}>{t.is_active ? 'Active' : '—'}</div>
+                  <div style={{ opacity: 0.75 }}>{new Date(t.created_at).toLocaleString()}</div>
+
+                  <div>
+                    <button
+                      onClick={() => setActiveTournament(t)}
+                      disabled={t.is_active || settingActiveId === t.id}
+                      style={{
+                        padding: '6px 10px',
+                        cursor: t.is_active || settingActiveId === t.id ? 'not-allowed' : 'pointer',
+                        opacity: t.is_active ? 0.6 : 1,
+                      }}
+                    >
+                      {t.is_active ? 'Active' : settingActiveId === t.id ? 'Setting…' : 'Set active'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </main>

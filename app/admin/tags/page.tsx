@@ -194,50 +194,56 @@ export default function AdminTagsPage() {
       ) : filtered.length === 0 ? (
         <p>No tags found.</p>
       ) : (
-        <div
-          style={{
-            border: '1px solid var(--border-strong)',
-            borderRadius: 10,
-            overflow: 'hidden',
-            maxWidth: 820,
-            background: 'var(--surface)',
-          }}
-        >
+        <>
+          <div className="table-scroll-hint">
+            <span className="table-scroll-hint__icon">↔</span>
+            <span>Swipe to scroll the table</span>
+          </div>
           <div
+            className="table-scroll table-scroll-indicator"
             style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 2fr 1fr',
-              background: 'var(--primary)',
-              padding: 10,
-              fontWeight: 700,
-              color: 'var(--text-inverse)',
+              border: '1px solid var(--border-strong)',
+              borderRadius: 10,
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              maxWidth: 820,
+              background: 'var(--surface)',
             }}
           >
-            <div>Label</div>
-            <div>Slug</div>
-            <div>Sort</div>
-          </div>
+            <div
+              className="table-grid table-grid--tags table-grid--header"
+              style={{
+                background: 'var(--primary)',
+                padding: 10,
+                fontWeight: 700,
+                color: 'var(--text-inverse)',
+              }}
+            >
+              <div>Label</div>
+              <div>Slug</div>
+              <div>Sort</div>
+            </div>
 
-          {filtered
-            .slice()
-            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.label.localeCompare(b.label))
-            .map((t) => (
-              <div
-                key={t.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 2fr 1fr',
-                  padding: 10,
-                  borderTop: '1px solid var(--divider-soft)',
-                  background: 'rgba(230, 239, 224, 0.7)',
-                }}
-              >
-                <div style={{ fontWeight: 700 }}>{t.label}</div>
-                <div style={{ opacity: 0.85 }}>{t.slug}</div>
-                <div style={{ opacity: 0.85 }}>{t.sort_order}</div>
-              </div>
-            ))}
-        </div>
+            {filtered
+              .slice()
+              .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.label.localeCompare(b.label))
+              .map((t) => (
+                <div
+                  key={t.id}
+                  className="table-grid table-grid--tags table-grid--body"
+                  style={{
+                    padding: 10,
+                    borderTop: '1px solid var(--divider-soft)',
+                    background: 'rgba(230, 239, 224, 0.7)',
+                  }}
+                >
+                  <div style={{ fontWeight: 700 }}>{t.label}</div>
+                  <div style={{ opacity: 0.85 }}>{t.slug}</div>
+                  <div style={{ opacity: 0.85 }}>{t.sort_order}</div>
+                </div>
+              ))}
+          </div>
+        </>
       )}
       </div>
     </main>
