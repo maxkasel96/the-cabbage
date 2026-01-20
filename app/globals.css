@@ -155,20 +155,6 @@ button:disabled {
   line-height: 1;
 }
 
-.table-scroll-indicator {
-  position: relative;
-}
-
-.table-scroll-indicator::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 24px;
-  height: 100%;
-  pointer-events: none;
-  background: linear-gradient(90deg, rgba(231, 234, 219, 0), var(--page-background));
-}
 
 .main-nav__bar {
   display: none;
