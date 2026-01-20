@@ -565,23 +565,13 @@ button:disabled {
 
 .main-nav__desktop-link:focus-visible,
 .main-nav__desktop-trigger:focus-visible,
-.mega-menu__item:focus-visible,
-.main-nav__account:focus-visible {
+.mega-menu__item:focus-visible {
   outline: 2px solid #f7f9f0;
   outline-offset: 2px;
 }
 
 .main-nav__desktop-item {
   position: relative;
-}
-
-.main-nav__account {
-  border-radius: 999px;
-  border: 1px solid rgba(231, 234, 219, 0.4);
-  background: rgba(231, 234, 219, 0.2);
-  color: var(--text-inverse);
-  padding: 8px 12px;
-  font-size: 16px;
 }
 
 .mega-menu {
@@ -643,6 +633,12 @@ button:disabled {
   text-decoration: none;
   color: #2e3f2a;
   transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.mega-menu__item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .mega-menu__item:hover {

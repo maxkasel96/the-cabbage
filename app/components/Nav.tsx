@@ -74,51 +74,6 @@ const iconPaths = {
   ),
 }
 
-const resourcesMenu: MegaMenuConfig = {
-  id: 'resources',
-  label: 'Resources',
-  groups: [
-    {
-      title: 'Play & Learn',
-      items: [
-        {
-          href: '/',
-          title: 'How to Play',
-          description: 'Start a new round and review the rules.',
-          icon: 'guide',
-          tone: 'sage',
-        },
-        {
-          href: '/history',
-          title: 'Annals Archive',
-          description: 'Explore past matches and highlights.',
-          icon: 'scroll',
-          tone: 'wheat',
-        },
-      ],
-    },
-    {
-      title: 'Tools & Insights',
-      items: [
-        {
-          href: '/bracket',
-          title: 'Bracket Lab',
-          description: 'Build brackets and preview outcomes.',
-          icon: 'bracket',
-          tone: 'mint',
-        },
-        {
-          href: '/bracket',
-          title: 'Championship Tracker',
-          description: 'Follow title runs with clarity.',
-          icon: 'trophy',
-          tone: 'peach',
-        },
-      ],
-    },
-  ],
-}
-
 const adminMenu: MegaMenuConfig = {
   id: 'admin',
   label: 'Admin',
@@ -164,7 +119,7 @@ const adminMenu: MegaMenuConfig = {
   ],
 }
 
-const megaMenus = [resourcesMenu, adminMenu]
+const megaMenus = [adminMenu]
 
 type IconProps = {
   name: keyof typeof iconPaths
@@ -454,9 +409,6 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
                 </div>
               ))}
           </div>
-          <button type="button" className="main-nav__account" aria-label="Account">
-            <span aria-hidden="true">👤</span>
-          </button>
         </div>
         <button
           type="button"
@@ -489,14 +441,6 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
         <div className="main-nav__sheet-handle" />
         <div className="main-nav__sheet-links">
           {primaryLinks.map((link) => renderMobileLink(link.href, link.label, link.icon))}
-        </div>
-        <div className="main-nav__sheet-section">
-          <div className="main-nav__sheet-section-title">Resources</div>
-          <div className="main-nav__sheet-links">
-            {resourcesMenu.groups.flatMap((group) =>
-              group.items.map((item) => renderMobileLink(item.href, item.title, '📚'))
-            )}
-          </div>
         </div>
         {showAdminMenu ? (
           <div className="main-nav__sheet-section">
