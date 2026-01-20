@@ -501,11 +501,100 @@ function openMarkPlayedModal() {
         }
 
         .noteTextarea::placeholder {
-          color: rgba(63, 90, 42, 0.6);
+          color: rgba(79, 55, 32, 0.6);
         }
         
         .noteTextarea {
-          color: var(--text-primary);
+          width: 100%;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid rgba(89, 60, 33, 0.35);
+          background: linear-gradient(180deg, rgba(250, 241, 217, 0.98), rgba(238, 222, 184, 0.95));
+          color: #4b331c;
+          box-shadow: inset 0 1px 3px rgba(61, 38, 18, 0.2);
+          font-family: 'Georgia', 'Times New Roman', serif;
+          line-height: 1.6;
+        }
+        
+        .markPlayedModal {
+          width: min(720px, 95vw);
+          border-radius: 18px;
+          padding: 10px;
+          background: linear-gradient(135deg, #6a4324 0%, #3d2515 50%, #2c1a10 100%);
+          border: 1px solid rgba(43, 26, 16, 0.9);
+          box-shadow: 0 24px 50px rgba(28, 17, 8, 0.45);
+          position: relative;
+        }
+
+        .markPlayedModal::before {
+          content: '';
+          position: absolute;
+          inset: 8px;
+          border-radius: 14px;
+          border: 1px solid rgba(255, 223, 177, 0.18);
+          box-shadow: inset 0 0 0 1px rgba(255, 236, 203, 0.08);
+          pointer-events: none;
+        }
+
+        .markPlayedModalInner {
+          border-radius: 14px;
+          padding: 18px;
+          background: linear-gradient(180deg, #f8f0d6 0%, #ecd9b0 100%);
+          border: 1px solid rgba(109, 80, 47, 0.35);
+          box-shadow: inset 0 1px 4px rgba(93, 63, 30, 0.22);
+          color: #3f2a15;
+          font-family: 'Georgia', 'Times New Roman', serif;
+          position: relative;
+          z-index: 1;
+        }
+
+        .markPlayedModalTitle {
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          color: #3d2514;
+        }
+
+        .markPlayedModalSubtitle {
+          opacity: 0.75;
+          color: #5b3b21;
+        }
+
+        .markPlayedModalHint {
+          margin-top: 8px;
+          font-size: 12px;
+          color: #6c4c2f;
+        }
+
+        .markPlayedModalClose {
+          padding: 8px 12px;
+          cursor: pointer;
+          border-radius: 999px;
+          border: 1px solid rgba(89, 60, 33, 0.4);
+          background: rgba(250, 241, 217, 0.8);
+          color: #4b331c;
+          font-weight: 600;
+        }
+
+        .markPlayedModalPrimary {
+          padding: 10px 14px;
+          cursor: pointer;
+          border-radius: 999px;
+          border: none;
+          background: linear-gradient(135deg, #6b3f1e, #b07a3f);
+          color: #fff4df;
+          font-weight: 700;
+          box-shadow: 0 10px 18px rgba(70, 40, 18, 0.3);
+        }
+
+        .markPlayedModalSecondary {
+          padding: 10px 14px;
+          cursor: pointer;
+          border-radius: 999px;
+          border: 1px solid rgba(89, 60, 33, 0.4);
+          background: rgba(252, 243, 220, 0.8);
+          color: #4b331c;
+          font-weight: 700;
         }
 
         .filtersCard {
@@ -1219,7 +1308,7 @@ function openMarkPlayedModal() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(31, 42, 26, 0.55)',
+            background: 'rgba(28, 20, 14, 0.65)',
             display: 'grid',
             placeItems: 'center',
             padding: 16,
@@ -1227,87 +1316,52 @@ function openMarkPlayedModal() {
           }}
         >
           <div
-            style={{
-              background: 'var(--surface)',
-              borderRadius: 12,
-              width: 'min(720px, 95vw)',
-              padding: 16,
-              border: '1px solid var(--border-strong)',
-            }}
+            className="markPlayedModal"
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800 }}>Add a note</div>
-                <div style={{ opacity: 0.8, color: 'var(--text-secondary)' }}>{game.name}</div>
+            <div className="markPlayedModalInner">
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+                <div>
+                  <div className="markPlayedModalTitle">Add a note</div>
+                  <div className="markPlayedModalSubtitle">{game.name}</div>
+                </div>
+                <button
+                  onClick={() => setNoteModalOpen(false)}
+                  className="markPlayedModalClose"
+                  disabled={marking}
+                >
+                  Close
+                </button>
               </div>
-              <button
-                onClick={() => setNoteModalOpen(false)}
-                style={{
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  borderRadius: 999,
-                  border: '1px solid var(--border-strong)',
-                  background: 'var(--page-background)',
-                  color: 'var(--text-primary)',
-                }}
-                disabled={marking}
-              >
-                Close
-              </button>
-            </div>
 
-            <div style={{ marginTop: 12 }}>
-              <textarea
-                className="noteTextarea"
-                value={noteDraft}
-                onChange={(e) => setNoteDraft(e.target.value)}
-                placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
-                rows={5}
-                style={{
-                  width: '100%',
-                  padding: 10,
-                  borderRadius: 10,
-                  border: '1px solid var(--border-strong)',
-                  background: 'var(--page-background)',
-                }}
-                disabled={marking}
-              />
-              <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12, color: 'var(--text-muted)' }}>
-                This note will appear in History under “Notes”.
+              <div style={{ marginTop: 12 }}>
+                <textarea
+                  className="noteTextarea"
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
+                  placeholder="Optional note (e.g., ‘Tom dominated round 2’)…"
+                  rows={5}
+                  disabled={marking}
+                />
+                <div className="markPlayedModalHint">This note will appear in History under “Notes”.</div>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
-              <button
-                onClick={confirmMarkPlayed}
-                style={{
-                  padding: '10px 14px',
-                  cursor: marking ? 'not-allowed' : 'pointer',
-                  borderRadius: 999,
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: 'var(--text-inverse)',
-                  fontWeight: 700,
-                }}
-                disabled={marking}
-              >
-                {marking ? 'Saving…' : 'Save & mark played'}
-              </button>
+              <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+                <button
+                  onClick={confirmMarkPlayed}
+                  className="markPlayedModalPrimary"
+                  disabled={marking}
+                >
+                  {marking ? 'Saving…' : 'Save & mark played'}
+                </button>
 
-              <button
-                onClick={() => setNoteModalOpen(false)}
-                style={{
-                  padding: '10px 14px',
-                  cursor: marking ? 'not-allowed' : 'pointer',
-                  borderRadius: 999,
-                  border: '1px solid var(--border-strong)',
-                  background: 'var(--page-background)',
-                  color: 'var(--text-primary)',
-                }}
-                disabled={marking}
-              >
-                Cancel
-              </button>
+                <button
+                  onClick={() => setNoteModalOpen(false)}
+                  className="markPlayedModalSecondary"
+                  disabled={marking}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
