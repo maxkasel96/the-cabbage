@@ -181,17 +181,20 @@ export default function BracketPage() {
         minHeight: '100vh',
       }}
     >
-      <PageTitle>Bracket Generator</PageTitle>
-      <Nav />
-      <section
-        style={{
-          maxWidth: 1100,
-          margin: '12px auto 0',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 18,
-        }}
-      >
+      <div className="pageShell">
+        <PageTitle>Bracket Generator</PageTitle>
+        <div className="stickyHeader">
+          <Nav />
+        </div>
+        <section
+          style={{
+            maxWidth: 1100,
+            margin: '12px auto 0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 18,
+          }}
+        >
         <header style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
             Shuffle active players into a single-elimination bracket with automatic byes.
@@ -368,7 +371,8 @@ export default function BracketPage() {
             Generate a bracket to see the round-by-round layout.
           </div>
         )}
-      </section>
+        </section>
+      </div>
     </main>
   )
 }

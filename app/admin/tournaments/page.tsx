@@ -118,146 +118,150 @@ export default function AdminTournamentsPage() {
         minHeight: '100vh',
       }}
     >
-      <PageTitle>Admin: Tournaments</PageTitle>
-      <AdminSubNav />
-      <Nav showAdminMenu={false} />
+      <div className="pageShell">
+        <PageTitle>Admin: Tournaments</PageTitle>
+        <div className="stickyHeader">
+          <Nav showAdminMenu={false} />
+        </div>
+        <AdminSubNav />
 
-      <div style={{ marginBottom: 16, opacity: 0.85 }}>
-        {active ? (
-          <>
-            <strong>Active:</strong> {active.label} ({active.year_start}-{active.year_end})
-          </>
-        ) : (
-          <strong>No active tournament set</strong>
-        )}
-      </div>
-
-    {/* Start new tournament */}
-    <div
-      style={{
-        border: '1px solid var(--border-strong)',
-        borderRadius: 10,
-        padding: 14,
-        marginBottom: 18,
-        maxWidth: 760,
-        display: 'grid',
-        gap: 12,
-        background: 'var(--surface)',
-      }}
-    >
-      <div style={{ fontSize: 16, fontWeight: 800 }}>Start new tournament</div>
-
-      <label style={{ display: 'grid', gap: 6 }}>
-        <span style={{ fontSize: 13, opacity: 0.85 }}>Label</span>
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          style={{ padding: 10 }}
-          placeholder="Dec 2026 – Jan 2027"
-        />
-      </label>
-
-      <label style={{ display: 'grid', gap: 6, maxWidth: 220 }}>
-        <span style={{ fontSize: 13, opacity: 0.85 }}>Year start</span>
-        <input
-          type="number"
-          value={yearStart}
-          onChange={(e) => setYearStart(Number(e.target.value))}
-          style={{ padding: 10 }}
-        />
-      </label>
-
-      <div style={{ fontSize: 13, opacity: 0.8 }}>
-        Year end will be set to <strong>{yearEnd}</strong>.
-      </div>
-
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={startNewTournament} style={{ padding: '10px 14px' }}>
-          Start new tournament (set active)
-        </button>
-
-        <button onClick={loadTournaments} style={{ padding: '10px 14px' }}>
-          Refresh
-        </button>
-
-        {status && (
-          <span style={{ opacity: 0.85 }}>
-            <strong>{status}</strong>
-          </span>
-        )}
-      </div>
-    </div>
-
-    {/* List tournaments */}
-    <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>All tournaments</div>
-
-    {loading ? (
-      <p>Loading…</p>
-    ) : tournaments.length === 0 ? (
-      <p style={{ opacity: 0.8 }}>No tournaments found.</p>
-    ) : (
-      <div
-        style={{
-          border: '1px solid var(--border-strong)',
-          borderRadius: 10,
-          overflow: 'hidden',
-          maxWidth: 900,
-          background: 'var(--surface)',
-        }}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-            background: 'var(--primary)',
-            padding: 10,
-            fontWeight: 700,
-            color: 'var(--text-inverse)',
-          }}
-        >
-          <div>Label</div>
-          <div>Years</div>
-          <div>Status</div>
-          <div>Created</div>
-          <div>Actions</div>
+        <div style={{ marginBottom: 16, opacity: 0.85 }}>
+          {active ? (
+            <>
+              <strong>Active:</strong> {active.label} ({active.year_start}-{active.year_end})
+            </>
+          ) : (
+            <strong>No active tournament set</strong>
+          )}
         </div>
 
-        {tournaments.map((t) => (
+        {/* Start new tournament */}
+        <div
+          style={{
+            border: '1px solid var(--border-strong)',
+            borderRadius: 10,
+            padding: 14,
+            marginBottom: 18,
+            maxWidth: 760,
+            display: 'grid',
+            gap: 12,
+            background: 'var(--surface)',
+          }}
+        >
+          <div style={{ fontSize: 16, fontWeight: 800 }}>Start new tournament</div>
+
+          <label style={{ display: 'grid', gap: 6 }}>
+            <span style={{ fontSize: 13, opacity: 0.85 }}>Label</span>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              style={{ padding: 10 }}
+              placeholder="Dec 2026 – Jan 2027"
+            />
+          </label>
+
+          <label style={{ display: 'grid', gap: 6, maxWidth: 220 }}>
+            <span style={{ fontSize: 13, opacity: 0.85 }}>Year start</span>
+            <input
+              type="number"
+              value={yearStart}
+              onChange={(e) => setYearStart(Number(e.target.value))}
+              style={{ padding: 10 }}
+            />
+          </label>
+
+          <div style={{ fontSize: 13, opacity: 0.8 }}>
+            Year end will be set to <strong>{yearEnd}</strong>.
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button onClick={startNewTournament} style={{ padding: '10px 14px' }}>
+              Start new tournament (set active)
+            </button>
+
+            <button onClick={loadTournaments} style={{ padding: '10px 14px' }}>
+              Refresh
+            </button>
+
+            {status && (
+              <span style={{ opacity: 0.85 }}>
+                <strong>{status}</strong>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* List tournaments */}
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>All tournaments</div>
+
+        {loading ? (
+          <p>Loading…</p>
+        ) : tournaments.length === 0 ? (
+          <p style={{ opacity: 0.8 }}>No tournaments found.</p>
+        ) : (
           <div
-            key={t.id}
             style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-              padding: 10,
-              borderTop: '1px solid var(--divider-soft)',
-              alignItems: 'center',
-              background: 'rgba(230, 239, 224, 0.7)',
+              border: '1px solid var(--border-strong)',
+              borderRadius: 10,
+              overflow: 'hidden',
+              maxWidth: 900,
+              background: 'var(--surface)',
             }}
           >
-            <div>{t.label}</div>
-            <div>
-              {t.year_start}-{t.year_end}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+                background: 'var(--primary)',
+                padding: 10,
+                fontWeight: 700,
+                color: 'var(--text-inverse)',
+              }}
+            >
+              <div>Label</div>
+              <div>Years</div>
+              <div>Status</div>
+              <div>Created</div>
+              <div>Actions</div>
             </div>
-            <div style={{ fontWeight: 700 }}>{t.is_active ? 'Active' : '—'}</div>
-            <div style={{ opacity: 0.75 }}>{new Date(t.created_at).toLocaleString()}</div>
 
-            <div>
-              <button
-                onClick={() => setActiveTournament(t)}
-                disabled={t.is_active || settingActiveId === t.id}
+            {tournaments.map((t) => (
+              <div
+                key={t.id}
                 style={{
-                  padding: '6px 10px',
-                  cursor: t.is_active || settingActiveId === t.id ? 'not-allowed' : 'pointer',
-                  opacity: t.is_active ? 0.6 : 1,
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+                  padding: 10,
+                  borderTop: '1px solid var(--divider-soft)',
+                  alignItems: 'center',
+                  background: 'rgba(230, 239, 224, 0.7)',
                 }}
               >
-                {t.is_active ? 'Active' : settingActiveId === t.id ? 'Setting…' : 'Set active'}
-              </button>
-            </div>
+                <div>{t.label}</div>
+                <div>
+                  {t.year_start}-{t.year_end}
+                </div>
+                <div style={{ fontWeight: 700 }}>{t.is_active ? 'Active' : '—'}</div>
+                <div style={{ opacity: 0.75 }}>{new Date(t.created_at).toLocaleString()}</div>
+
+                <div>
+                  <button
+                    onClick={() => setActiveTournament(t)}
+                    disabled={t.is_active || settingActiveId === t.id}
+                    style={{
+                      padding: '6px 10px',
+                      cursor: t.is_active || settingActiveId === t.id ? 'not-allowed' : 'pointer',
+                      opacity: t.is_active ? 0.6 : 1,
+                    }}
+                  >
+                    {t.is_active ? 'Active' : settingActiveId === t.id ? 'Setting…' : 'Set active'}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
-    )}
     </main>
   )
 }
