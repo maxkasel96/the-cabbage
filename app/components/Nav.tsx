@@ -145,7 +145,6 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
       data-active={pathname === href}
       onClick={handleMobileClose}
     >
-      <span className="main-nav__sheet-dot" aria-hidden="true" />
       <span className="main-nav__sheet-icon" aria-hidden="true">
         {icon}
       </span>
@@ -160,7 +159,7 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
     >
       <div className="main-nav__bar">
         <Link href="/" className="main-nav__brand">
-          <span>The Cabbage</span>
+          <span>The Cabbage 🥬</span>
         </Link>
         <button
           type="button"
@@ -191,7 +190,6 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
         tabIndex={-1}
       >
         <div className="main-nav__sheet-handle" />
-        <div className="main-nav__sheet-title">Navigation</div>
         <div className="main-nav__sheet-links">
           {primaryLinks.map((link) => renderMobileLink(link.href, link.label, link.icon))}
         </div>

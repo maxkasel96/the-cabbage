@@ -62,10 +62,11 @@ button:disabled {
 }
 
 .main-nav {
+  --nav-height: 64px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 12px 18px;
+  padding: 12px 0;
   background-color: var(--nav-surface);
   border-bottom: 1px solid rgba(231, 234, 219, 0.2);
   box-shadow: 0 12px 24px rgba(30, 43, 24, 0.35);
@@ -284,6 +285,9 @@ button:disabled {
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .main-nav__brand {
@@ -293,8 +297,9 @@ button:disabled {
   font-weight: 700;
   text-decoration: none;
   color: var(--text-inverse);
-  font-size: 18px;
+  font-size: 38px;
   letter-spacing: 0.4px;
+  padding: 0;
 }
 
 .main-nav__brand:hover {
@@ -392,7 +397,7 @@ button:disabled {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 40;
+  z-index: 55;
   border: none;
 }
 
@@ -412,9 +417,10 @@ button:disabled {
   background: #e7eadb;
   border-radius: 0 24px 24px 0;
   box-shadow: 16px 0 30px rgba(30, 43, 24, 0.35);
-  padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  height: 100vh;
   overflow-y: auto;
-  z-index: 45;
+  z-index: 60;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -422,6 +428,7 @@ button:disabled {
 
 .main-nav__sheet.is-open {
   transform: translateX(0);
+  border-radius: 0;
 }
 
 .main-nav__sheet-handle {
@@ -432,12 +439,6 @@ button:disabled {
   align-self: center;
 }
 
-.main-nav__sheet-title {
-  font-weight: 700;
-  color: #2e3f2a;
-  padding: 0 4px;
-}
-
 .main-nav__sheet-links {
   display: flex;
   flex-direction: column;
@@ -446,9 +447,9 @@ button:disabled {
 
 .main-nav__sheet-link {
   display: grid;
-  grid-template-columns: 14px 24px 1fr;
+  grid-template-columns: 24px 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 12px 12px;
   border-radius: 12px;
   text-decoration: none;
@@ -462,19 +463,8 @@ button:disabled {
   background: rgba(110, 127, 74, 0.18);
 }
 
-.main-nav__sheet-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: transparent;
-}
-
 .main-nav__sheet-link[data-active='true'] {
   font-weight: 700;
-}
-
-.main-nav__sheet-link[data-active='true'] .main-nav__sheet-dot {
-  background: #2e3f2a;
 }
 
 .main-nav__sheet-section {
@@ -504,6 +494,15 @@ button:disabled {
 }
 
 @media (max-width: 960px) {
+  .main-nav {
+    --nav-height: 60px;
+  }
+
+  .main-nav__brand {
+    font-size: 32px;
+    padding: 0;
+  }
+
   .pageShell {
     padding-top: 80px;
   }
