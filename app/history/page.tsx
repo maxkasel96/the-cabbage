@@ -315,59 +315,67 @@ export default function HistoryPage() {
       ) : filtered.length === 0 ? (
         <p>No played games yet.</p>
       ) : (
-        <div
-          className="table-scroll"
-          style={{
-            borderRadius: 16,
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            maxWidth: 960,
-            border: '2px solid var(--border-strong)',
-            background: 'var(--surface)',
-            boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
-          }}
-        >
+        <>
+          <div className="table-scroll-hint">
+            <span className="table-scroll-hint__icon">↔</span>
+            <span>Swipe to scroll the table</span>
+          </div>
           <div
-            className="table-grid table-grid--history table-grid--header"
+            className="table-scroll table-scroll-indicator"
             style={{
-              background: 'linear-gradient(90deg, var(--primary), var(--primary-hover))',
-              padding: '12px 16px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              color: 'var(--text-inverse)',
-              borderBottom: '2px solid var(--border-strong)',
+              borderRadius: 16,
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              maxWidth: 960,
+              border: '2px solid var(--border-strong)',
+              background: 'var(--surface)',
+              boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
             }}
           >
-            <div>Game</div>
-            <div>Winners</div>
-            <div>Notes</div>
-            <div>Played</div>
+            <div
+              className="table-grid table-grid--history table-grid--header"
+              style={{
+                background: 'linear-gradient(90deg, var(--primary), var(--primary-hover))',
+                padding: '12px 16px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                color: 'var(--text-inverse)',
+                borderBottom: '2px solid var(--border-strong)',
+              }}
+            >
+              <div>Game</div>
+              <div>Winners</div>
+              <div>Notes</div>
+              <div>Played</div>
+            </div>
+
+            {filtered.map((h, index) => {
+              const winnersLabel =
+                (h.winners ?? []).length === 0 ? '—' : h.winners.map((w) => w.display_name).join(', ')
+
+              return (
+                <div
+                  key={h.id}
+                  className="table-grid table-grid--history table-grid--body"
+                  style={{
+                    padding: '12px 16px',
+                    borderTop: '1px solid var(--divider-soft)',
+                    alignItems: 'start',
+                    background: index % 2 === 0 ? 'var(--surface)' : 'var(--surface-alt)',
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{h.name}</div>
+                  <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
+                  <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
+                  <div style={{ opacity: 0.75 }}>
+                    {h.played_at ? new Date(h.played_at).toLocaleString() : '—'}
+                  </div>
+                </div>
+              )
+            })}
           </div>
-
-          {filtered.map((h, index) => {
-            const winnersLabel =
-              (h.winners ?? []).length === 0 ? '—' : h.winners.map((w) => w.display_name).join(', ')
-
-            return (
-              <div
-                key={h.id}
-                className="table-grid table-grid--history"
-                style={{
-                  padding: '12px 16px',
-                  borderTop: '1px solid var(--divider-soft)',
-                  alignItems: 'start',
-                  background: index % 2 === 0 ? 'var(--surface)' : 'var(--surface-alt)',
-                }}
-              >
-                <div style={{ fontWeight: 600 }}>{h.name}</div>
-                <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
-                <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
-                <div style={{ opacity: 0.75 }}>{h.played_at ? new Date(h.played_at).toLocaleString() : '—'}</div>
-              </div>
-            )
-          })}
-        </div>
+        </>
       )}
       </div>
     </main>
