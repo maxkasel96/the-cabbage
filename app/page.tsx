@@ -110,6 +110,18 @@ export default function Home() {
     setWinnerPlayerIds(new Set())
   }
 
+  function resetRecommendation() {
+    setGame(null)
+    setGameStarted(false)
+    setTeamMode('')
+    setTeamCount('')
+    setTeams([])
+    setTeamStatus('')
+    setShowWinners(false)
+    setWinningTeamId(null)
+    setWinnerPlayerIds(new Set())
+    setIsRolling(false)
+  }
 
   // Random roll animation helper
   const [isRolling, setIsRolling] = useState(false)
@@ -270,8 +282,7 @@ export default function Home() {
         : `Saved: ${game.name} (No winners selected). View History to confirm.`
     )
 
-    // Auto-roll again with current filters
-    await rollRandom()
+    resetRecommendation()
   }
 
 function openMarkPlayedModal() {
@@ -320,7 +331,7 @@ function openMarkPlayedModal() {
 
     setStatus(`Saved: ${game.name}. View History to confirm.`)
 
-    await rollRandom()
+    resetRecommendation()
   }
 
   const selectedLabels =
