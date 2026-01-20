@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import type { FocusEvent, KeyboardEvent } from 'react'
+import type { FocusEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 type NavProps = {
   showAdminMenu?: boolean
@@ -370,7 +370,7 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
     }
   }
 
-  const handleDesktopKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleDesktopKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       setActiveMenu(null)
     }
