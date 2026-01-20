@@ -40,13 +40,6 @@ const primaryLinks: NavLink[] = [
   { href: '/bracket', label: 'Bracket Generator', icon: '🏆' },
 ]
 
-const adminLinks: NavLink[] = [
-  { href: '/admin/games', label: 'Games', icon: '🎮' },
-  { href: '/admin/tags', label: 'Tags', icon: '🏷️' },
-  { href: '/admin/players', label: 'Players', icon: '👥' },
-  { href: '/admin/tournaments', label: 'Tournaments', icon: '🏟️' },
-]
-
 const iconPaths = {
   leaf: (
     <path d="M12 3c4.4 0 7 3.6 7 8 0 4.4-3.6 8-8 8-1.6 0-3.3-.5-4.7-1.4l-2.3 2.4a1 1 0 0 1-1.4-1.4l2.4-2.3A8.1 8.1 0 0 1 4 11c0-4.4 3.6-8 8-8z" />
@@ -442,9 +435,16 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
         </div>
         <div className="main-nav__sheet-section">
           <div className="main-nav__sheet-section-title">Admin</div>
-          <div className="main-nav__sheet-links">
-            {adminLinks.map((link) => renderMobileLink(link.href, link.label, link.icon))}
-          </div>
+          {adminMenu.groups.map((group) => (
+            <div key={group.title} className="main-nav__sheet-group">
+              <div className="main-nav__sheet-group-title">{group.title}</div>
+              <div className="main-nav__sheet-links">
+                {group.items.map((item) =>
+                  renderMobileLink(item.href, item.title, '⚙️')
+                )}
+              </div>
+            </div>
+          ))}
         </div>
         <button
           type="button"
