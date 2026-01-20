@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import Nav from '../../components/Nav'
 import PageTitle from '../../components/PageTitle'
 import PlayerBio from '../../components/players/PlayerBio'
@@ -30,8 +31,10 @@ type PlayerWinsResponse = {
 const placeholderBio =
   'A steadfast competitor in the Cabbage League, always ready for the next matchup. Bio details will be expanded soon.'
 
-export default function PlayerDetailPage({ params }: { params: { playerId: string } }) {
-  const playerId = params?.playerId
+export default function PlayerDetailPage() {
+  const params = useParams()
+  const playerId =
+    typeof params?.playerId === 'string' ? params.playerId : params?.playerId?.[0]
   const [player, setPlayer] = useState<Player | null>(null)
   const [wins, setWins] = useState<PlayerWinsResponse | null>(null)
   const [loadingPlayer, setLoadingPlayer] = useState(true)
