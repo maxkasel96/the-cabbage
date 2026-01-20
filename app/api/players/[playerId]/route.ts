@@ -1,15 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 type Params = {
-  params: { playerId: string }
+  params: Promise<{ playerId: string }>
 }
 
-export async function GET(_: Request, { params }: Params) {
+export async function GET(_: NextRequest, { params }: Params) {
+  const { playerId } = await params
   const { data, error } = await supabaseServer
     .from('players')
     .select('id, display_name, is_active')
-    .eq('id', params.playerId)
+    .eq('id', playerId)
     .maybeSingle()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

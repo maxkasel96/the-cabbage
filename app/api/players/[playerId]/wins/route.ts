@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 type Params = {
-  params: { playerId: string }
+  params: Promise<{ playerId: string }>
 }
 
 type SeasonSummary = {
@@ -13,7 +13,8 @@ type SeasonSummary = {
   yearEnd?: number | null
 }
 
-export async function GET(_: Request, { params }: Params) {
+export async function GET(_: NextRequest, { params }: Params) {
+  const { playerId } = await params
   const { data, error } = await supabaseServer
     .from('plays')
     .select(
@@ -32,7 +33,7 @@ export async function GET(_: Request, { params }: Params) {
         )
       `
     )
-    .eq('game_winners.player_id', params.playerId)
+    .eq('game_winners.player_id', playerId)
     .not('played_at', 'is', null)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
