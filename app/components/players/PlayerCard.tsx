@@ -4,7 +4,6 @@ export type PlayerCardProps = {
   id: string
   name: string
   isActive?: boolean
-  avatarUrl?: string | null
 }
 
 const getInitials = (name: string) =>
@@ -15,17 +14,13 @@ const getInitials = (name: string) =>
     .map((part) => part[0]?.toUpperCase())
     .join('')
 
-export default function PlayerCard({ id, name, isActive, avatarUrl }: PlayerCardProps) {
+export default function PlayerCard({ id, name, isActive }: PlayerCardProps) {
   const initials = getInitials(name) || '?'
 
   return (
     <Link href={`/players/${id}`} className="player-card" aria-label={`View ${name} win history`}>
       <div className="player-card__avatar">
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={`Avatar for ${name}`} />
-        ) : (
-          <span aria-hidden="true">{initials}</span>
-        )}
+        <span aria-hidden="true">{initials}</span>
       </div>
       <div className="player-card__content">
         <div className="player-card__name">{name}</div>
