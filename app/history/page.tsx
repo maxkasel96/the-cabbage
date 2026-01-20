@@ -196,57 +196,32 @@ export default function HistoryPage() {
       )}
 
       {/* Scoreboard */}
-      <div style={{ marginTop: 8, marginBottom: 18 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, letterSpacing: 1 }}>Scoreboard</div>
+      <div className="scoreboard">
+        <div className="scoreboard__title">
+          <span>Scoreboard</span>
+          <span className="scoreboard__season">{selectedTournamentLabel}</span>
+        </div>
 
         {loading ? (
           <p>Loading…</p>
         ) : scores.length === 0 ? (
           <p style={{ opacity: 0.75 }}>No wins recorded yet.</p>
         ) : (
-          <div
-            style={{
-              borderRadius: 16,
-              overflow: 'hidden',
-              maxWidth: 620,
-              border: '2px solid var(--border-strong)',
-              background: 'var(--surface)',
-              boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
-            }}
-          >
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr',
-                background: 'linear-gradient(90deg, var(--primary), var(--primary-hover))',
-                padding: '12px 16px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                color: 'var(--text-inverse)',
-                borderBottom: '2px solid var(--border-strong)',
-              }}
-            >
+          <div className="scoreboard__frame">
+            <div className="scoreboard__columns">
+              <div>Rank</div>
               <div>Player</div>
-              <div>Wins</div>
+              <div className="scoreboard__wins-header">Wins</div>
             </div>
 
-            {scores.map((s) => (
+            {scores.map((s, index) => (
               <div
                 key={s.player_id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr',
-                  padding: '12px 16px',
-                  borderTop: '1px solid var(--divider-soft)',
-                  background: 'var(--surface-alt)',
-                  fontFamily:
-                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                  color: 'var(--text-primary)',
-                }}
+                className={`scoreboard__row ${index < 3 ? 'scoreboard__row--leader' : ''}`}
               >
-                <div>{s.display_name}</div>
-                <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{s.wins}</div>
+                <div className="scoreboard__rank">#{index + 1}</div>
+                <div className="scoreboard__player">{s.display_name}</div>
+                <div className="scoreboard__wins">{s.wins}</div>
               </div>
             ))}
           </div>
