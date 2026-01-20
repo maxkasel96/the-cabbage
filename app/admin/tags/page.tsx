@@ -109,9 +109,12 @@ export default function AdminTagsPage() {
         minHeight: '100vh',
       }}
     >
-      <PageTitle>Admin: Tags</PageTitle>
-      <AdminSubNav />
-      <Nav showAdminMenu={false} />
+      <div className="pageShell">
+        <PageTitle>Admin: Tags</PageTitle>
+        <div className="stickyHeader">
+          <Nav showAdminMenu={false} />
+        </div>
+        <AdminSubNav />
 
       {/* Create tag */}
       <div
@@ -236,6 +239,7 @@ export default function AdminTagsPage() {
             ))}
         </div>
       )}
+      </div>
     </main>
   )
 }

@@ -85,9 +85,12 @@ export default function AdminPlayersPage() {
         minHeight: '100vh',
       }}
     >
-      <PageTitle>Admin: Players</PageTitle>
-      <AdminSubNav />
-      <Nav showAdminMenu={false} />
+      <div className="pageShell">
+        <PageTitle>Admin: Players</PageTitle>
+        <div className="stickyHeader">
+          <Nav showAdminMenu={false} />
+        </div>
+        <AdminSubNav />
 
       <div style={{ marginBottom: 14, opacity: 0.8 }}>
         Active players appear as winner options on the homepage. Inactive players stay in history.
@@ -153,6 +156,7 @@ export default function AdminPlayersPage() {
           ))}
         </div>
       )}
+      </div>
     </main>
   )
 }

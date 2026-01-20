@@ -41,6 +41,7 @@ export default function AdminSubNav() {
         flexWrap: 'wrap',
         gap: 10,
         alignItems: 'center',
+        marginTop: 12,
         padding: '10px 14px',
         borderRadius: 16,
         marginBottom: 12,

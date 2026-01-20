@@ -369,9 +369,12 @@ export default function AdminGamesPage() {
         minHeight: '100vh',
       }}
     >
-      <PageTitle>Admin: Games & Tags</PageTitle>
-      <AdminSubNav />
-      <Nav showAdminMenu={false} />
+      <div className="pageShell">
+        <PageTitle>Admin: Games & Tags</PageTitle>
+        <div className="stickyHeader">
+          <Nav showAdminMenu={false} />
+        </div>
+        <AdminSubNav />
 
       {/* Add new game */}
       <div
@@ -686,6 +689,7 @@ export default function AdminGamesPage() {
         </div>
       </div>
     )}
+      </div>
   </main>
 )
 }
