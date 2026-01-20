@@ -370,10 +370,10 @@ export default function AdminGamesPage() {
       }}
     >
       <div className="pageShell">
-        <PageTitle>Admin: Games & Tags</PageTitle>
         <div className="stickyHeader">
           <Nav showAdminMenu={false} />
         </div>
+        <PageTitle>Admin: Games & Tags</PageTitle>
         <AdminSubNav />
 
       {/* Add new game */}

@@ -850,10 +850,10 @@ function openMarkPlayedModal() {
       `}</style>
 
       <div className="pageShell">
-        <PageTitle>The Game Cabbage</PageTitle>
         <div className="stickyHeader">
           <Nav />
         </div>
+        <PageTitle>The Game Cabbage</PageTitle>
 
         <div className="mainLayout">
           <section className="filtersCard">

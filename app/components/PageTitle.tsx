@@ -10,7 +10,7 @@ export default function PageTitle({ children }: PageTitleProps) {
   return (
     <h1
       style={{
-        margin: '0 0 10px',
+        margin: '18px 0 10px',
         fontSize: 32,
         fontWeight: 800,
         letterSpacing: 1,
