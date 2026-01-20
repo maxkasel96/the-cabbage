@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import Nav from './components/Nav'
 import PageTitle from './components/PageTitle'
 
@@ -58,6 +59,8 @@ export default function Home() {
   const [teamStatus, setTeamStatus] = useState('')
   const [showWinners, setShowWinners] = useState(false)
   const [winningTeamId, setWinningTeamId] = useState<number | null>(null)
+  const [showExplosion, setShowExplosion] = useState(false)
+  const explosionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
@@ -83,6 +86,22 @@ export default function Home() {
       setWelcomeModalOpen(true)
     }
   }, [])
+
+  useEffect(() => {
+    if (!showExplosion) return
+    if (explosionTimerRef.current) {
+      clearTimeout(explosionTimerRef.current)
+    }
+    explosionTimerRef.current = setTimeout(() => {
+      setShowExplosion(false)
+    }, 1200)
+
+    return () => {
+      if (explosionTimerRef.current) {
+        clearTimeout(explosionTimerRef.current)
+      }
+    }
+  }, [showExplosion])
 
   function toggleTag(slug: string) {
     setSelectedTagSlugs((prev) => {
@@ -304,6 +323,7 @@ function openMarkPlayedModal() {
     if (marking) return
 
     setMarking(true)
+    setShowExplosion(true)
     setStatus('')
 
     const winnerIds = Array.from(winnerPlayerIds)
@@ -360,6 +380,24 @@ function openMarkPlayedModal() {
         minHeight: '100vh',
       }}
     >
+      {showExplosion ? (
+        <div className="explosionOverlay" aria-hidden="true">
+          <div className="explosionCore" />
+          <div className="explosionRing" />
+          {Array.from({ length: 12 }).map((_, index) => (
+            <span
+              key={index}
+              className="explosionSpark"
+              style={
+                {
+                  '--spark-rotate': `${index * 30}deg`,
+                  '--spark-delay': `${index * 0.03}s`,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </div>
+      ) : null}
 
       {/* rolling an animation */}
       <style>{`
@@ -1275,6 +1313,98 @@ function openMarkPlayedModal() {
         </div>
       )}
 
+      <style jsx>{`
+        .explosionOverlay {
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          pointer-events: none;
+          z-index: 80;
+        }
+
+        .explosionCore {
+          position: absolute;
+          width: 48vmin;
+          height: 48vmin;
+          max-width: 480px;
+          max-height: 480px;
+          border-radius: 50%;
+          background: radial-gradient(circle, #ffeab7 0%, #ff9447 40%, rgba(255, 115, 69, 0) 70%);
+          filter: blur(2px);
+          animation: explosion-core 900ms ease-out forwards;
+        }
+
+        .explosionRing {
+          position: absolute;
+          width: 60vmin;
+          height: 60vmin;
+          max-width: 560px;
+          max-height: 560px;
+          border-radius: 50%;
+          border: 4px solid rgba(255, 208, 97, 0.8);
+          box-shadow: 0 0 40px rgba(255, 163, 73, 0.7);
+          animation: explosion-ring 900ms ease-out forwards;
+        }
+
+        .explosionSpark {
+          position: absolute;
+          width: 10vmin;
+          height: 2vmin;
+          max-width: 90px;
+          max-height: 18px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, rgba(255, 244, 204, 0.95), rgba(255, 138, 72, 0.1));
+          transform-origin: left center;
+          transform: rotate(var(--spark-rotate)) translateX(8vmin) scaleX(0.2);
+          animation: explosion-spark 900ms ease-out forwards;
+          animation-delay: var(--spark-delay);
+        }
+
+        @keyframes explosion-core {
+          0% {
+            transform: scale(0.2);
+            opacity: 0.2;
+          }
+          40% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1.3);
+            opacity: 0;
+          }
+        }
+
+        @keyframes explosion-ring {
+          0% {
+            transform: scale(0.1);
+            opacity: 0.4;
+          }
+          70% {
+            transform: scale(1);
+            opacity: 0.9;
+          }
+          100% {
+            transform: scale(1.4);
+            opacity: 0;
+          }
+        }
+
+        @keyframes explosion-spark {
+          0% {
+            transform: rotate(var(--spark-rotate)) translateX(6vmin) scaleX(0.1);
+            opacity: 0.1;
+          }
+          60% {
+            opacity: 1;
+          }
+          100% {
+            transform: rotate(var(--spark-rotate)) translateX(26vmin) scaleX(1);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </main>
   )
 }
