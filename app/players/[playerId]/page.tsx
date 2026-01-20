@@ -31,6 +31,7 @@ const placeholderBio =
   'A steadfast competitor in the Cabbage League, always ready for the next matchup. Bio details will be expanded soon.'
 
 export default function PlayerDetailPage({ params }: { params: { playerId: string } }) {
+  const playerId = params?.playerId
   const [player, setPlayer] = useState<Player | null>(null)
   const [wins, setWins] = useState<PlayerWinsResponse | null>(null)
   const [loadingPlayer, setLoadingPlayer] = useState(true)
@@ -42,7 +43,13 @@ export default function PlayerDetailPage({ params }: { params: { playerId: strin
     setLoadingPlayer(true)
     setStatus('')
 
-    const res = await fetch(`/api/players/${params.playerId}`, { cache: 'no-store' })
+    if (!playerId) {
+      setNotFound(true)
+      setLoadingPlayer(false)
+      return
+    }
+
+    const res = await fetch(`/api/players/${playerId}`, { cache: 'no-store' })
     const json = await res.json().catch(() => ({}))
 
     if (res.status === 404) {
@@ -64,7 +71,12 @@ export default function PlayerDetailPage({ params }: { params: { playerId: strin
   async function loadWins() {
     setLoadingWins(true)
 
-    const res = await fetch(`/api/players/${params.playerId}/wins`, { cache: 'no-store' })
+    if (!playerId) {
+      setLoadingWins(false)
+      return
+    }
+
+    const res = await fetch(`/api/players/${playerId}/wins`, { cache: 'no-store' })
     const json = await res.json().catch(() => ({}))
 
     if (!res.ok) {
@@ -79,10 +91,17 @@ export default function PlayerDetailPage({ params }: { params: { playerId: strin
   }
 
   useEffect(() => {
+    if (!playerId) {
+      setNotFound(true)
+      setLoadingPlayer(false)
+      setLoadingWins(false)
+      return
+    }
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPlayer()
     loadWins()
-  }, [params.playerId])
+  }, [playerId])
 
   const totalWins = wins?.totalWins ?? 0
   const seasons = useMemo(() => wins?.winsBySeason ?? [], [wins])

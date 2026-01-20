@@ -5,8 +5,15 @@ type Params = {
   params: Promise<{ playerId: string }>
 }
 
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 export async function GET(_: NextRequest, { params }: Params) {
   const { playerId } = await params
+  if (!uuidPattern.test(playerId)) {
+    return NextResponse.json({ error: 'Invalid player id.' }, { status: 400 })
+  }
+
   const { data, error } = await supabaseServer
     .from('players')
     .select('id, display_name, is_active')
