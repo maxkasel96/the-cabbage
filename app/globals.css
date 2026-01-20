@@ -155,6 +155,119 @@ button:disabled {
   line-height: 1;
 }
 
+.scoreboard {
+  margin-top: 8px;
+  margin-bottom: 18px;
+}
+
+.scoreboard__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.scoreboard__season {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.scoreboard__frame {
+  position: relative;
+  overflow: hidden;
+  max-width: 680px;
+  border-radius: 18px;
+  border: 3px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 20px 45px rgba(30, 43, 24, 0.35);
+}
+
+.scoreboard__frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(46, 63, 42, 0.08) 0px,
+    rgba(46, 63, 42, 0.08) 14px,
+    transparent 14px,
+    transparent 28px
+  );
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.scoreboard__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(243, 245, 236, 0.35), transparent 60%);
+  pointer-events: none;
+}
+
+.scoreboard__columns {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.8fr 2.2fr 1fr;
+  padding: 12px 18px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  color: var(--text-inverse);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  border-bottom: 2px solid var(--border-strong);
+}
+
+.scoreboard__wins-header {
+  text-align: right;
+}
+
+.scoreboard__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.8fr 2.2fr 1fr;
+  padding: 12px 18px;
+  border-top: 1px solid var(--divider-soft);
+  font-family: "Lucida Console", "Courier New", monospace;
+  color: var(--text-primary);
+  background: var(--surface-alt);
+}
+
+.scoreboard__row--leader {
+  background: linear-gradient(90deg, rgba(201, 209, 184, 0.8), rgba(179, 190, 159, 0.95));
+}
+
+.scoreboard__rank {
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+.scoreboard__player {
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.scoreboard__wins {
+  text-align: right;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--primary);
+  text-shadow: 0 2px 0 rgba(231, 234, 219, 0.9);
+}
+
 
 .main-nav__bar {
   display: none;
