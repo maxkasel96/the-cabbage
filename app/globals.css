@@ -332,3 +332,13 @@ button:disabled {
     display: none;
   }
 }
+
+@media (min-width: 961px) {
+  body {
+    cursor: url("/lightsaber-cursor.svg") 16 2, auto;
+  }
+
+  body * {
+    cursor: url("/lightsaber-cursor.svg") 16 2, auto !important;
+  }
+}
