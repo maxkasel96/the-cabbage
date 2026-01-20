@@ -278,7 +278,6 @@ button:disabled {
 }
 
 .scoreboard__row--leader {
-  background: linear-gradient(90deg, rgba(201, 209, 184, 0.95), rgba(179, 190, 159, 0.95));
   border-color: rgba(110, 127, 74, 0.8);
 }
 
