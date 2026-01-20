@@ -332,3 +332,13 @@ button:disabled {
     display: none;
   }
 }
+
+@media (min-width: 961px) {
+  body {
+    cursor: url("/cabbage-cursor.svg") 16 16, auto;
+  }
+
+  body * {
+    cursor: url("/cabbage-cursor.svg") 16 16, auto !important;
+  }
+}
