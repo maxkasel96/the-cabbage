@@ -89,6 +89,13 @@ const adminMenu: MegaMenuConfig = {
           tone: 'moss',
         },
         {
+          href: '/admin/tags',
+          title: 'Tags',
+          description: 'Curate metadata and categories.',
+          icon: 'tags',
+          tone: 'wheat',
+        },
+        {
           href: '/admin/tournaments',
           title: 'Tournaments',
           description: 'Organize brackets and schedules.',
@@ -98,7 +105,7 @@ const adminMenu: MegaMenuConfig = {
       ],
     },
     {
-      title: 'Community',
+      title: 'Player Ops',
       items: [
         {
           href: '/admin/players',
@@ -106,13 +113,6 @@ const adminMenu: MegaMenuConfig = {
           description: 'Update rosters and bios.',
           icon: 'users',
           tone: 'mint',
-        },
-        {
-          href: '/admin/tags',
-          title: 'Tags',
-          description: 'Curate metadata and categories.',
-          icon: 'tags',
-          tone: 'wheat',
         },
       ],
     },
