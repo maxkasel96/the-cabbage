@@ -477,6 +477,7 @@ button:disabled {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
+  box-sizing: border-box;
 }
 
 .main-nav__brand {
@@ -698,6 +699,23 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
+  .main-nav__bar {
+    padding: 0 24px;
+  }
+
+  .main-nav__brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 24px;
+  }
+
+  .main-nav__brand span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .table-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
