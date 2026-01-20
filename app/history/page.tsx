@@ -316,9 +316,11 @@ export default function HistoryPage() {
         <p>No played games yet.</p>
       ) : (
         <div
+          className="table-scroll"
           style={{
             borderRadius: 16,
-            overflow: 'hidden',
+            overflowX: 'auto',
+            overflowY: 'hidden',
             maxWidth: 960,
             border: '2px solid var(--border-strong)',
             background: 'var(--surface)',
@@ -326,10 +328,8 @@ export default function HistoryPage() {
           }}
         >
           <div
+            className="table-grid table-grid--history table-grid--header"
             style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr 2fr 1fr',
-              gap: 0,
               background: 'linear-gradient(90deg, var(--primary), var(--primary-hover))',
               padding: '12px 16px',
               fontWeight: 700,
@@ -352,10 +352,8 @@ export default function HistoryPage() {
             return (
               <div
                 key={h.id}
+                className="table-grid table-grid--history"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 2fr 1fr',
-                  gap: 0,
                   padding: '12px 16px',
                   borderTop: '1px solid var(--divider-soft)',
                   alignItems: 'start',
