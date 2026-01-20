@@ -352,6 +352,65 @@ function openMarkPlayedModal() {
 
       {/* rolling an animation */}
       <style>{`
+        .pageShell {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .stickyHeader {
+          position: sticky;
+          top: 16px;
+          z-index: 20;
+          background: linear-gradient(135deg, rgba(31, 63, 42, 0.95), rgba(75, 110, 66, 0.9));
+          border-radius: 22px;
+          padding: 12px;
+          box-shadow: 0 18px 40px rgba(30, 43, 24, 0.35);
+          border: 1px solid rgba(210, 225, 200, 0.3);
+        }
+
+        .stickyHeader .main-nav {
+          margin-bottom: 0;
+          background: transparent;
+          border-bottom: none;
+          box-shadow: none;
+        }
+
+        .mainLayout {
+          display: grid;
+          gap: 24px;
+          grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.4fr);
+          align-items: start;
+          margin-top: 24px;
+        }
+
+        .sectionTitle {
+          font-size: 18px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .sectionSubtitle {
+          font-size: 13px;
+          opacity: 0.7;
+          margin-top: 2px;
+        }
+
+        .filtersHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .filtersMeta {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+
         @keyframes shake {
           0% { transform: translateX(0) rotate(0deg); }
           20% { transform: translateX(-6px) rotate(-1deg); }
@@ -375,6 +434,12 @@ function openMarkPlayedModal() {
           100% { transform: scale(1) rotate(0deg); }
         }
 
+        @keyframes leafUnfurl {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.04) rotate(-1deg); }
+          100% { transform: scale(0.98); }
+        }
+
         .rollBtn {
           transition: transform 120ms ease, opacity 120ms ease;
           background: var(--primary);
@@ -384,9 +449,13 @@ function openMarkPlayedModal() {
           font-weight: 700;
           letter-spacing: 0.2px;
           box-shadow: 0 10px 20px rgba(63, 90, 42, 0.2);
+          width: 100%;
         }
         .rollBtn:active {
-          transform: scale(0.98);
+          animation: leafUnfurl 220ms ease-out;
+        }
+        .rollBtn:hover {
+          transform: translateY(-1px) scale(1.01);
         }
         .rollBtnRolling {
           animation: shake 420ms ease-in-out;
@@ -419,7 +488,6 @@ function openMarkPlayedModal() {
           border-radius: 16px;
           padding: 16px;
           box-shadow: 0 16px 34px rgba(63, 90, 42, 0.2);
-          max-width: 840px;
           color: var(--text-primary);
         }
 
@@ -460,6 +528,15 @@ function openMarkPlayedModal() {
           color: var(--text-primary);
         }
 
+        .filtersCount {
+          font-size: 12px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          background: rgba(63, 90, 42, 0.12);
+          border: 1px solid rgba(63, 90, 42, 0.2);
+          font-weight: 700;
+        }
+
         .playersInput {
           padding: 8px 12px;
           border-radius: 10px;
@@ -478,7 +555,6 @@ function openMarkPlayedModal() {
         .resultCard {
           border-radius: 18px;
           padding: 20px;
-          max-width: 760px;
           background: var(--surface);
           border: 2px solid var(--border-strong);
           box-shadow: 0 18px 40px rgba(63, 90, 42, 0.25);
@@ -576,7 +652,7 @@ function openMarkPlayedModal() {
 
         .teamGrid {
           display: grid;
-          gap: 10px;
+          gap: 12px;
           margin-top: 10px;
         }
 
@@ -585,6 +661,24 @@ function openMarkPlayedModal() {
           border: 1px solid var(--border-strong);
           padding: 10px 12px;
           background: var(--surface);
+          box-shadow: 0 10px 18px rgba(63, 90, 42, 0.14);
+          transition: transform 120ms ease, box-shadow 120ms ease;
+        }
+
+        .teamCard:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 14px 24px rgba(63, 90, 42, 0.2);
+        }
+
+        .teamBadge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          border-radius: 999px;
+          padding: 4px 10px;
+          background: rgba(63, 90, 42, 0.12);
         }
 
         .winnerTeamGrid {
@@ -599,9 +693,8 @@ function openMarkPlayedModal() {
           border: 1px solid #9eaa86;
           padding: 10px 12px;
           background: #e7eadb;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+          display: grid;
+          gap: 8px;
           cursor: pointer;
           transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
         }
@@ -615,7 +708,7 @@ function openMarkPlayedModal() {
 
         .winnerTeamCardActive {
           border-color: #1c2518;
-          box-shadow: 0 4px 12px rgba(30, 37, 24, 0.25);
+          box-shadow: 0 10px 24px rgba(30, 37, 24, 0.3);
           background: #3f5a32;
           border-left: 6px solid #d2b45a;
           padding-left: 6px;
@@ -647,6 +740,15 @@ function openMarkPlayedModal() {
 
         .winnerTeamMetaActive {
           color: #dce3d2;
+        }
+
+        .winnerTeamPlayers {
+          font-size: 12px;
+          color: #5a6a4c;
+        }
+
+        .winnerTeamPlayersActive {
+          color: rgba(243, 245, 236, 0.85);
         }
 
         .winnerTeamRadio {
@@ -704,293 +806,338 @@ function openMarkPlayedModal() {
           color: #2e3f2a;
         }
 
+        .sectionCard {
+          display: grid;
+          gap: 16px;
+        }
+
+        @media (max-width: 960px) {
+          .mainLayout {
+            grid-template-columns: 1fr;
+          }
+
+          .stickyHeader {
+            position: relative;
+            top: auto;
+          }
+        }
       `}</style>
 
-
-      <PageTitle>The Game Cabbage</PageTitle>
-      <Nav />
-
-      <section style={{ marginBottom: 20 }}>
-        <div className="filtersCard">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Choose your vibe</div>
-              <div style={{ fontSize: 13, opacity: 0.75 }}>
-                Mix and match tags to steer the cabbage toward your perfect quest.
-              </div>
-            </div>
-            <div className="filtersSummary">
-              <strong>Filters:</strong> {selectedLabels}
-            </div>
-          </div>
-
-          {tags.length > 0 && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-              {tags.map((t) => {
-                const active = selectedTagSlugs.has(t.slug)
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => toggleTag(t.slug)}
-                    className={`chip ${active ? 'chipActive' : ''}`}
-                    title={t.slug}
-                  >
-                    <span>{active ? '✨' : '•'}</span>
-                    {t.label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-
-          <div style={{ marginTop: 14, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ fontWeight: 600 }}>Number of players</div>
-            <input
-              className="playersInput"
-              type="number"
-              min={1}
-              value={playerCount}
-              onChange={(event) => setPlayerCount(event.target.value)}
-              placeholder="e.g., 4"
-            />
-            <div style={{ fontSize: 12, opacity: 0.7 }}>Leave blank to ignore player count.</div>
-            {selectedTagSlugs.size > 0 && (
-              <button
-                onClick={clearFilters}
-                style={{
-                  fontSize: 12,
-                  background: 'none',
-                  border: 'none',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  padding: 0,
-                  color: 'var(--text-muted)',
-                }}
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
+      <div className="pageShell">
+        <PageTitle>The Game Cabbage</PageTitle>
+        <div className="stickyHeader">
+          <Nav />
         </div>
-      </section>
 
-      {/* Primary actions */}
-      <button
-        onClick={rollRandom}
-        ref={rollButtonRef}
-        disabled={isRolling}
-        className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
-        style={{
-          padding: '16px 26px',
-          cursor: isRolling ? 'not-allowed' : 'pointer',
-          opacity: isRolling ? 0.75 : 1,
-          fontSize: 20,
-          marginBottom: game ? 24 : 16,
-        }}
-      >
-        {isRolling ? 'Choosing from the cabbage… 🥬' : game ? 'Pick another game from the cabbage 🥬' : 'Pick a game from the cabbage 🥬'}
-      </button>
-
-      {/* Status */}
-      {status && (
-        <p style={{ marginBottom: 16 }}>
-          <strong>{status}</strong>{' '}
-          <a href="/history" style={{ color: 'var(--primary)' }}>
-            Open History
-          </a>
-        </p>
-      )}
-
-      {!game ? (
-        <p style={{ color: 'var(--text-secondary)' }}>
-          Let the cabbage take the guessing out of things. Select Pick a game from the cabbage to get rolling.
-        </p>
-      ) : (
-        <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'}>
-          <div className="resultCard">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <div className="resultBadge">✨ Fresh from the cabbage</div>
-              <div style={{ fontSize: 12, opacity: 0.7, color: 'var(--text-secondary)' }}>Ready when you are</div>
-            </div>
-            <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{game.name}</h2>
-
-            <div className="statRow">
-              <div className="statPill">
-                👥 Players: {game.min_players && game.max_players ? `${game.min_players}–${game.max_players}` : '—'}
+        <div className="mainLayout">
+          <section className="filtersCard">
+            <div className="filtersHeader">
+              <div>
+                <div className="sectionTitle">🥬 Find Your Game</div>
+                <div className="sectionSubtitle">Choose your vibe to guide the cabbage.</div>
               </div>
-              <div className="statPill">⏱️ Playtime: {game.playtime_minutes ? `${game.playtime_minutes} min` : '—'}</div>
+              <div className="filtersMeta">
+                <div className="filtersCount">Active filters: {selectedTagSlugs.size}</div>
+                <div className="filtersSummary">
+                  <strong>Filters:</strong> {selectedLabels}
+                </div>
+              </div>
             </div>
 
-            {game.notes && (
-              <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--text-secondary)' }}>{game.notes}</p>
+            {tags.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                {tags.map((t) => {
+                  const active = selectedTagSlugs.has(t.slug)
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => toggleTag(t.slug)}
+                      className={`chip ${active ? 'chipActive' : ''}`}
+                      title={t.slug}
+                    >
+                      <span>{active ? '✨' : '•'}</span>
+                      {t.label}
+                    </button>
+                  )
+                })}
+              </div>
             )}
 
-            {!gameStarted && (
-              <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-                <button onClick={startGame} className="startGameButton" style={{ cursor: 'pointer' }}>
-                  Start a game
+            <div style={{ marginTop: 14, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ fontWeight: 600 }}>Number of players</div>
+              <input
+                className="playersInput"
+                type="number"
+                min={1}
+                value={playerCount}
+                onChange={(event) => setPlayerCount(event.target.value)}
+                placeholder="e.g., 4"
+              />
+              <div style={{ fontSize: 12, opacity: 0.7 }}>Leave blank to ignore player count.</div>
+              {selectedTagSlugs.size > 0 && (
+                <button
+                  onClick={clearFilters}
+                  style={{
+                    fontSize: 12,
+                    background: 'none',
+                    border: 'none',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    padding: 0,
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  Clear filters
                 </button>
-              </div>
+              )}
+            </div>
+
+            <button
+              onClick={rollRandom}
+              ref={rollButtonRef}
+              disabled={isRolling}
+              className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
+              style={{
+                padding: '16px 26px',
+                cursor: isRolling ? 'not-allowed' : 'pointer',
+                opacity: isRolling ? 0.75 : 1,
+                fontSize: 18,
+                marginTop: 16,
+              }}
+            >
+              {isRolling ? 'Choosing from the cabbage… 🥬' : game ? 'Find another game 🥬' : 'Find My Game 🥬'}
+            </button>
+          </section>
+
+          <section className="sectionCard">
+            <div>
+              <div className="sectionTitle">🎮 Game Setup & Results</div>
+              <div className="sectionSubtitle">Configure, shuffle, and celebrate the winners.</div>
+            </div>
+
+            {status && (
+              <p style={{ marginBottom: 16 }}>
+                <strong>{status}</strong>{' '}
+                <a href="/history" style={{ color: 'var(--primary)' }}>
+                  Open History
+                </a>
+              </p>
             )}
 
-            {gameStarted && (
-              <div className="teamPanel">
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>Team setup</div>
-                <div style={{ display: 'grid', gap: 8 }}>
-                  <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <input
-                      type="radio"
-                      name="team-mode"
-                      checked={teamMode === 'individual'}
-                      onChange={() => handleTeamModeChange('individual')}
-                    />
-                    <span>Individual (no teams)</span>
-                  </label>
-                  <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <input
-                      type="radio"
-                      name="team-mode"
-                      checked={teamMode === 'teams'}
-                      onChange={() => handleTeamModeChange('teams')}
-                    />
-                    <span># of teams required</span>
-                  </label>
-                  {teamMode === 'teams' && (
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <input
-                        className="playersInput"
-                        type="number"
-                        min={1}
-                        value={teamCount}
-                        onChange={(event) => setTeamCount(event.target.value)}
-                        placeholder="e.g., 3"
-                      />
-                      <button
-                        onClick={generateTeams}
-                        className="startGameButton"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        Generate teams
+            {!game ? (
+              <div className="resultCard">
+                <div className="resultBadge">✨ Awaiting a game</div>
+                <p style={{ color: 'var(--text-secondary)', marginTop: 10 }}>
+                  Let the cabbage take the guessing out of things. Choose Find My Game to get rolling.
+                </p>
+              </div>
+            ) : (
+              <div key={rollKey} className={isRolling ? 'gameCardRolling' : 'gameCardPop'}>
+                <div className="resultCard">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <div className="resultBadge">✨ Fresh from the cabbage</div>
+                    <div style={{ fontSize: 12, opacity: 0.7, color: 'var(--text-secondary)' }}>
+                      Ready when you are
+                    </div>
+                  </div>
+                  <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{game.name}</h2>
+
+                  <div className="statRow">
+                    <div className="statPill">
+                      👥 Players: {game.min_players && game.max_players ? `${game.min_players}–${game.max_players}` : '—'}
+                    </div>
+                    <div className="statPill">
+                      ⏱️ Playtime: {game.playtime_minutes ? `${game.playtime_minutes} min` : '—'}
+                    </div>
+                  </div>
+
+                  {game.notes && (
+                    <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--text-secondary)' }}>
+                      {game.notes}
+                    </p>
+                  )}
+
+                  {!gameStarted && (
+                    <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+                      <button onClick={startGame} className="startGameButton" style={{ cursor: 'pointer' }}>
+                        Start Setup ▶
                       </button>
                     </div>
                   )}
-                </div>
 
-                {teamStatus && (
-                  <div style={{ marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>{teamStatus}</div>
-                )}
-
-                {teams.length > 0 && (
-                  <div className="teamGrid">
-                    {teams.map((team) => (
-                      <div key={team.id} className="teamCard">
-                        <div style={{ fontWeight: 700, marginBottom: 6 }}>Team {team.id}</div>
-                        {team.players.length === 0 ? (
-                          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>No players assigned.</div>
-                        ) : (
-                          <div style={{ display: 'grid', gap: 4 }}>
-                            {team.players.map((player) => (
-                              <div key={player.id}>{player.display_name}</div>
-                            ))}
+                  {gameStarted && (
+                    <div className="teamPanel">
+                      <div style={{ fontWeight: 700, marginBottom: 8 }}>🔀 Team Setup</div>
+                      <div style={{ display: 'grid', gap: 8 }}>
+                        <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <input
+                            type="radio"
+                            name="team-mode"
+                            checked={teamMode === 'individual'}
+                            onChange={() => handleTeamModeChange('individual')}
+                          />
+                          <span>Individual (no teams)</span>
+                        </label>
+                        <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <input
+                            type="radio"
+                            name="team-mode"
+                            checked={teamMode === 'teams'}
+                            onChange={() => handleTeamModeChange('teams')}
+                          />
+                          <span># of teams required</span>
+                        </label>
+                        {teamMode === 'teams' && (
+                          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <input
+                              className="playersInput"
+                              type="number"
+                              min={1}
+                              value={teamCount}
+                              onChange={(event) => setTeamCount(event.target.value)}
+                              placeholder="e.g., 3"
+                            />
+                            <button
+                              onClick={generateTeams}
+                              className="startGameButton"
+                              style={{ cursor: 'pointer', display: 'inline-flex', gap: 6, alignItems: 'center' }}
+                            >
+                              🔄 Generate teams
+                            </button>
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                )}
 
+                      {teamStatus && (
+                        <div style={{ marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>{teamStatus}</div>
+                      )}
+
+                      {teams.length > 0 && (
+                        <div className="teamGrid">
+                          {teams.map((team) => (
+                            <div key={team.id} className="teamCard">
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontWeight: 700 }}>Team {team.id}</div>
+                                <span className="teamBadge">Players: {team.players.length}</span>
+                              </div>
+                              {team.players.length === 0 ? (
+                                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>
+                                  No players assigned.
+                                </div>
+                              ) : (
+                                <div style={{ display: 'grid', gap: 4, marginTop: 6 }}>
+                                  {team.players.map((player) => (
+                                    <div key={player.id}>{player.display_name}</div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showWinners && (
+                    <>
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ fontWeight: 700, marginBottom: 6 }}>🏆 Select Winner(s)</div>
+
+                        {teamMode === 'teams' && teams.length > 0 ? (
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                              Choose a winning team
+                            </div>
+                            <div className="winnerTeamGrid">
+                              {teams.map((team) => {
+                                const isActive = winningTeamId === team.id
+                                const dimWhenUnselected = winningTeamId !== null && !isActive
+                                return (
+                                  <button
+                                    key={team.id}
+                                    type="button"
+                                    className={`winnerTeamCard ${isActive ? 'winnerTeamCardActive' : ''} ${
+                                      dimWhenUnselected ? 'winnerTeamCardDim' : ''
+                                    }`}
+                                    onClick={() => selectWinningTeam(team.id)}
+                                  >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                      <div>
+                                        <div className={`winnerTeamTitle ${isActive ? 'winnerTeamTitleActive' : ''}`}>
+                                          Team {team.id}
+                                        </div>
+                                        <div className={`winnerTeamMeta ${isActive ? 'winnerTeamMetaActive' : ''}`}>
+                                          {team.players.length} player{team.players.length === 1 ? '' : 's'}
+                                        </div>
+                                      </div>
+                                      <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+                                        {!isActive && (
+                                          <div className="winnerTeamRadio">
+                                            <span className="winnerTeamRadioDot" />
+                                          </div>
+                                        )}
+                                        {isActive && <div className="winnerTeamTrophy">🏆</div>}
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={`winnerTeamPlayers ${isActive ? 'winnerTeamPlayersActive' : ''}`}
+                                    >
+                                      {team.players.length > 0
+                                        ? team.players.map((player) => player.display_name).join(' • ')
+                                        : 'No players assigned'}
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
+                            {players.map((p) => (
+                              <label
+                                key={p.id}
+                                style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={winnerPlayerIds.has(p.id)}
+                                  onChange={() => toggleWinner(p.id)}
+                                />
+                                <span>{p.display_name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ marginTop: 8, fontSize: 13 }}>
+                          <span className="selectedWinnersLabel">Selected:</span>{' '}
+                          <span className="selectedWinnersNames">{selectedWinnersLabel}</span>
+                        </div>
+
+                        {winnerPlayerIds.size > 0 && (
+                          <button onClick={clearWinners} className="clearWinnersButton">
+                            Clear winners
+                          </button>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+                        <button
+                          onClick={openMarkPlayedModal}
+                          className="markPlayedButton"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          Mark as Played 🎉
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
-
-            {showWinners && (
-              <>
-                {/* Multi-winner picker */}
-                <div style={{ marginTop: 14 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Select winner(s):</div>
-
-                  {teamMode === 'teams' && teams.length > 0 ? (
-                    <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        Choose a winning team
-                      </div>
-                      <div className="winnerTeamGrid">
-                        {teams.map((team) => {
-                          const isActive = winningTeamId === team.id
-                          const dimWhenUnselected = winningTeamId !== null && !isActive
-                          return (
-                            <button
-                              key={team.id}
-                              type="button"
-                              className={`winnerTeamCard ${isActive ? 'winnerTeamCardActive' : ''} ${
-                                dimWhenUnselected ? 'winnerTeamCardDim' : ''
-                              }`}
-                              onClick={() => selectWinningTeam(team.id)}
-                            >
-                              <div>
-                                <div className={`winnerTeamTitle ${isActive ? 'winnerTeamTitleActive' : ''}`}>
-                                  Team {team.id}
-                                </div>
-                                <div className={`winnerTeamMeta ${isActive ? 'winnerTeamMetaActive' : ''}`}>
-                                  {team.players.length} player{team.players.length === 1 ? '' : 's'}
-                                </div>
-                              </div>
-                              <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
-                                {!isActive && (
-                                  <div className="winnerTeamRadio">
-                                    <span className="winnerTeamRadioDot" />
-                                  </div>
-                                )}
-                                {isActive && <div className="winnerTeamTrophy">🏆</div>}
-                              </div>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
-                      {players.map((p) => (
-                        <label
-                          key={p.id}
-                          style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-primary)' }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={winnerPlayerIds.has(p.id)}
-                            onChange={() => toggleWinner(p.id)}
-                          />
-                          <span>{p.display_name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: 8, fontSize: 13 }}>
-                    <span className="selectedWinnersLabel">Selected:</span>{' '}
-                    <span className="selectedWinnersNames">{selectedWinnersLabel}</span>
-                  </div>
-
-                  {winnerPlayerIds.size > 0 && (
-                    <button onClick={clearWinners} className="clearWinnersButton">
-                      Clear winners
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-                  <button
-                    onClick={openMarkPlayedModal}
-                    className="markPlayedButton"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    Mark as played
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          </section>
         </div>
-      )}
+      </div>
       {welcomeModalOpen && (
         <div
           style={{
