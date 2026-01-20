@@ -131,6 +131,14 @@ export default function HistoryPage() {
     tournaments.find((t) => t.is_active)?.label ||
     'Active tournament'
 
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('')
+
   return (
     <main
       style={{
@@ -198,32 +206,83 @@ export default function HistoryPage() {
       {/* Scoreboard */}
       <div className="scoreboard">
         <div className="scoreboard__title">
-          <span>Scoreboard</span>
+          <div className="scoreboard__title-badge">
+            <span className="scoreboard__title-icon" aria-hidden="true">
+              🥬
+            </span>
+            <span>Leaderboard</span>
+          </div>
           <span className="scoreboard__season">{selectedTournamentLabel}</span>
         </div>
 
         {loading ? (
-          <p>Loading…</p>
+          <div className="scoreboard__frame">
+            <div className="scoreboard__list" aria-live="polite" aria-busy="true">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={`skeleton-${index}`} className="scoreboard__row scoreboard__row--skeleton">
+                  <div className="scoreboard__rank">
+                    <div className="scoreboard__skeleton-circle" />
+                  </div>
+                  <div className="scoreboard__avatar scoreboard__avatar--skeleton" />
+                  <div className="scoreboard__player">
+                    <div className="scoreboard__skeleton-line" />
+                  </div>
+                  <div className="scoreboard__wins scoreboard__wins--skeleton">
+                    <div className="scoreboard__skeleton-pill" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : scores.length === 0 ? (
           <p style={{ opacity: 0.75 }}>No wins recorded yet.</p>
         ) : (
           <div className="scoreboard__frame">
-            <div className="scoreboard__columns">
-              <div>Rank</div>
-              <div>Player</div>
-              <div className="scoreboard__wins-header">Wins</div>
-            </div>
+            <div className="scoreboard__list" role="list">
+              {scores.map((s, index) => {
+                const rank = index + 1
+                const initials = getInitials(s.display_name) || '?'
+                const medalClass =
+                  rank === 1
+                    ? 'scoreboard__medal--gold'
+                    : rank === 2
+                      ? 'scoreboard__medal--silver'
+                      : rank === 3
+                        ? 'scoreboard__medal--bronze'
+                        : ''
 
-            {scores.map((s, index) => (
-              <div
-                key={s.player_id}
-                className={`scoreboard__row ${index < 3 ? 'scoreboard__row--leader' : ''}`}
-              >
-                <div className="scoreboard__rank">#{index + 1}</div>
-                <div className="scoreboard__player">{s.display_name}</div>
-                <div className="scoreboard__wins">{s.wins}</div>
-              </div>
-            ))}
+                return (
+                  <div
+                    key={s.player_id}
+                    className={`scoreboard__row ${rank <= 3 ? 'scoreboard__row--leader' : ''}`}
+                    role="listitem"
+                    tabIndex={0}
+                  >
+                    <div className="scoreboard__rank">
+                      {rank <= 3 ? (
+                        <div className={`scoreboard__medal ${medalClass}`} aria-label={`Rank ${rank}`}>
+                          <span>{rank}</span>
+                        </div>
+                      ) : (
+                        <div className="scoreboard__rank-badge" aria-label={`Rank ${rank}`}>
+                          {rank}
+                        </div>
+                      )}
+                    </div>
+                    <div className="scoreboard__avatar" aria-label={`Initials for ${s.display_name}`}>
+                      {initials}
+                    </div>
+                    <div className="scoreboard__player">
+                      <span>{s.display_name}</span>
+                    </div>
+                    <div className="scoreboard__wins" aria-label={`Wins: ${s.wins}`}>
+                      <span className="scoreboard__wins-value">{s.wins}</span>
+                      <span className="scoreboard__wins-label">Wins</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
