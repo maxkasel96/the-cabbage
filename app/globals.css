@@ -522,7 +522,7 @@ button:disabled {
   align-items: center;
   gap: 20px;
   flex: 1 1 auto;
-  justify-content: center;
+  justify-content: flex-end;
   position: relative;
 }
 
