@@ -87,7 +87,7 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
   }
 
   return (
-    <div className="relative w-full aspect-[3/4] [perspective:1400px]">
+    <div className="relative w-full aspect-[2/3] [perspective:1400px]">
       <button
         type="button"
         onClick={handleToggle}
@@ -130,9 +130,9 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.3em] text-[#6e7f4a]">
                   Player Name
                 </span>
-                <span className="block text-xl font-black text-[#1c2518]">
+                <span className="block text-lg font-black text-[#1c2518]">
                   {first}
-                  {last ? <span className="block text-lg font-bold text-[#4a5a3c]">{last}</span> : null}
+                  {last ? <span className="block text-base font-bold text-[#4a5a3c]">{last}</span> : null}
                 </span>
               </span>
             </span>
@@ -148,16 +148,18 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#6e7f4a]">
               Player Record
             </span>
-            <span className="mt-2 text-3xl font-black text-[#1c2518] sm:text-4xl">
+            <span className="mt-2 text-2xl font-black text-[#1c2518] sm:text-3xl">
               {player.display_name}
             </span>
-            <span className="mt-4 flex flex-1 flex-col gap-4">
-              <span className="rounded-2xl border border-[#c8b68a] bg-[#f8f1de] px-4 py-4 shadow-[0_12px_20px_rgba(44,46,34,0.18)]">
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.35em] text-[#6e7f4a]">
-                  Total Wins
-                </span>
-                <span className="mt-2 block text-4xl font-black text-[#2e3f2a] sm:text-5xl">
-                  {stats.totalWins}
+            <span className="mt-4 flex flex-1 min-h-0 flex-col gap-3">
+              <span className="rounded-2xl border border-[#c8b68a] bg-[#f8f1de] px-4 py-3 shadow-[0_12px_20px_rgba(44,46,34,0.18)]">
+                <span className="flex items-center justify-between gap-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#6e7f4a]">
+                    Total Wins
+                  </span>
+                  <span className="text-3xl font-black text-[#2e3f2a] sm:text-4xl">
+                    {stats.totalWins}
+                  </span>
                 </span>
               </span>
               <span className="rounded-2xl border border-[#d7caa2] bg-[#fbf6e8] px-4 py-3 text-left shadow-[0_6px_14px_rgba(44,46,34,0.1)]">
@@ -173,7 +175,7 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                   Wins by Season
                 </span>
                 <span className="relative mt-3 block">
-                  <span className="flex max-h-40 flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1">
+                  <span className="flex max-h-32 flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1">
                     {winsBySeason.map((season, index) => (
                       <span
                         key={season.id}
