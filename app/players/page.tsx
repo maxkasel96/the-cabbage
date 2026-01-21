@@ -99,13 +99,12 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
   if (!winsError && winsData) {
     winsData.forEach((play: any) => {
       const seasonInfo = buildSeasonLabel(play.tournaments, play.tournament_id ?? 'unknown')
-      const winners = new Set(
-        (play.game_winners ?? [])
-          .map((winner: any) => winner.player_id)
-          .filter(Boolean)
-      )
+      const winnerIds = (play.game_winners ?? [])
+        .map((winner: any) => winner.player_id)
+        .filter((playerId: string | null): playerId is string => Boolean(playerId))
+      const winners = new Set<string>(winnerIds)
 
-      winners.forEach((playerId: string) => {
+      winners.forEach((playerId) => {
         const current =
           statsByPlayer.get(playerId) ??
           { totalWins: 0, winsBySeason: new Map<string, SeasonSummary>() }
