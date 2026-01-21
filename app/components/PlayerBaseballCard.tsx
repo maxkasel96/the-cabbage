@@ -72,9 +72,6 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
           >
             <span className="flex items-center justify-between bg-[#2e3f2a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f3f5ec]">
               <span>{teamLabel}</span>
-              <span className="rounded-full bg-[#f3f5ec] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#2e3f2a]">
-                Roster
-              </span>
             </span>
             <span className="relative mx-4 mt-4 flex flex-1 items-center justify-center overflow-hidden rounded-[18px] border-[3px] border-[#c8b68a] bg-[#e2d6b9] shadow-[inset_0_0_18px_rgba(44,46,34,0.25)]">
               {avatarUrl ? (
@@ -100,15 +97,6 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                   {first}
                   {last ? <span className="block text-lg font-bold text-[#4a5a3c]">{last}</span> : null}
                 </span>
-              </span>
-              <span
-                className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] ${
-                  player.is_active
-                    ? 'border-[#4d7539] bg-[#dce8cd] text-[#2f4b23]'
-                    : 'border-[#9ea58c] bg-[#e4e0d0] text-[#4a5a3c]'
-                }`}
-              >
-                {player.is_active ? 'Active' : 'Inactive'}
               </span>
             </span>
           </span>
