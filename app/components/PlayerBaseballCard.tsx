@@ -16,6 +16,7 @@ type PlayerBaseballCardProps = {
     display_name: string
     is_active: boolean
     avatar_path?: string | null
+    card_path?: string | null
   }
   stats: {
     totalWins: number
@@ -42,7 +43,7 @@ const getInitials = (displayName: string) => {
 export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
   const { first, last } = useMemo(() => getNameParts(player.display_name), [player.display_name])
-  const avatarUrl = getAvatarPublicUrl(player.avatar_path)
+  const avatarUrl = getAvatarPublicUrl(player.card_path ?? player.avatar_path)
   const initials = getInitials(player.display_name)
 
   const handleToggle = () => {

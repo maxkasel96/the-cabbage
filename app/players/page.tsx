@@ -8,6 +8,7 @@ type Player = {
   display_name: string
   is_active: boolean
   avatar_path?: string | null
+  card_path?: string | null
 }
 
 type SeasonSummary = {
@@ -60,7 +61,7 @@ const sortSeasons = (seasons: SeasonSummary[]) =>
 async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; status?: string }> {
   const { data: playersData, error: playersError } = await supabaseServer
     .from('players')
-    .select('id, display_name, is_active, avatar_path')
+    .select('id, display_name, is_active, avatar_path, card_path')
     .order('display_name')
 
   if (playersError) {
