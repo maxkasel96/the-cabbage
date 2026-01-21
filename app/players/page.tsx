@@ -9,6 +9,7 @@ type Player = {
   id: string
   display_name: string
   is_active: boolean
+  avatar_path?: string | null
 }
 
 export default function PlayersLandingPage() {
@@ -85,6 +86,7 @@ export default function PlayersLandingPage() {
                 id={player.id}
                 name={player.display_name}
                 isActive={player.is_active}
+                avatarPath={player.avatar_path}
               />
             ))}
           </div>

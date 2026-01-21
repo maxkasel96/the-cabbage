@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState } from 'react'
 import Nav from '@/app/components/Nav'
 import AdminSubNav from '@/app/components/AdminSubNav'
 import PageTitle from '@/app/components/PageTitle'
+import AvatarUploader from '@/app/components/players/AvatarUploader'
 
 type Player = {
   id: string
   display_name: string
   is_active: boolean
+  avatar_path?: string | null
 }
 
 export default function AdminPlayersPage() {
@@ -137,10 +139,22 @@ export default function AdminPlayersPage() {
                 background: 'var(--surface)',
               }}
             >
-              <div>
-                <div style={{ fontWeight: 700 }}>{player.display_name}</div>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>
-                  {player.is_active ? 'Active' : 'Inactive'}
+              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                <AvatarUploader
+                  playerId={player.id}
+                  playerName={player.display_name}
+                  currentAvatarPath={player.avatar_path}
+                  onUploadSuccess={(avatarPath) =>
+                    setPlayers((prev) =>
+                      prev.map((p) => (p.id === player.id ? { ...p, avatar_path: avatarPath } : p))
+                    )
+                  }
+                />
+                <div>
+                  <div style={{ fontWeight: 700 }}>{player.display_name}</div>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>
+                    {player.is_active ? 'Active' : 'Inactive'}
+                  </div>
                 </div>
               </div>
               <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

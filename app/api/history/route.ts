@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
       game_winners (
         players (
           id,
-          display_name
+          display_name,
+          avatar_path
         )
       )
     `
@@ -57,6 +58,5 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({ history, tournamentId })
 }
-
 
 
