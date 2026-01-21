@@ -17,64 +17,69 @@ const ALLOWED_TYPES: Record<string, string> = {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const { playerId } = await params
-  const supabaseServiceRole = getSupabaseServiceRole()
 
   if (!uuidPattern.test(playerId)) {
     return NextResponse.json({ error: 'Invalid player id.' }, { status: 400 })
   }
 
-  const formData = await request.formData()
-  const file = formData.get('file')
+  try {
+    const formData = await request.formData()
+    const file = formData.get('file')
 
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: 'File is required.' }, { status: 400 })
-  }
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'File is required.' }, { status: 400 })
+    }
 
-  const extension = ALLOWED_TYPES[file.type]
-  if (!extension) {
-    return NextResponse.json(
-      { error: 'Invalid file type. Please upload a PNG, JPEG, or WebP image.' },
-      { status: 400 }
-    )
-  }
+    const extension = ALLOWED_TYPES[file.type]
+    if (!extension) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Please upload a PNG, JPEG, or WebP image.' },
+        { status: 400 }
+      )
+    }
 
-  if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: 'File size must be 5MB or less.' }, { status: 400 })
-  }
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File size must be 5MB or less.' }, { status: 400 })
+    }
 
-  const objectPath = `players/${playerId}/avatar.${extension}`
-  const buffer = Buffer.from(await file.arrayBuffer())
+    const supabaseServiceRole = getSupabaseServiceRole()
+    const objectPath = `players/${playerId}/avatar.${extension}`
+    const buffer = Buffer.from(await file.arrayBuffer())
 
-  const { error: uploadError } = await supabaseServiceRole.storage
-    .from('images')
-    .upload(objectPath, buffer, {
-      contentType: file.type,
-      upsert: true,
+    const { error: uploadError } = await supabaseServiceRole.storage
+      .from('images')
+      .upload(objectPath, buffer, {
+        contentType: file.type,
+        upsert: true,
+      })
+
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: 500 })
+    }
+
+    const { data, error } = await supabaseServiceRole
+      .from('players')
+      .update({ avatar_path: objectPath })
+      .eq('id', playerId)
+      .select('avatar_path')
+      .maybeSingle()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
+    }
+
+    const { data: publicData } = supabaseServiceRole.storage.from('images').getPublicUrl(objectPath)
+
+    return NextResponse.json({
+      avatar_path: data.avatar_path,
+      public_url: publicData?.publicUrl ?? null,
     })
-
-  if (uploadError) {
-    return NextResponse.json({ error: uploadError.message }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to upload avatar.'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const { data, error } = await supabaseServiceRole
-    .from('players')
-    .update({ avatar_path: objectPath })
-    .eq('id', playerId)
-    .select('avatar_path')
-    .maybeSingle()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  if (!data) {
-    return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
-  }
-
-  const { data: publicData } = supabaseServiceRole.storage.from('images').getPublicUrl(objectPath)
-
-  return NextResponse.json({
-    avatar_path: data.avatar_path,
-    public_url: publicData?.publicUrl ?? null,
-  })
 }
