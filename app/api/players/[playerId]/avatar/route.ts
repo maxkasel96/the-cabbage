@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseServiceRole } from '@/lib/supabaseServiceRole'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 
 type Params = {
   params: Promise<{ playerId: string }>
@@ -17,6 +17,7 @@ const ALLOWED_TYPES: Record<string, string> = {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const { playerId } = await params
+  const supabaseServiceRole = getSupabaseServiceRole()
 
   if (!uuidPattern.test(playerId)) {
     return NextResponse.json({ error: 'Invalid player id.' }, { status: 400 })
