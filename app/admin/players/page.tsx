@@ -5,12 +5,14 @@ import Nav from '@/app/components/Nav'
 import AdminSubNav from '@/app/components/AdminSubNav'
 import PageTitle from '@/app/components/PageTitle'
 import AvatarUploader from '@/app/components/players/AvatarUploader'
+import CardImageUploader from '@/app/components/players/CardImageUploader'
 
 type Player = {
   id: string
   display_name: string
   is_active: boolean
   avatar_path?: string | null
+  card_path?: string | null
 }
 
 export default function AdminPlayersPage() {
@@ -140,16 +142,28 @@ export default function AdminPlayersPage() {
               }}
             >
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                <AvatarUploader
-                  playerId={player.id}
-                  playerName={player.display_name}
-                  currentAvatarPath={player.avatar_path}
-                  onUploadSuccess={(avatarPath) =>
-                    setPlayers((prev) =>
-                      prev.map((p) => (p.id === player.id ? { ...p, avatar_path: avatarPath } : p))
-                    )
-                  }
-                />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                  <AvatarUploader
+                    playerId={player.id}
+                    playerName={player.display_name}
+                    currentAvatarPath={player.avatar_path}
+                    onUploadSuccess={(avatarPath) =>
+                      setPlayers((prev) =>
+                        prev.map((p) => (p.id === player.id ? { ...p, avatar_path: avatarPath } : p))
+                      )
+                    }
+                  />
+                  <CardImageUploader
+                    playerId={player.id}
+                    playerName={player.display_name}
+                    currentCardPath={player.card_path}
+                    onUploadSuccess={(cardPath) =>
+                      setPlayers((prev) =>
+                        prev.map((p) => (p.id === player.id ? { ...p, card_path: cardPath } : p))
+                      )
+                    }
+                  />
+                </div>
                 <div>
                   <div style={{ fontWeight: 700 }}>{player.display_name}</div>
                   <div style={{ fontSize: 12, opacity: 0.7 }}>

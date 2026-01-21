@@ -16,7 +16,7 @@ export async function GET(_: NextRequest, { params }: Params) {
 
   const { data, error } = await supabaseServer
     .from('players')
-    .select('id, display_name, is_active, avatar_path')
+    .select('id, display_name, is_active, avatar_path, card_path')
     .eq('id', playerId)
     .maybeSingle()
 
