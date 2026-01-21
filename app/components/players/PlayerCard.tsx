@@ -1,27 +1,17 @@
 import Link from 'next/link'
+import PlayerAvatar from './PlayerAvatar'
 
 export type PlayerCardProps = {
   id: string
   name: string
   isActive?: boolean
+  avatarPath?: string | null
 }
 
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('')
-
-export default function PlayerCard({ id, name, isActive }: PlayerCardProps) {
-  const initials = getInitials(name) || '?'
-
+export default function PlayerCard({ id, name, isActive, avatarPath }: PlayerCardProps) {
   return (
     <Link href={`/players/${id}`} className="player-card" aria-label={`View ${name} win history`}>
-      <div className="player-card__avatar">
-        <span aria-hidden="true">{initials}</span>
-      </div>
+      <PlayerAvatar name={name} avatarPath={avatarPath} className="player-card__avatar" size={52} />
       <div className="player-card__content">
         <div className="player-card__name">{name}</div>
         {typeof isActive === 'boolean' && (

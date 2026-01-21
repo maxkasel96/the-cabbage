@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import Nav from '../../components/Nav'
 import PageTitle from '../../components/PageTitle'
+import PlayerAvatar from '../../components/players/PlayerAvatar'
 import PlayerBio from '../../components/players/PlayerBio'
 import SeasonWinsList from '../../components/players/SeasonWinsList'
 import StatCard from '../../components/players/StatCard'
@@ -13,6 +14,7 @@ type Player = {
   id: string
   display_name: string
   is_active: boolean
+  avatar_path?: string | null
 }
 
 type SeasonWin = {
@@ -147,7 +149,18 @@ export default function PlayerDetailPage() {
                   <div className="player-bio__skeleton-line player-bio__skeleton-line--short" />
                 </div>
               ) : player ? (
-                <PlayerBio name={player.display_name} bio={placeholderBio}>
+                <PlayerBio
+                  name={player.display_name}
+                  bio={placeholderBio}
+                  avatar={
+                    <PlayerAvatar
+                      name={player.display_name}
+                      avatarPath={player.avatar_path}
+                      className="player-bio__avatar-image"
+                      size={72}
+                    />
+                  }
+                >
                   <span className={`player-bio__status ${player.is_active ? 'player-bio__status--active' : 'player-bio__status--inactive'}`}>
                     {player.is_active ? 'Active' : 'Inactive'}
                   </span>

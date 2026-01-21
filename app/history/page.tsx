@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
+import PlayerAvatar from '../components/players/PlayerAvatar'
 
 type Winner = {
   id: string
   display_name: string
+  avatar_path?: string | null
 }
 
 type HistoryRow = {
@@ -21,6 +23,7 @@ type ScoreRow = {
   player_id: string
   display_name: string
   wins: number
+  avatar_path?: string | null
 }
 
 type Tournament = {
@@ -107,7 +110,12 @@ export default function HistoryPage() {
         if (existing) {
           existing.wins += 1
         } else {
-          map.set(w.id, { player_id: w.id, display_name: w.display_name, wins: 1 })
+          map.set(w.id, {
+            player_id: w.id,
+            display_name: w.display_name,
+            wins: 1,
+            avatar_path: w.avatar_path ?? null,
+          })
         }
       }
     }
@@ -131,13 +139,6 @@ export default function HistoryPage() {
     tournaments.find((t) => t.is_active)?.label ||
     'Active tournament'
 
-  const getInitials = (name: string) =>
-    name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('')
 
   return (
     <main
@@ -241,7 +242,6 @@ export default function HistoryPage() {
             <div className="scoreboard__list" role="list">
               {scores.map((s, index) => {
                 const rank = index + 1
-                const initials = getInitials(s.display_name) || '?'
                 const medalClass =
                   rank === 1
                     ? 'scoreboard__medal--gold'
@@ -269,9 +269,12 @@ export default function HistoryPage() {
                         </div>
                       )}
                     </div>
-                    <div className="scoreboard__avatar" aria-label={`Initials for ${s.display_name}`}>
-                      {initials}
-                    </div>
+                    <PlayerAvatar
+                      name={s.display_name}
+                      avatarPath={s.avatar_path}
+                      className="scoreboard__avatar"
+                      size={42}
+                    />
                     <div className="scoreboard__player">
                       <span>{s.display_name}</span>
                     </div>
