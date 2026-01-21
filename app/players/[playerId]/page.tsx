@@ -15,6 +15,7 @@ type Player = {
   display_name: string
   is_active: boolean
   avatar_path?: string | null
+  card_path?: string | null
 }
 
 type SeasonWin = {
@@ -155,7 +156,7 @@ export default function PlayerDetailPage() {
                   avatar={
                     <PlayerAvatar
                       name={player.display_name}
-                      avatarPath={player.avatar_path}
+                      avatarPath={player.card_path ?? player.avatar_path}
                       className="player-bio__avatar-image"
                       size={72}
                     />
