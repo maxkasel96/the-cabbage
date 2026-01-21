@@ -22,33 +22,61 @@ export async function GET(_: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Invalid player id.' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
-    .from('plays')
-    .select(
-      `
-        id,
-        played_at,
-        tournament_id,
-        tournaments:tournament_id (
-          id,
-          label,
-          year_start,
-          year_end
-        ),
-        game_winners!inner (
-          player_id
+  const [{ data: tournaments, error: tournamentsError }, { data: wins, error: winsError }] =
+    await Promise.all([
+      supabaseServer
+        .from('tournaments')
+        .select('id,label,year_start,year_end')
+        .order('year_start', { ascending: false })
+        .order('year_end', { ascending: false }),
+      supabaseServer
+        .from('plays')
+        .select(
+          `
+            id,
+            played_at,
+            tournament_id,
+            tournaments:tournament_id (
+              id,
+              label,
+              year_start,
+              year_end
+            ),
+            game_winners!inner (
+              player_id
+            )
+          `
         )
-      `
-    )
-    .eq('game_winners.player_id', playerId)
-    .not('played_at', 'is', null)
+        .eq('game_winners.player_id', playerId)
+        .not('played_at', 'is', null),
+    ])
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (tournamentsError) {
+    return NextResponse.json({ error: tournamentsError.message }, { status: 500 })
+  }
 
-  const wins = data ?? []
+  if (winsError) return NextResponse.json({ error: winsError.message }, { status: 500 })
+
   const totalsBySeason = new Map<string, SeasonSummary>()
 
-  wins.forEach((play: any) => {
+  ;(tournaments ?? []).forEach((season) => {
+    const yearStart = season.year_start ?? null
+    const yearEnd = season.year_end ?? null
+    const label =
+      yearStart && yearEnd
+        ? `${yearStart}–${yearEnd}`
+        : season.label ?? 'Unknown season'
+
+    totalsBySeason.set(season.id, {
+      id: season.id,
+      label,
+      wins: 0,
+      yearStart,
+      yearEnd,
+    })
+  })
+
+  ;(wins ?? []).forEach((play: any) => {
     const season = play.tournaments
     const seasonId = season?.id ?? play.tournament_id ?? 'unknown'
     const yearStart = season?.year_start ?? null
@@ -80,7 +108,7 @@ export async function GET(_: NextRequest, { params }: Params) {
   })
 
   return NextResponse.json({
-    totalWins: wins.length,
+    totalWins: wins?.length ?? 0,
     winsBySeason,
   })
 }
