@@ -65,7 +65,7 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
   }
 
   return (
-    <div className="relative w-full aspect-[2/3] [perspective:1400px]">
+    <div className="relative w-full aspect-[5/7] [perspective:1400px]">
       <button
         type="button"
         onClick={handleToggle}
@@ -149,21 +149,27 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                 <span className="block text-[11px] font-semibold uppercase tracking-[0.35em] text-[#6e7f4a]">
                   Wins by Season
                 </span>
-                <span className="relative mt-3 block min-h-0 flex-1">
-                  <span className="flex h-full flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1">
-                    {winsBySeason.map((season, index) => (
-                      <span
-                        key={season.id}
-                        className={`flex items-center justify-between rounded-xl px-2 py-1 text-sm text-[#1c2518] ${
-                          index === 0 ? 'bg-[#eef4dd]' : ''
-                        }`}
-                      >
-                        <span className="font-semibold">{season.label}</span>
-                        <span className="inline-flex min-w-[44px] items-center justify-center rounded-full bg-[#dce8cd] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#2f4b23]">
-                          {season.wins}
-                        </span>
+                <span className="relative mt-3 block min-h-[8rem] flex-1">
+                  <span className="flex max-h-48 flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1">
+                    {winsBySeason.length === 0 ? (
+                      <span className="rounded-xl px-2 py-2 text-sm text-[#4a5a3c]">
+                        No season wins recorded yet.
                       </span>
-                    ))}
+                    ) : (
+                      winsBySeason.map((season, index) => (
+                        <span
+                          key={season.id}
+                          className={`flex items-center justify-between rounded-xl px-2 py-1 text-sm text-[#1c2518] ${
+                            index === 0 ? 'bg-[#eef4dd]' : ''
+                          }`}
+                        >
+                          <span className="font-semibold">{season.label}</span>
+                          <span className="inline-flex min-w-[44px] items-center justify-center rounded-full bg-[#dce8cd] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#2f4b23]">
+                            {season.wins}
+                          </span>
+                        </span>
+                      ))
+                    )}
                   </span>
                   <span className="pointer-events-none absolute inset-x-0 bottom-0 h-6 rounded-b-2xl bg-gradient-to-t from-[#f8f1de] to-transparent" />
                 </span>
