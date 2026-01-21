@@ -45,25 +45,6 @@ const getInitials = (displayName: string) => {
 const placeholderBio =
   'A steady presence in the league who brings calm focus to every match. Always ready for the next showdown.'
 
-const sampleWinsBySeason: SeasonWin[] = [
-  { id: '2024-2025', label: '2024–2025', wins: 12, yearStart: 2024, yearEnd: 2025 },
-  { id: '2023-2024', label: '2023–2024', wins: 18, yearStart: 2023, yearEnd: 2024 },
-  { id: '2022-2023', label: '2022–2023', wins: 9, yearStart: 2022, yearEnd: 2023 },
-  { id: '2021-2022', label: '2021–2022', wins: 14, yearStart: 2021, yearEnd: 2022 },
-  { id: '2020-2021', label: '2020–2021', wins: 7, yearStart: 2020, yearEnd: 2021 },
-  { id: '2019-2020', label: '2019–2020', wins: 11, yearStart: 2019, yearEnd: 2020 },
-  { id: '2018-2019', label: '2018–2019', wins: 6, yearStart: 2018, yearEnd: 2019 },
-  { id: '2017-2018', label: '2017–2018', wins: 10, yearStart: 2017, yearEnd: 2018 },
-  { id: '2016-2017', label: '2016–2017', wins: 8, yearStart: 2016, yearEnd: 2017 },
-  { id: '2015-2016', label: '2015–2016', wins: 13, yearStart: 2015, yearEnd: 2016 },
-  { id: '2014-2015', label: '2014–2015', wins: 5, yearStart: 2014, yearEnd: 2015 },
-  { id: '2013-2014', label: '2013–2014', wins: 16, yearStart: 2013, yearEnd: 2014 },
-  { id: '2012-2013', label: '2012–2013', wins: 4, yearStart: 2012, yearEnd: 2013 },
-  { id: '2011-2012', label: '2011–2012', wins: 9, yearStart: 2011, yearEnd: 2012 },
-  { id: '2010-2011', label: '2010–2011', wins: 3, yearStart: 2010, yearEnd: 2011 },
-  { id: '2009-2010', label: '2009–2010', wins: 2, yearStart: 2009, yearEnd: 2010 },
-]
-
 const sortSeasons = (seasons: SeasonWin[]) =>
   [...seasons].sort((a, b) => {
     const aScore = (a.yearStart ?? 0) * 10000 + (a.yearEnd ?? 0)
@@ -77,17 +58,14 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
   const { first, last } = useMemo(() => getNameParts(player.display_name), [player.display_name])
   const avatarUrl = getAvatarPublicUrl(player.card_path ?? player.avatar_path)
   const initials = getInitials(player.display_name)
-  const winsBySeason = useMemo(() => {
-    const seasons = stats.winsBySeason.length > 0 ? stats.winsBySeason : sampleWinsBySeason
-    return sortSeasons(seasons)
-  }, [stats.winsBySeason])
+  const winsBySeason = useMemo(() => sortSeasons(stats.winsBySeason), [stats.winsBySeason])
 
   const handleToggle = () => {
     setIsFlipped((prev) => !prev)
   }
 
   return (
-    <div className="relative w-full aspect-[3/4] [perspective:1400px]">
+    <div className="relative w-full aspect-[5/7] [perspective:1400px]">
       <button
         type="button"
         onClick={handleToggle}
@@ -130,9 +108,9 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.3em] text-[#6e7f4a]">
                   Player Name
                 </span>
-                <span className="block text-xl font-black text-[#1c2518]">
+                <span className="block text-lg font-black text-[#1c2518]">
                   {first}
-                  {last ? <span className="block text-lg font-bold text-[#4a5a3c]">{last}</span> : null}
+                  {last ? <span className="block text-base font-bold text-[#4a5a3c]">{last}</span> : null}
                 </span>
               </span>
             </span>
@@ -148,16 +126,15 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#6e7f4a]">
               Player Record
             </span>
-            <span className="mt-2 text-3xl font-black text-[#1c2518] sm:text-4xl">
-              {player.display_name}
-            </span>
-            <span className="mt-4 flex flex-1 flex-col gap-4">
-              <span className="rounded-2xl border border-[#c8b68a] bg-[#f8f1de] px-4 py-4 shadow-[0_12px_20px_rgba(44,46,34,0.18)]">
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.35em] text-[#6e7f4a]">
-                  Total Wins
-                </span>
-                <span className="mt-2 block text-4xl font-black text-[#2e3f2a] sm:text-5xl">
-                  {stats.totalWins}
+            <span className="mt-4 flex flex-1 min-h-0 flex-col gap-3">
+              <span className="rounded-2xl border border-[#c8b68a] bg-[#f8f1de] px-4 py-3 shadow-[0_12px_20px_rgba(44,46,34,0.18)]">
+                <span className="flex items-center justify-between gap-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#6e7f4a]">
+                    Total Wins
+                  </span>
+                  <span className="text-3xl font-black text-[#2e3f2a] sm:text-4xl">
+                    {stats.totalWins}
+                  </span>
                 </span>
               </span>
               <span className="rounded-2xl border border-[#d7caa2] bg-[#fbf6e8] px-4 py-3 text-left shadow-[0_6px_14px_rgba(44,46,34,0.1)]">
@@ -168,25 +145,31 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                   {placeholderBio}
                 </span>
               </span>
-              <span className="rounded-2xl border border-[#c8b68a] bg-[#f8f1de] px-4 py-3 shadow-[0_10px_18px_rgba(44,46,34,0.15)]">
+              <span className="flex min-h-0 flex-1 flex-col rounded-2xl border border-[#c8b68a] bg-[#f8f1de] px-4 py-3 shadow-[0_10px_18px_rgba(44,46,34,0.15)]">
                 <span className="block text-[11px] font-semibold uppercase tracking-[0.35em] text-[#6e7f4a]">
                   Wins by Season
                 </span>
-                <span className="relative mt-3 block">
-                  <span className="flex max-h-40 flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1">
-                    {winsBySeason.map((season, index) => (
-                      <span
-                        key={season.id}
-                        className={`flex items-center justify-between rounded-xl px-2 py-1 text-sm text-[#1c2518] ${
-                          index === 0 ? 'bg-[#eef4dd]' : ''
-                        }`}
-                      >
-                        <span className="font-semibold">{season.label}</span>
-                        <span className="inline-flex min-w-[44px] items-center justify-center rounded-full bg-[#dce8cd] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#2f4b23]">
-                          {season.wins}
-                        </span>
+                <span className="relative mt-3 block min-h-[8rem] flex-1">
+                  <span className="flex max-h-48 flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1">
+                    {winsBySeason.length === 0 ? (
+                      <span className="rounded-xl px-2 py-2 text-sm text-[#4a5a3c]">
+                        No season wins recorded yet.
                       </span>
-                    ))}
+                    ) : (
+                      winsBySeason.map((season, index) => (
+                        <span
+                          key={season.id}
+                          className={`flex items-center justify-between rounded-xl px-2 py-1 text-sm text-[#1c2518] ${
+                            index === 0 ? 'bg-[#eef4dd]' : ''
+                          }`}
+                        >
+                          <span className="font-semibold">{season.label}</span>
+                          <span className="inline-flex min-w-[44px] items-center justify-center rounded-full bg-[#dce8cd] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#2f4b23]">
+                            {season.wins}
+                          </span>
+                        </span>
+                      ))
+                    )}
                   </span>
                   <span className="pointer-events-none absolute inset-x-0 bottom-0 h-6 rounded-b-2xl bg-gradient-to-t from-[#f8f1de] to-transparent" />
                 </span>
