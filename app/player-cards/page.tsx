@@ -54,7 +54,7 @@ export default async function PlayerCardsPage() {
               return (
                 <div
                   key={player.id}
-                  className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
+                  className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
                 >
                   {imageUrl ? (
                     <Image
