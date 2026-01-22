@@ -701,7 +701,7 @@ button:disabled {
 
 .player-card-modal__table td:last-child,
 .player-card-modal__table th:last-child {
-  text-align: right;
+  text-align: center;
 }
 
 .player-card-modal__table tfoot th,
