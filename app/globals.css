@@ -585,6 +585,118 @@ button:disabled {
   text-overflow: ellipsis;
 }
 
+.player-card-flip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  perspective: 1200px;
+  border-radius: 12px;
+  outline: none;
+}
+
+.player-card-flip:focus-visible {
+  box-shadow: 0 0 0 3px rgba(139, 200, 111, 0.7);
+}
+
+.player-card-flip__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+
+.player-card-flip__inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.player-card-flip__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.player-card-flip__face--front {
+  transform: rotateY(0deg);
+}
+
+.player-card-flip__face--back {
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #182014 0%, #2e3f2a 100%);
+  color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.player-card-back {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-card-back__link {
+  border: none;
+  background: transparent;
+  color: #f3e9c8;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.player-card-back__link:focus-visible {
+  outline: 2px solid #f3e9c8;
+  outline-offset: 4px;
+}
+
+.player-card-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-card-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 9, 0.6);
+}
+
+.player-card-modal__content {
+  position: relative;
+  z-index: 1;
+  background: #f8f7f0;
+  color: #1d2417;
+  padding: 24px;
+  border-radius: 12px;
+  min-width: 220px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+.player-card-modal__close {
+  border: none;
+  background: #2e3f2a;
+  color: #f8f7f0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.player-card-modal__close:focus-visible {
+  outline: 2px solid #2e3f2a;
+  outline-offset: 3px;
+}
+
 .player-card--skeleton {
   pointer-events: none;
   box-shadow: none;
