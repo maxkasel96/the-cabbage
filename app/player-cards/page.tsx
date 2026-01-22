@@ -50,6 +50,7 @@ export default async function PlayerCardsPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {players.map((player) => {
               const imageUrl = getAvatarPublicUrl(player.card_path ?? player.avatar_path)
+              const avatarUrl = getAvatarPublicUrl(player.avatar_path)
 
               return (
                 <div
@@ -65,6 +66,11 @@ export default async function PlayerCardsPage() {
                       margin: '10px',
                     }}
                   >
+                    <img
+                      src={avatarUrl ?? 'path/to/user-logo.png'}
+                      alt={`${player.display_name} avatar`}
+                      className="absolute bottom-0 right-0 z-10 m-4 h-20 w-20"
+                    />
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
