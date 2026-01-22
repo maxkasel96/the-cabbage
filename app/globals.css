@@ -1008,8 +1008,8 @@ button:disabled {
 .mega-menu {
   position: absolute;
   top: calc(100% + 12px);
-  left: 50%;
-  transform: translate(-50%, 10px);
+  right: 0;
+  transform: translate(0, 10px);
   width: min(640px, calc(100vw - 48px));
   background: #eef1e5;
   border-radius: 18px;
@@ -1033,7 +1033,7 @@ button:disabled {
 .mega-menu.is-open {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, 0);
+  transform: translate(0, 0);
 }
 
 .mega-menu__content {
