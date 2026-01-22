@@ -54,21 +54,31 @@ export default async function PlayerCardsPage() {
               return (
                 <div
                   key={player.id}
-                  className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
+                  className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
                 >
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={`Player card for ${player.display_name}`}
-                      fill
-                      sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm text-[color:var(--text-secondary)]">
-                      No card image available.
-                    </span>
-                  )}
+                  <div className="absolute inset-x-0 top-0 bottom-16">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={`Player card for ${player.display_name}`}
+                        fill
+                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
+                        className="object-cover object-bottom"
+                      />
+                    ) : (
+                      <span className="flex h-full items-center justify-center text-sm text-[color:var(--text-secondary)]">
+                        No card image available.
+                      </span>
+                    )}
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-emerald-600 px-4 py-3 text-right text-white">
+                    <p className="text-base font-bold italic uppercase tracking-[0.2em] text-white/80">
+                      Position
+                    </p>
+                    <p className="text-2xl font-bold italic leading-tight">
+                      {player.display_name}
+                    </p>
+                  </div>
                 </div>
               )
             })}
