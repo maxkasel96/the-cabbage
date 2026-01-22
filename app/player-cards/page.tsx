@@ -54,7 +54,7 @@ export default async function PlayerCardsPage() {
               return (
                 <div
                   key={player.id}
-                  className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
+                  className="group relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)] transition-transform duration-200 ease-out hover:-translate-y-0.5"
                 >
                   {imageUrl ? (
                     <Image
@@ -65,10 +65,29 @@ export default async function PlayerCardsPage() {
                       className="object-cover"
                     />
                   ) : (
-                    <span className="text-sm text-[color:var(--text-secondary)]">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[var(--surface)] text-sm text-[color:var(--text-secondary)]">
                       No card image available.
-                    </span>
+                    </div>
                   )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/5" />
+                  <div
+                    className="pointer-events-none absolute left-4 top-4 z-10 bg-emerald-100/95 px-4 py-2 text-[0.62rem] font-bold uppercase tracking-[0.28em] text-emerald-900 shadow-sm"
+                    style={{
+                      clipPath:
+                        'polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%, 6% 50%)',
+                      transform: 'rotate(-12deg)',
+                    }}
+                  >
+                    The Cabbage League
+                  </div>
+                  <div className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-black/65 px-4 py-3 text-right text-white shadow-md">
+                    <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/80">
+                      All Star
+                    </span>
+                    <span className="block text-lg font-semibold leading-tight">
+                      {player.display_name}
+                    </span>
+                  </div>
                 </div>
               )
             })}
