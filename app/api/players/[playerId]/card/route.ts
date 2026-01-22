@@ -43,7 +43,22 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const supabaseServiceRole = getSupabaseServiceRole()
-    const objectPath = `players/${playerId}/card.${extension}`
+    const { data: existingPlayer, error: existingPlayerError } = await supabaseServiceRole
+      .from('players')
+      .select('card_path')
+      .eq('id', playerId)
+      .maybeSingle()
+
+    if (existingPlayerError) {
+      return NextResponse.json({ error: existingPlayerError.message }, { status: 500 })
+    }
+
+    if (!existingPlayer) {
+      return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
+    }
+
+    const previousCardPath = existingPlayer.card_path ?? null
+    const objectPath = `players/${playerId}/card-${Date.now()}.${extension}`
     const buffer = Buffer.from(await file.arrayBuffer())
 
     const { error: uploadError } = await supabaseServiceRole.storage
@@ -69,7 +84,11 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
+      return NextResponse.json({ error: 'Failed to update player card.' }, { status: 500 })
+    }
+
+    if (previousCardPath && previousCardPath !== objectPath) {
+      await supabaseServiceRole.storage.from('images').remove([previousCardPath])
     }
 
     const { data: publicData } = supabaseServiceRole.storage.from('images').getPublicUrl(objectPath)
