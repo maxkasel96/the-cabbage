@@ -699,6 +699,10 @@ button:disabled {
   font-weight: 700;
 }
 
+.player-card-modal__table td:first-child {
+  text-align: left;
+}
+
 .player-card-modal__table td:last-child,
 .player-card-modal__table th:last-child {
   text-align: center;
