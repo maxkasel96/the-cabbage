@@ -69,6 +69,14 @@ export default async function PlayerCardsPage() {
                       No card image available.
                     </span>
                   )}
+                  <div className="absolute inset-x-0 bottom-0 z-10 bg-emerald-600 px-4 py-3 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+                      Position
+                    </p>
+                    <p className="text-lg font-semibold leading-tight">
+                      {player.display_name}
+                    </p>
+                  </div>
                 </div>
               )
             })}
