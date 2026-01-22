@@ -74,7 +74,7 @@ export default async function PlayerCardsPage() {
                     <img
                       src={avatarUrl ?? 'path/to/user-logo.png'}
                       alt={`${player.display_name} avatar`}
-                      className="absolute bottom-0 left-0 z-50 m-4 h-[6.05rem] w-[6.05rem] -rotate-10"
+                      className="absolute bottom-0 left-0 z-50 m-0 h-[9.05rem] w-[9.05rem] -rotate-10"
                     />
                     {imageUrl ? (
                       <Image
