@@ -1021,6 +1021,15 @@ button:disabled {
   z-index: 40;
 }
 
+.mega-menu::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
 .mega-menu.is-open {
   opacity: 1;
   pointer-events: auto;
