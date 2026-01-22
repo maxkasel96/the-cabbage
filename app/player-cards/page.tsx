@@ -56,7 +56,7 @@ export default async function PlayerCardsPage() {
                   key={player.id}
                   className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
                 >
-                  <div className="absolute inset-x-0 top-0 bottom-16">
+                  <div className="absolute inset-0">
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
@@ -71,14 +71,14 @@ export default async function PlayerCardsPage() {
                       </span>
                     )}
                     <div className="pointer-events-none absolute inset-2 rounded-xl border-2 border-emerald-400" />
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-emerald-600 px-4 py-3 text-right text-white">
-                    <p className="text-base font-bold italic uppercase tracking-[0.2em] text-white/80">
-                      Position
-                    </p>
-                    <p className="text-2xl font-bold italic leading-tight">
-                      {player.display_name}
-                    </p>
+                    <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-emerald-600 px-4 py-3 text-right text-white">
+                      <p className="text-base font-bold italic uppercase tracking-[0.2em] text-white/80">
+                        Position
+                      </p>
+                      <p className="text-2xl font-bold italic leading-tight">
+                        {player.display_name}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )
