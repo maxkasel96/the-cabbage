@@ -85,10 +85,16 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(230,222,198,0.9)), radial-gradient(circle at top, rgba(110,127,74,0.2), transparent 60%)',
             }}
           >
-            <span className="flex items-center justify-between bg-[#2e3f2a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f3f5ec]">
+            <span
+              className="flex items-center justify-between bg-[#2e3f2a] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#f3f5ec] shadow-[inset_0_-1px_0_rgba(243,245,236,0.35)]"
+              style={{
+                backgroundImage:
+                  'linear-gradient(180deg, rgba(58,76,52,0.98), rgba(38,53,34,0.98)), repeating-linear-gradient(90deg, rgba(243,245,236,0.08), rgba(243,245,236,0.08) 1px, transparent 1px, transparent 6px)',
+              }}
+            >
               <span>{teamLabel}</span>
             </span>
-            <span className="relative mx-4 mt-4 flex flex-1 items-center justify-center overflow-hidden rounded-[18px] border-[3px] border-[#c8b68a] bg-[#e2d6b9] shadow-[inset_0_0_18px_rgba(44,46,34,0.25)]">
+            <span className="relative mx-3 mt-3 mb-4 flex flex-1 items-center justify-center overflow-hidden rounded-[16px] border-[3px] border-[#c8b68a] bg-[#e2d6b9] shadow-[inset_0_0_18px_rgba(44,46,34,0.25),0_8px_14px_rgba(28,37,24,0.18)] ring-2 ring-inset ring-[#f3f5ec]/70">
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
@@ -102,16 +108,15 @@ export default function PlayerBaseballCard({ player, stats }: PlayerBaseballCard
                   {initials}
                 </span>
               )}
-            </span>
-            <span className="mx-4 mb-4 mt-4 flex items-center justify-between gap-2 rounded-[14px] border-2 border-[#b8a67f] bg-[#f8f1de] px-4 py-3 text-left shadow-[0_8px_16px_rgba(44,46,34,0.15)]">
-              <span>
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.3em] text-[#6e7f4a]">
-                  Player Name
-                </span>
-                <span className="block text-lg font-black text-[#1c2518]">
-                  {first}
-                  {last ? <span className="block text-base font-bold text-[#4a5a3c]">{last}</span> : null}
-                </span>
+              <span className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.2),transparent_60%)]" />
+              <span className="pointer-events-none absolute inset-0 z-10 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22 viewBox=%220 0 120 120%22><filter id=%22n%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%222%22 stitchTiles=%22stitch%22/></filter><rect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%220.12%22/></svg>')] opacity-40 mix-blend-soft-light" />
+              <span className="absolute bottom-4 left-4 z-20 inline-flex -rotate-2 items-center gap-2 rounded-full border border-[#f3f5ec]/60 bg-[#1b2217]/70 px-4 py-2 text-sm font-black uppercase tracking-[0.15em] text-[#f7f4e7] shadow-[0_6px_12px_rgba(18,24,15,0.35)] backdrop-blur-[1px]">
+                <span className="sr-only">Player name</span>
+                <span>{first}</span>
+                {last ? <span className="text-[#d7dec8]">{last}</span> : null}
+              </span>
+              <span className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#f3f5ec]/70 bg-[#2e3f2a]/85 text-[10px] font-black uppercase tracking-[0.2em] text-[#f3f5ec] shadow-[0_4px_8px_rgba(18,24,15,0.3)]">
+                CL
               </span>
             </span>
           </span>
