@@ -1,8 +1,7 @@
-import Image from 'next/image'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
-import { getAvatarPublicUrl } from '@/lib/getAvatarPublicUrl'
 import { supabaseServer } from '@/lib/supabaseServer'
+import PlayerCard from './PlayerCard'
 
 type Player = {
   id: string
@@ -48,59 +47,14 @@ export default async function PlayerCardsPage() {
           <p>No players found.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {players.map((player) => {
-              const imageUrl = getAvatarPublicUrl(player.card_path ?? player.avatar_path)
-              const avatarUrl = getAvatarPublicUrl(player.avatar_path)
-
-              return (
-                <div
-                  key={player.id}
-                  className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
-                >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      border: '6px solid #2e3f2a',
-                      boxShadow: 'inset 0 0 0 2px rgba(255, 255, 255, 0.15)',
-                      borderRadius: '8px',
-                      margin: '10px',
-                    }}
-                  >
-                    <img
-                      src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jan%2021,%202026,%2010_05_29%20PM.png"
-                      alt="Decorative banner"
-                      className="absolute left-1/2 top-[calc(var(--spacing)*-9)] z-10 w-full -translate-x-1/2"
-                    />
-                    <img
-                      src={avatarUrl ?? 'path/to/user-logo.png'}
-                      alt={`${player.display_name} avatar`}
-                      className="absolute bottom-0 left-0 z-50 m-0 h-[9.05rem] w-[9.05rem] -rotate-10"
-                    />
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={`Player card for ${player.display_name}`}
-                        fill
-                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
-                        className="object-cover object-bottom"
-                      />
-                    ) : (
-                      <span className="flex h-full items-center justify-center text-sm text-[color:var(--text-secondary)]">
-                        No card image available.
-                      </span>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-[#2e3f2a] px-4 py-3 text-right text-white">
-                      <p className="text-base font-bold italic uppercase tracking-[0.2em] text-white/80">
-                        Position
-                      </p>
-                      <p className="text-2xl font-bold italic leading-tight">
-                        {player.display_name}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            {players.map((player) => (
+              <div
+                key={player.id}
+                className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
+              >
+                <PlayerCard player={player} />
+              </div>
+            ))}
           </div>
         )}
       </div>
