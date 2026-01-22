@@ -52,23 +52,29 @@ export default async function PlayerCardsPage() {
               const imageUrl = getAvatarPublicUrl(player.card_path ?? player.avatar_path)
 
               return (
-                <div
-                  key={player.id}
-                  className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
-                >
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={`Player card for ${player.display_name}`}
-                      fill
-                      sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm text-[color:var(--text-secondary)]">
-                      No card image available.
-                    </span>
-                  )}
+                <div key={player.id} className="player-card">
+                  <div className="player-card__image">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={`Player card for ${player.display_name}`}
+                        fill
+                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
+                        className="player-card__img"
+                      />
+                    ) : (
+                      <span className="player-card__fallback">No card image available.</span>
+                    )}
+                  </div>
+
+                  <div className="player-card__pennant" aria-hidden="true">
+                    <span className="player-card__pennant-text">The Cabbage League</span>
+                  </div>
+
+                  <div className="player-card__nameplate">
+                    <div className="player-card__title">Bad Ass</div>
+                    <div className="player-card__player-name">{player.display_name}</div>
+                  </div>
                 </div>
               )
             })}
