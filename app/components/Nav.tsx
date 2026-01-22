@@ -37,6 +37,7 @@ type MegaMenuConfig = {
 const primaryLinks: NavLink[] = [
   { href: '/', label: 'The Game Cabbage', icon: '🥬' },
   { href: '/history', label: 'The Annals', icon: '📜' },
+  { href: '/player-cards', label: 'Player Cards', icon: '🃏' },
   { href: '/players', label: 'Players', icon: '👤' },
   { href: '/bracket', label: 'Bracket Generator', icon: '🏆' },
 ]
