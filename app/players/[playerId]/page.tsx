@@ -16,6 +16,7 @@ type Player = {
   is_active: boolean
   avatar_path?: string | null
   card_path?: string | null
+  player_bio?: string | null
 }
 
 type SeasonWin = {
@@ -152,7 +153,7 @@ export default function PlayerDetailPage() {
               ) : player ? (
                 <PlayerBio
                   name={player.display_name}
-                  bio={placeholderBio}
+                  bio={player.player_bio?.trim() ? player.player_bio : placeholderBio}
                   avatar={
                     <PlayerAvatar
                       name={player.display_name}
