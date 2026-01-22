@@ -1,6 +1,5 @@
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
-import PlayerBaseballCard from '../components/PlayerBaseballCard'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 type Player = {
@@ -170,11 +169,44 @@ export default async function PlayersLandingPage() {
         {players.length === 0 ? (
           <p>No players found.</p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="space-y-6">
             {players.map((player) => (
-              <PlayerBaseballCard key={player.id} player={player} stats={player.stats} />
+              <li
+                key={player.id}
+                className="rounded-2xl border border-[color:var(--border-strong)] bg-[var(--surface)] p-4 shadow-[0_10px_20px_rgba(24,32,18,0.12)]"
+              >
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-lg font-semibold text-[color:var(--text-primary)]">
+                    {player.display_name}
+                  </h2>
+                  <p className="text-sm text-[color:var(--text-secondary)]">
+                    Total wins: <span className="font-semibold">{player.stats.totalWins}</span>
+                  </p>
+                </div>
+                <div className="mt-4">
+                  {player.stats.winsBySeason.length === 0 ? (
+                    <p className="text-sm text-[color:var(--text-secondary)]">
+                      No wins recorded yet.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {player.stats.winsBySeason.map((season) => (
+                        <li
+                          key={season.id}
+                          className="flex items-center justify-between rounded-lg border border-[color:var(--border-strong)]/70 bg-[color:var(--page-background)] px-3 py-2 text-sm"
+                        >
+                          <span className="text-[color:var(--text-secondary)]">{season.label}</span>
+                          <span className="font-semibold text-[color:var(--text-primary)]">
+                            {season.wins}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </main>
