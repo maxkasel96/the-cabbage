@@ -62,10 +62,7 @@ export async function GET(_: NextRequest, { params }: Params) {
   ;(tournaments ?? []).forEach((season) => {
     const yearStart = season.year_start ?? null
     const yearEnd = season.year_end ?? null
-    const label =
-      yearStart && yearEnd
-        ? `${yearStart}–${yearEnd}`
-        : season.label ?? 'Unknown season'
+    const label = season.label ?? 'Unknown tournament'
 
     totalsBySeason.set(season.id, {
       id: season.id,
@@ -81,10 +78,7 @@ export async function GET(_: NextRequest, { params }: Params) {
     const seasonId = season?.id ?? play.tournament_id ?? 'unknown'
     const yearStart = season?.year_start ?? null
     const yearEnd = season?.year_end ?? null
-    const label =
-      yearStart && yearEnd
-        ? `${yearStart}–${yearEnd}`
-        : season?.label ?? 'Unknown season'
+    const label = season?.label ?? 'Unknown tournament'
 
     const existing = totalsBySeason.get(seasonId)
     if (existing) {

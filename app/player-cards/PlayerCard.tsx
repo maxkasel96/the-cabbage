@@ -12,6 +12,17 @@ type Player = {
   avatar_path?: string | null
 }
 
+type TournamentWin = {
+  id: string
+  label: string
+  wins: number
+}
+
+type PlayerWinsResponse = {
+  totalWins: number
+  winsBySeason: TournamentWin[]
+}
+
 type PlayerCardProps = {
   player: Player
 }
@@ -20,6 +31,9 @@ export default function PlayerCard({ player }: PlayerCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [wins, setWins] = useState<PlayerWinsResponse | null>(null)
+  const [winsStatus, setWinsStatus] = useState('')
+  const [isWinsLoading, setIsWinsLoading] = useState(false)
   const imageUrl = useMemo(
     () => getAvatarPublicUrl(player.card_path ?? player.avatar_path),
     [player.card_path, player.avatar_path]
@@ -53,6 +67,32 @@ export default function PlayerCard({ player }: PlayerCardProps) {
     event?.stopPropagation()
     setIsModalOpen(false)
   }
+
+  async function loadWins() {
+    setIsWinsLoading(true)
+    setWinsStatus('')
+
+    const res = await fetch(`/api/players/${player.id}/wins`, { cache: 'no-store' })
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      setWinsStatus(json.error || 'Failed to load wins.')
+      setWins({ totalWins: 0, winsBySeason: [] })
+      setIsWinsLoading(false)
+      return
+    }
+
+    setWins(json)
+    setIsWinsLoading(false)
+  }
+
+  useEffect(() => {
+    if (!isModalOpen) return
+    loadWins()
+  }, [isModalOpen, player.id])
+
+  const winsByTournament = wins?.winsBySeason ?? []
+  const totalWins = wins?.totalWins ?? 0
 
   return (
     <div
@@ -125,6 +165,39 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                 onClick={(event) => event.stopPropagation()}
               >
                 <p className="text-base font-semibold">Expanded stats</p>
+                <table className="player-card-modal__table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Tournament</th>
+                      <th scope="col">Wins</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isWinsLoading ? (
+                      <tr>
+                        <td colSpan={2}>Loading wins...</td>
+                      </tr>
+                    ) : winsByTournament.length === 0 ? (
+                      <tr>
+                        <td colSpan={2}>No wins recorded yet.</td>
+                      </tr>
+                    ) : (
+                      winsByTournament.map((season) => (
+                        <tr key={season.id}>
+                          <td>{season.label}</td>
+                          <td>{season.wins}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th scope="row">Total</th>
+                      <td>{totalWins}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+                {winsStatus ? <p className="player-card-modal__status">{winsStatus}</p> : null}
                 <button type="button" className="player-card-modal__close" onClick={closeModal}>
                   Close
                 </button>

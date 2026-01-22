@@ -682,6 +682,40 @@ button:disabled {
   text-align: center;
 }
 
+.player-card-modal__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.player-card-modal__table th,
+.player-card-modal__table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(46, 63, 42, 0.2);
+}
+
+.player-card-modal__table thead th {
+  text-align: left;
+  font-weight: 700;
+}
+
+.player-card-modal__table td:last-child,
+.player-card-modal__table th:last-child {
+  text-align: right;
+}
+
+.player-card-modal__table tfoot th,
+.player-card-modal__table tfoot td {
+  border-top: 2px solid rgba(46, 63, 42, 0.4);
+  border-bottom: none;
+  font-weight: 700;
+}
+
+.player-card-modal__status {
+  font-size: 0.9rem;
+  color: #7a1f1f;
+}
+
 .player-card-modal__close {
   border: none;
   background: #2e3f2a;
