@@ -684,6 +684,32 @@ button:disabled {
   text-align: center;
 }
 
+.player-card-modal__bio {
+  width: 100%;
+  text-align: left;
+  background: rgba(46, 63, 42, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.player-card-modal__bio-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: #2e3f2a;
+}
+
+.player-card-modal__bio-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1d2417;
+  line-height: 1.5;
+}
+
 .player-card-modal__table {
   width: 100%;
   border-collapse: collapse;

@@ -6,6 +6,7 @@ import PlayerCard from './PlayerCard'
 type Player = {
   id: string
   display_name: string
+  player_bio?: string | null
   card_path?: string | null
   avatar_path?: string | null
 }
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic'
 async function loadPlayers(): Promise<{ players: Player[]; status?: string }> {
   const { data, error } = await supabaseServer
     .from('players')
-    .select('id, display_name, card_path, avatar_path')
+    .select('id, display_name, player_bio, card_path, avatar_path')
     .order('display_name')
 
   if (error) {

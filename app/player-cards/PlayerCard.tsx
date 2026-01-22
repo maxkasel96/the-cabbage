@@ -8,6 +8,7 @@ import { getAvatarPublicUrl } from '@/lib/getAvatarPublicUrl'
 type Player = {
   id: string
   display_name: string
+  player_bio?: string | null
   card_path?: string | null
   avatar_path?: string | null
 }
@@ -165,6 +166,12 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                 onClick={(event) => event.stopPropagation()}
               >
                 <p className="text-base font-semibold">Expanded stats</p>
+                <section className="player-card-modal__bio" aria-label="Player biography">
+                  <p className="player-card-modal__bio-title">Biography</p>
+                  <p className="player-card-modal__bio-text">
+                    {player.player_bio?.trim() ? player.player_bio : 'No biography available.'}
+                  </p>
+                </section>
                 <table className="player-card-modal__table">
                   <thead>
                     <tr>
