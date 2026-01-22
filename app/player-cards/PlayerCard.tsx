@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
+import { createPortal } from 'react-dom'
 import { getAvatarPublicUrl } from '@/lib/getAvatarPublicUrl'
 
 type Player = {
@@ -18,6 +19,7 @@ type PlayerCardProps = {
 export default function PlayerCard({ player }: PlayerCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const imageUrl = useMemo(
     () => getAvatarPublicUrl(player.card_path ?? player.avatar_path),
     [player.card_path, player.avatar_path]
@@ -26,6 +28,10 @@ export default function PlayerCard({ player }: PlayerCardProps) {
     () => getAvatarPublicUrl(player.avatar_path),
     [player.avatar_path]
   )
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   function toggleFlip() {
     setIsFlipped((prev) => !prev)
@@ -109,22 +115,24 @@ export default function PlayerCard({ player }: PlayerCardProps) {
           </div>
         </div>
       </div>
-      {isModalOpen ? (
-        <div
-          className="player-card-modal"
-          role="dialog"
-          aria-modal="true"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="player-card-modal__backdrop" onClick={closeModal} />
-          <div className="player-card-modal__content" role="document">
-            <p className="text-base font-semibold">Expanded stats</p>
-            <button type="button" className="player-card-modal__close" onClick={closeModal}>
-              Close
-            </button>
-          </div>
-        </div>
-      ) : null}
+      {isModalOpen && isMounted
+        ? createPortal(
+            <div className="player-card-modal" role="dialog" aria-modal="true">
+              <div className="player-card-modal__backdrop" onClick={closeModal} />
+              <div
+                className="player-card-modal__content"
+                role="document"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <p className="text-base font-semibold">Expanded stats</p>
+                <button type="button" className="player-card-modal__close" onClick={closeModal}>
+                  Close
+                </button>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   )
 }
