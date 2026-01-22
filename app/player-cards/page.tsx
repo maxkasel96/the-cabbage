@@ -67,6 +67,11 @@ export default async function PlayerCardsPage() {
                     }}
                   >
                     <img
+                      src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jan%2021,%202026,%2010_05_29%20PM.png"
+                      alt="Decorative banner"
+                      className="absolute left-1/2 top-[calc(var(--spacing)*-9)] z-10 w-full -translate-x-1/2"
+                    />
+                    <img
                       src={avatarUrl ?? 'path/to/user-logo.png'}
                       alt={`${player.display_name} avatar`}
                       className="absolute bottom-0 left-0 z-50 m-4 h-[6.05rem] w-[6.05rem] -rotate-10"
