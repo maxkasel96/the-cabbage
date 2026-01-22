@@ -494,13 +494,16 @@ button:disabled {
 }
 
 .player-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 3 / 4;
+  padding: 0;
   border-radius: 16px;
   background: var(--surface);
-  border: 1px solid var(--border-strong);
+  border: 1px solid rgba(46, 63, 42, 0.35);
   text-decoration: none;
   color: var(--text-primary);
   box-shadow: 0 12px 24px rgba(24, 32, 18, 0.18);
@@ -515,87 +518,95 @@ button:disabled {
 
 .player-card:focus-visible {
   outline: 2px solid var(--primary);
-  outline-offset: 3px;
+  outline-offset: 4px;
 }
 
-.player-card__avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  color: var(--text-primary);
-  background: var(--page-background);
-  border: 2px solid rgba(46, 63, 42, 0.4);
-  flex-shrink: 0;
+.player-card__image {
+  position: absolute;
+  inset: 0;
 }
 
-.player-card__avatar img {
+.player-card__image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      180deg,
+      rgba(12, 15, 9, 0.45) 0%,
+      rgba(12, 15, 9, 0.05) 40%,
+      rgba(12, 15, 9, 0.1) 60%,
+      rgba(12, 15, 9, 0.65) 100%
+    ),
+    radial-gradient(circle at top, rgba(0, 0, 0, 0.25), transparent 55%);
+  pointer-events: none;
+}
+
+.player-card__image img {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   object-fit: cover;
+  display: block;
 }
 
-.player-card__content {
-  flex: 1;
-  min-width: 0;
+.player-card__team,
+.player-card__player-name {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(20, 24, 16, 0.55);
+  color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(8, 10, 6, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-.player-card__name {
+.player-card__team {
+  top: 12px;
+  font-size: 11px;
   font-weight: 700;
-  font-size: 16px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.player-card__player-name {
+  bottom: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.player-card__status {
-  margin-top: 6px;
-  display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.player-card__status--active {
-  background: rgba(77, 117, 57, 0.18);
-  color: #2f4b23;
-  border: 1px solid rgba(77, 117, 57, 0.35);
-}
-
-.player-card__status--inactive {
-  background: rgba(130, 134, 121, 0.2);
-  color: #3b4035;
-  border: 1px solid rgba(130, 134, 121, 0.35);
-}
-
-.player-card__chevron {
-  font-size: 24px;
-  color: var(--text-secondary);
-}
-
 .player-card--skeleton {
   pointer-events: none;
   box-shadow: none;
-  background: rgba(201, 209, 184, 0.35);
+  background: rgba(201, 209, 184, 0.25);
   border-style: dashed;
 }
 
-.player-card__avatar--skeleton {
-  border: 1px solid rgba(46, 63, 42, 0.3);
-  background: rgba(243, 245, 236, 0.2);
+.player-card__image--skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(
+    120deg,
+    rgba(243, 245, 236, 0.25),
+    rgba(243, 245, 236, 0.5),
+    rgba(243, 245, 236, 0.25)
+  );
+  background-size: 200% 100%;
+  animation: scoreboard-shimmer 1.4s ease-in-out infinite;
 }
 
-.player-card__skeleton-line,
-.player-card__skeleton-pill {
-  width: 100%;
+.player-card__skeleton-bar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 24px;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
@@ -607,14 +618,14 @@ button:disabled {
   animation: scoreboard-shimmer 1.4s ease-in-out infinite;
 }
 
-.player-card__skeleton-line {
-  height: 14px;
-  margin-bottom: 10px;
+.player-card__skeleton-bar--team {
+  top: 12px;
+  height: 18px;
 }
 
-.player-card__skeleton-pill {
-  height: 20px;
-  max-width: 120px;
+.player-card__skeleton-bar--name {
+  bottom: 12px;
+  height: 26px;
 }
 
 .player-detail {
