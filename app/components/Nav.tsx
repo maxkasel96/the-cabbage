@@ -3,7 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import type { FocusEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
+import type {
+  FocusEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react'
 
 type NavProps = {
   showAdminMenu?: boolean
@@ -326,6 +330,12 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
     }
   }
 
+  const handleDesktopItemMouseLeave = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setActiveMenu(null)
+    }
+  }
+
   const handleDesktopNavigate = () => {
     setActiveMenu(null)
   }
@@ -344,7 +354,6 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
           ref={desktopNavRef}
           onBlur={handleDesktopBlur}
           onKeyDown={handleDesktopKeyDown}
-          onMouseLeave={() => setActiveMenu(null)}
         >
           <div className="main-nav__desktop-links" role="menubar" aria-label="Primary">
             {primaryLinks.map((link) => (
@@ -364,6 +373,7 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
                 key={menu.id}
                 className="main-nav__desktop-item"
                 onMouseEnter={() => setActiveMenu(menu.id)}
+                onMouseLeave={handleDesktopItemMouseLeave}
               >
                 <button
                   type="button"
