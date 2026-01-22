@@ -70,6 +70,7 @@ export default async function PlayerCardsPage() {
                         No card image available.
                       </span>
                     )}
+                    <div className="pointer-events-none absolute inset-0 bg-emerald-500/10" />
                     <div className="pointer-events-none absolute inset-2 rounded-xl border-2 border-emerald-400" />
                   </div>
                   <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-emerald-600 px-4 py-3 text-right text-white">
