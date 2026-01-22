@@ -12,16 +12,29 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const { id } = await params
   const body = await req.json().catch(() => null)
   const isActive = body?.is_active
+  const playerBio = body?.player_bio
 
-  if (typeof isActive !== 'boolean') {
-    return NextResponse.json({ error: 'is_active must be a boolean' }, { status: 400 })
+  const update: { is_active?: boolean; player_bio?: string | null } = {}
+
+  if (typeof isActive === 'boolean') {
+    update.is_active = isActive
+  }
+
+  if (typeof playerBio === 'string') {
+    update.player_bio = playerBio.trim() === '' ? null : playerBio
+  } else if (playerBio === null) {
+    update.player_bio = null
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update.' }, { status: 400 })
   }
 
   const { data, error } = await supabaseServer
     .from('players')
-    .update({ is_active: isActive })
+    .update(update)
     .eq('id', id)
-    .select('id, display_name, is_active')
+    .select('id, display_name, is_active, player_bio')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
