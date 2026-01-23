@@ -1119,7 +1119,6 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
   color: var(--text-inverse);
   transition: background 0.2s ease, border-color 0.2s ease;
 }
@@ -1131,7 +1130,7 @@ button:disabled {
 
 .main-nav__menu-button span {
   font-size: 50px;
-  line-height: 1;
+  line-height: 0.9;
   display: block;
 }
 
