@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
 import PageTitle from './components/PageTitle'
 
@@ -43,6 +43,8 @@ export default function Home() {
   const [noteDraft, setNoteDraft] = useState('')
   const [marking, setMarking] = useState(false)
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false)
+  const [winImageFile, setWinImageFile] = useState<File | null>(null)
+  const winImageInputRef = useRef<HTMLInputElement | null>(null)
 
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
@@ -129,6 +131,13 @@ export default function Home() {
     setWinnerPlayerIds(new Set())
   }
 
+  function resetWinImage() {
+    setWinImageFile(null)
+    if (winImageInputRef.current) {
+      winImageInputRef.current.value = ''
+    }
+  }
+
   function resetRecommendation() {
     setGame(null)
     setGameStarted(false)
@@ -140,6 +149,7 @@ export default function Home() {
     setWinningTeamId(null)
     setWinnerPlayerIds(new Set())
     setIsRolling(false)
+    resetWinImage()
   }
 
   // Random roll animation helper
@@ -268,6 +278,7 @@ export default function Home() {
     if (!game) return
     setStatus('')
     setNoteDraft('')
+    resetWinImage()
     setNoteModalOpen(true)
 
     const winnerIds = Array.from(winnerPlayerIds)
@@ -304,40 +315,66 @@ export default function Home() {
     resetRecommendation()
   }
 
-function openMarkPlayedModal() {
-  if (!game) return
-  setStatus('')
-  setNoteDraft('')
-  setNoteModalOpen(true)
-}
+  function openMarkPlayedModal() {
+    if (!game) return
+    setStatus('')
+    setNoteDraft('')
+    resetWinImage()
+    setNoteModalOpen(true)
+  }
+
+  function handleWinImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null
+    setWinImageFile(file)
+  }
 
   function closeWelcomeModal() {
     window.localStorage.setItem('cabbageWelcomeSeen', 'true')
     setWelcomeModalOpen(false)
   }
 
-
-// Function for saving note and closing modal
+  // Function for saving note and closing modal
   async function confirmMarkPlayed() {
     if (!game) return
     if (marking) return
+
+    const winnerIds = Array.from(winnerPlayerIds)
+    if (winImageFile && winnerIds.length === 0) {
+      setStatus('Please select at least one winner to attach an image.')
+      return
+    }
 
     setMarking(true)
     setShowExplosion(true)
     setStatus('')
 
-    const winnerIds = Array.from(winnerPlayerIds)
     const note = noteDraft.trim()
 
-    const res = await fetch('/api/game/mark-played', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        gameId: game.id,
-        winnerPlayerIds: winnerIds,
-        note: note.length ? note : null,
-      }),
-    })
+    const requestInit: RequestInit = winImageFile
+      ? (() => {
+          const formData = new FormData()
+          formData.append('gameId', game.id)
+          formData.append('winnerPlayerIds', JSON.stringify(winnerIds))
+          if (note.length) {
+            formData.append('note', note)
+          }
+          formData.append('winImage', winImageFile)
+          return {
+            method: 'POST',
+            body: formData,
+          }
+        })()
+      : {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameId: game.id,
+            winnerPlayerIds: winnerIds,
+            note: note.length ? note : null,
+          }),
+        }
+
+    const res = await fetch('/api/game/mark-played', requestInit)
 
     const json = await res.json()
     if (!res.ok) {
@@ -348,6 +385,7 @@ function openMarkPlayedModal() {
 
     setNoteModalOpen(false)
     setMarking(false)
+    resetWinImage()
 
     setStatus(`Saved: ${game.name}. View History to confirm.`)
 
@@ -564,6 +602,48 @@ function openMarkPlayedModal() {
           margin-top: 8px;
           font-size: 12px;
           color: #6c4c2f;
+        }
+
+        .markPlayedModalField {
+          margin-top: 16px;
+          display: grid;
+          gap: 6px;
+        }
+
+        .markPlayedModalLabel {
+          font-size: 14px;
+          font-weight: 700;
+          color: #4b331c;
+        }
+
+        .markPlayedModalFileInput {
+          padding: 10px;
+          border-radius: 10px;
+          border: 1px solid rgba(89, 60, 33, 0.35);
+          background: rgba(252, 243, 220, 0.8);
+          color: #4b331c;
+          font-family: 'Georgia', 'Times New Roman', serif;
+        }
+
+        .markPlayedModalFileMeta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          font-size: 13px;
+          color: #5b3b21;
+          padding: 8px 10px;
+          border-radius: 10px;
+          background: rgba(252, 243, 220, 0.75);
+          border: 1px solid rgba(89, 60, 33, 0.25);
+        }
+
+        .markPlayedModalFileRemove {
+          border: none;
+          background: transparent;
+          color: #7a4d28;
+          font-weight: 700;
+          cursor: pointer;
         }
 
         .markPlayedModalClose {
@@ -1343,6 +1423,37 @@ function openMarkPlayedModal() {
                   disabled={marking}
                 />
                 <div className="markPlayedModalHint">This note will appear in History under “Notes”.</div>
+              </div>
+
+              <div className="markPlayedModalField">
+                <label className="markPlayedModalLabel" htmlFor="win-image-input">
+                  Attach a win image (optional)
+                </label>
+                <input
+                  id="win-image-input"
+                  ref={winImageInputRef}
+                  className="markPlayedModalFileInput"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleWinImageChange}
+                  disabled={marking}
+                />
+                <div className="markPlayedModalHint">
+                  Upload a PNG, JPG, or WebP image up to 5MB to celebrate the win.
+                </div>
+                {winImageFile && (
+                  <div className="markPlayedModalFileMeta">
+                    <span>{winImageFile.name}</span>
+                    <button
+                      type="button"
+                      onClick={resetWinImage}
+                      className="markPlayedModalFileRemove"
+                      disabled={marking}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>

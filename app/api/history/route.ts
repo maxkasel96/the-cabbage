@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         name
       ),
       game_winners (
+        win_image,
         players (
           id,
           display_name,
@@ -45,6 +46,8 @@ export async function GET(request: NextRequest) {
           if (!acc.some((x) => x.id === pl.id)) acc.push(pl)
           return acc
         }, [])
+    const winImage =
+      (p.game_winners ?? []).map((gw: any) => gw.win_image).find((image: string | null) => Boolean(image)) ?? null
 
     return {
       id: p.id, // play id
@@ -53,10 +56,10 @@ export async function GET(request: NextRequest) {
       played_at: p.played_at,
       notes: p.played_note ?? null,
       winners,
+      win_image: winImage,
     }
   })
 
   return NextResponse.json({ history, tournamentId })
 }
-
 
