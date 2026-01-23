@@ -1449,6 +1449,10 @@ button:disabled {
     --nav-height: 60px;
   }
 
+  .main-nav__menu-button {
+    display: none;
+  }
+
   .main-nav__brand {
     font-size: 32px;
     padding: 0;
