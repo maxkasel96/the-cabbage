@@ -532,7 +532,7 @@ export default function HistoryPage() {
           position: relative;
           background: var(--surface);
           border-radius: 16px;
-          padding: 16px;
+          padding: 16px 16px 24px;
           border: 1px solid var(--border-strong);
           max-width: min(90vw, 860px);
           max-height: min(85vh, 720px);
