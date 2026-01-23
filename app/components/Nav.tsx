@@ -17,6 +17,7 @@ type NavLink = {
   href: string
   label: string
   icon: string
+  description?: string
 }
 
 type MegaMenuItem = {
@@ -39,11 +40,36 @@ type MegaMenuConfig = {
 }
 
 const primaryLinks: NavLink[] = [
-  { href: '/', label: 'The Game Cabbage', icon: '🥬' },
-  { href: '/history', label: 'The Annals', icon: '📜' },
-  { href: '/player-cards', label: 'Player Cards', icon: '🃏' },
-  { href: '/players', label: 'Players', icon: '👤' },
-  { href: '/bracket', label: 'Bracket Generator', icon: '🏆' },
+  {
+    href: '/',
+    label: 'The Game Cabbage',
+    icon: '🥬',
+    description: 'Home for today’s matchup.',
+  },
+  {
+    href: '/history',
+    label: 'The Annals',
+    icon: '📜',
+    description: 'Past champions and stories.',
+  },
+  {
+    href: '/player-cards',
+    label: 'Player Cards',
+    icon: '🃏',
+    description: 'Quick stats at a glance.',
+  },
+  {
+    href: '/players',
+    label: 'Players',
+    icon: '👤',
+    description: 'Roster and bios.',
+  },
+  {
+    href: '/bracket',
+    label: 'Bracket Generator',
+    icon: '🏆',
+    description: 'Spin up new tournaments.',
+  },
 ]
 
 const iconPaths = {
@@ -276,6 +302,19 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
   }, [isMobileMenuOpen])
 
   useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return
+    }
+
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isMobileMenuOpen])
+
+  useEffect(() => {
     if (!activeMenu) {
       return
     }
@@ -303,7 +342,12 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
     }
   }, [activeMenu])
 
-  const renderMobileLink = (href: string, label: string, icon: string) => (
+  const renderMobileLink = (
+    href: string,
+    label: string,
+    icon: string,
+    description?: string
+  ) => (
     <Link
       key={href}
       href={href}
@@ -311,10 +355,16 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
       data-active={pathname === href}
       onClick={handleMobileClose}
     >
+      <span className="main-nav__sheet-indicator" aria-hidden="true" />
       <span className="main-nav__sheet-icon" aria-hidden="true">
         {icon}
       </span>
-      <span className="main-nav__sheet-label">{label}</span>
+      <span className="main-nav__sheet-text">
+        <span className="main-nav__sheet-label">{label}</span>
+        {description ? (
+          <span className="main-nav__sheet-description">{description}</span>
+        ) : null}
+      </span>
     </Link>
   )
 
@@ -347,7 +397,10 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
     >
       <div className="main-nav__bar">
         <Link href="/" className="main-nav__brand">
-          <span>The Cabbage 🥬</span>
+          <span className="main-nav__brand-icon" aria-hidden="true">
+            🥬
+          </span>
+          <span className="main-nav__brand-text">The Game Cabbage</span>
         </Link>
         <div
           className="main-nav__desktop"
@@ -368,55 +421,57 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
                 {link.label}
               </Link>
             ))}
-            {megaMenus.map((menu) => (
-              <div
-                key={menu.id}
-                className="main-nav__desktop-item"
-                onMouseEnter={() => setActiveMenu(menu.id)}
-                onMouseLeave={handleDesktopItemMouseLeave}
-              >
-                <button
-                  type="button"
-                  className="main-nav__desktop-trigger"
-                  aria-haspopup="true"
-                  aria-expanded={activeMenu === menu.id}
-                  aria-controls={`mega-menu-${menu.id}`}
-                  onFocus={() => setActiveMenu(menu.id)}
-                >
-                  {menu.label}
-                </button>
-                <div
-                  id={`mega-menu-${menu.id}`}
-                  className={`mega-menu ${activeMenu === menu.id ? 'is-open' : ''}`}
-                  role="menu"
-                  aria-label={`${menu.label} menu`}
-                  onMouseEnter={() => setActiveMenu(menu.id)}
-                >
-                  <div className="mega-menu__content">
-                    {menu.groups.map((group) => (
-                      <div key={group.title} className="mega-menu__group">
-                        <div className="mega-menu__group-title">{group.title}</div>
-                        <div className="mega-menu__items">
-                          {group.items.map((item) => (
-                            <MegaMenuItemCard
-                              key={item.title}
-                              item={item}
-                              onNavigate={handleDesktopNavigate}
-                            />
-                          ))}
-                        </div>
+            {showAdminMenu
+              ? megaMenus.map((menu) => (
+                  <div
+                    key={menu.id}
+                    className="main-nav__desktop-item"
+                    onMouseEnter={() => setActiveMenu(menu.id)}
+                    onMouseLeave={handleDesktopItemMouseLeave}
+                  >
+                    <button
+                      type="button"
+                      className="main-nav__desktop-trigger"
+                      aria-haspopup="true"
+                      aria-expanded={activeMenu === menu.id}
+                      aria-controls={`mega-menu-${menu.id}`}
+                      onFocus={() => setActiveMenu(menu.id)}
+                    >
+                      {menu.label}
+                    </button>
+                    <div
+                      id={`mega-menu-${menu.id}`}
+                      className={`mega-menu ${activeMenu === menu.id ? 'is-open' : ''}`}
+                      role="menu"
+                      aria-label={`${menu.label} menu`}
+                      onMouseEnter={() => setActiveMenu(menu.id)}
+                    >
+                      <div className="mega-menu__content">
+                        {menu.groups.map((group) => (
+                          <div key={group.title} className="mega-menu__group">
+                            <div className="mega-menu__group-title">{group.title}</div>
+                            <div className="mega-menu__items">
+                              {group.items.map((item) => (
+                                <MegaMenuItemCard
+                                  key={item.title}
+                                  item={item}
+                                  onNavigate={handleDesktopNavigate}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                ))
+              : null}
           </div>
         </div>
         <button
           type="button"
           className="main-nav__menu-button"
-          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isMobileMenuOpen}
           ref={menuButtonRef}
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
@@ -442,28 +497,33 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
         tabIndex={-1}
       >
         <div className="main-nav__sheet-handle" />
+        <div className="main-nav__sheet-title">Navigation</div>
         <div className="main-nav__sheet-links">
-          {primaryLinks.map((link) => renderMobileLink(link.href, link.label, link.icon))}
+          {primaryLinks.map((link) =>
+            renderMobileLink(link.href, link.label, link.icon, link.description)
+          )}
         </div>
-        <div className="main-nav__sheet-section">
-          <div className="main-nav__sheet-section-title">Admin</div>
-          {adminMenu.groups.map((group) => (
-            <div key={group.title} className="main-nav__sheet-group">
-              <div className="main-nav__sheet-group-title">{group.title}</div>
-              <div className="main-nav__sheet-links">
-                {group.items.map((item) =>
-                  renderMobileLink(item.href, item.title, '⚙️')
-                )}
+        {showAdminMenu ? (
+          <div className="main-nav__sheet-section">
+            <div className="main-nav__sheet-section-title">Admin</div>
+            {adminMenu.groups.map((group) => (
+              <div key={group.title} className="main-nav__sheet-group">
+                <div className="main-nav__sheet-group-title">{group.title}</div>
+                <div className="main-nav__sheet-links">
+                  {group.items.map((item) =>
+                    renderMobileLink(item.href, item.title, '🛠️', item.description)
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : null}
         <button
           type="button"
           className="main-nav__sheet-close"
           onClick={handleMobileClose}
         >
-          Close
+          Close menu
         </button>
       </div>
     </nav>
