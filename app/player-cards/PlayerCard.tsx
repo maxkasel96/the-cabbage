@@ -121,11 +121,13 @@ export default function PlayerCard({ player }: PlayerCardProps) {
               alt="Decorative banner"
               className="absolute left-1/2 top-[calc(var(--spacing)*-9)] z-10 w-full -translate-x-1/2"
             />
-            <img
-              src={avatarUrl ?? 'path/to/user-logo.png'}
-              alt={`${player.display_name} avatar`}
-              className="absolute bottom-0 left-0 z-50 m-0 h-[9.05rem] w-[9.05rem] -rotate-10"
-            />
+            <div className="absolute bottom-0 left-0 z-50 m-0 h-[9.05rem] w-[9.05rem] -rotate-10">
+              <img
+                src={avatarUrl ?? 'path/to/user-logo.png'}
+                alt={`${player.display_name} avatar`}
+                className="h-full w-full object-contain object-bottom"
+              />
+            </div>
             {imageUrl ? (
               <Image
                 src={imageUrl}
