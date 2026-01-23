@@ -325,7 +325,20 @@ export default function Home() {
 
   function handleWinImageChange(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? [])
-    setWinImageFiles(files)
+    if (files.length === 0) return
+    setWinImageFiles((prev) => {
+      const existingKeys = new Set(prev.map((file) => `${file.name}-${file.size}-${file.lastModified}`))
+      const nextFiles = files.filter((file) => {
+        const key = `${file.name}-${file.size}-${file.lastModified}`
+        if (existingKeys.has(key)) return false
+        existingKeys.add(key)
+        return true
+      })
+      return [...prev, ...nextFiles]
+    })
+    if (winImageInputRef.current) {
+      winImageInputRef.current.value = ''
+    }
   }
 
   function removeWinImage(index: number) {
