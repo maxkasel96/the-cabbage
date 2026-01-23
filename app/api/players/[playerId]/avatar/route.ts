@@ -43,7 +43,21 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const supabaseServiceRole = getSupabaseServiceRole()
-    const objectPath = `players/${playerId}/avatar.${extension}`
+    const { data: player, error: playerError } = await supabaseServiceRole
+      .from('players')
+      .select('avatar_path')
+      .eq('id', playerId)
+      .maybeSingle()
+
+    if (playerError) {
+      return NextResponse.json({ error: playerError.message }, { status: 500 })
+    }
+
+    if (!player) {
+      return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
+    }
+
+    const objectPath = `players/${playerId}/avatar-${Date.now()}.${extension}`
     const buffer = Buffer.from(await file.arrayBuffer())
 
     const { error: uploadError } = await supabaseServiceRole.storage
@@ -65,11 +79,17 @@ export async function POST(request: NextRequest, { params }: Params) {
       .maybeSingle()
 
     if (error) {
+      await supabaseServiceRole.storage.from('images').remove([objectPath])
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     if (!data) {
+      await supabaseServiceRole.storage.from('images').remove([objectPath])
       return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
+    }
+
+    if (player.avatar_path && player.avatar_path !== objectPath) {
+      await supabaseServiceRole.storage.from('images').remove([player.avatar_path])
     }
 
     const { data: publicData } = supabaseServiceRole.storage.from('images').getPublicUrl(objectPath)
