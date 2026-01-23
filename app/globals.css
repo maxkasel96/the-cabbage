@@ -1130,8 +1130,11 @@ button:disabled {
 
 .main-nav__menu-button span {
   font-size: 50px;
-  line-height: 0.9;
-  display: block;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
 }
 
 .main-nav__desktop {
