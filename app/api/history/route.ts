@@ -46,8 +46,24 @@ export async function GET(request: NextRequest) {
           if (!acc.some((x) => x.id === pl.id)) acc.push(pl)
           return acc
         }, [])
-    const winImage =
-      (p.game_winners ?? []).map((gw: any) => gw.win_image).find((image: string | null) => Boolean(image)) ?? null
+    const winImages = (p.game_winners ?? [])
+      .map((gw: any) => {
+        if (typeof gw.win_image !== 'string') return []
+        const trimmed = gw.win_image.trim()
+        if (!trimmed) return []
+        if (trimmed.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(trimmed)
+            return Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string') : []
+          } catch {
+            return [trimmed]
+          }
+        }
+        return [trimmed]
+      })
+      .flat()
+      .filter(Boolean)
+    const uniqueWinImages = Array.from(new Set(winImages))
 
     return {
       id: p.id, // play id
@@ -56,10 +72,9 @@ export async function GET(request: NextRequest) {
       played_at: p.played_at,
       notes: p.played_note ?? null,
       winners,
-      win_image: winImage,
+      win_images: uniqueWinImages,
     }
   })
 
   return NextResponse.json({ history, tournamentId })
 }
-

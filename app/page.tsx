@@ -43,7 +43,7 @@ export default function Home() {
   const [noteDraft, setNoteDraft] = useState('')
   const [marking, setMarking] = useState(false)
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false)
-  const [winImageFile, setWinImageFile] = useState<File | null>(null)
+  const [winImageFiles, setWinImageFiles] = useState<File[]>([])
   const winImageInputRef = useRef<HTMLInputElement | null>(null)
 
   // Multi-select tag filters (by slug)
@@ -132,7 +132,7 @@ export default function Home() {
   }
 
   function resetWinImage() {
-    setWinImageFile(null)
+    setWinImageFiles([])
     if (winImageInputRef.current) {
       winImageInputRef.current.value = ''
     }
@@ -324,8 +324,31 @@ export default function Home() {
   }
 
   function handleWinImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null
-    setWinImageFile(file)
+    const files = Array.from(event.target.files ?? [])
+    if (files.length === 0) return
+    setWinImageFiles((prev) => {
+      const existingKeys = new Set(prev.map((file) => `${file.name}-${file.size}-${file.lastModified}`))
+      const nextFiles = files.filter((file) => {
+        const key = `${file.name}-${file.size}-${file.lastModified}`
+        if (existingKeys.has(key)) return false
+        existingKeys.add(key)
+        return true
+      })
+      return [...prev, ...nextFiles]
+    })
+    if (winImageInputRef.current) {
+      winImageInputRef.current.value = ''
+    }
+  }
+
+  function removeWinImage(index: number) {
+    setWinImageFiles((prev) => {
+      const next = prev.filter((_, idx) => idx !== index)
+      if (next.length === 0 && winImageInputRef.current) {
+        winImageInputRef.current.value = ''
+      }
+      return next
+    })
   }
 
   function closeWelcomeModal() {
@@ -339,7 +362,7 @@ export default function Home() {
     if (marking) return
 
     const winnerIds = Array.from(winnerPlayerIds)
-    if (winImageFile && winnerIds.length === 0) {
+    if (winImageFiles.length > 0 && winnerIds.length === 0) {
       setStatus('Please select at least one winner to attach an image.')
       return
     }
@@ -350,7 +373,7 @@ export default function Home() {
 
     const note = noteDraft.trim()
 
-    const requestInit: RequestInit = winImageFile
+    const requestInit: RequestInit = winImageFiles.length > 0
       ? (() => {
           const formData = new FormData()
           formData.append('gameId', game.id)
@@ -358,7 +381,9 @@ export default function Home() {
           if (note.length) {
             formData.append('note', note)
           }
-          formData.append('winImage', winImageFile)
+          winImageFiles.forEach((file) => {
+            formData.append('winImages', file)
+          })
           return {
             method: 'POST',
             body: formData,
@@ -638,10 +663,24 @@ export default function Home() {
           border: 1px solid rgba(89, 60, 33, 0.25);
         }
 
+        .markPlayedModalFileList {
+          display: grid;
+          gap: 8px;
+        }
+
         .markPlayedModalFileRemove {
           border: none;
           background: transparent;
           color: #7a4d28;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .markPlayedModalFileClear {
+          align-self: flex-start;
+          border: none;
+          background: transparent;
+          color: #6b3f1e;
           font-weight: 700;
           cursor: pointer;
         }
@@ -1434,23 +1473,36 @@ export default function Home() {
                   ref={winImageInputRef}
                   className="markPlayedModalFileInput"
                   type="file"
+                  multiple
                   accept="image/png,image/jpeg,image/webp"
                   onChange={handleWinImageChange}
                   disabled={marking}
                 />
                 <div className="markPlayedModalHint">
-                  Upload a PNG, JPG, or WebP image up to 5MB to celebrate the win.
+                  Upload one or more PNG, JPG, or WebP images up to 5MB each to celebrate the win.
                 </div>
-                {winImageFile && (
-                  <div className="markPlayedModalFileMeta">
-                    <span>{winImageFile.name}</span>
+                {winImageFiles.length > 0 && (
+                  <div className="markPlayedModalFileList">
+                    {winImageFiles.map((file, index) => (
+                      <div key={`${file.name}-${index}`} className="markPlayedModalFileMeta">
+                        <span>{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeWinImage(index)}
+                          className="markPlayedModalFileRemove"
+                          disabled={marking}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
                     <button
                       type="button"
                       onClick={resetWinImage}
-                      className="markPlayedModalFileRemove"
+                      className="markPlayedModalFileClear"
                       disabled={marking}
                     >
-                      Remove
+                      Clear all
                     </button>
                   </div>
                 )}

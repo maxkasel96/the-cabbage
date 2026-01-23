@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   let gameId: string | undefined
   let winnerPlayerIdsRaw: unknown = []
   let noteRaw: unknown
-  let winImageFile: File | null = null
+  let winImageFiles: File[] = []
 
   if (contentType.includes('multipart/form-data')) {
     const formData = await req.formData()
@@ -33,8 +33,7 @@ export async function POST(req: Request) {
       }
     }
     noteRaw = formData.get('note')
-    const fileValue = formData.get('winImage')
-    winImageFile = fileValue instanceof File ? fileValue : null
+    winImageFiles = formData.getAll('winImages').filter((file): file is File => file instanceof File)
   } else {
     const body = await req.json().catch(() => null)
     gameId = body?.gameId as string | undefined
@@ -60,7 +59,7 @@ export async function POST(req: Request) {
     new Set(winnerPlayerIdsRaw.filter((x: unknown): x is string => typeof x === 'string' && uuidRegex.test(x)))
   )
 
-  if (winImageFile && winnerPlayerIds.length === 0) {
+  if (winImageFiles.length > 0 && winnerPlayerIds.length === 0) {
     return NextResponse.json({ error: 'Cannot attach an image without at least one winner.' }, { status: 400 })
   }
 
@@ -86,37 +85,43 @@ export async function POST(req: Request) {
   }
 
   const playId = playUpsert.data.id as string
-  let winImagePath: string | null = null
+  let winImageValue: string | null = null
 
-  if (winImageFile) {
-    const extension = ALLOWED_TYPES[winImageFile.type]
-    if (!extension) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Please upload a PNG, JPEG, or WebP image.' },
-        { status: 400 }
-      )
-    }
-
-    if (winImageFile.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'File size must be 5MB or less.' }, { status: 400 })
-    }
-
+  if (winImageFiles.length > 0) {
     const supabaseServiceRole = getSupabaseServiceRole()
-    const objectPath = `wins/${playId}/${randomUUID()}.${extension}`
-    const buffer = Buffer.from(await winImageFile.arrayBuffer())
+    const uploadedPaths: string[] = []
 
-    const { error: uploadError } = await supabaseServiceRole.storage
-      .from('images')
-      .upload(objectPath, buffer, {
-        contentType: winImageFile.type,
-        upsert: true,
-      })
+    for (const winImageFile of winImageFiles) {
+      const extension = ALLOWED_TYPES[winImageFile.type]
+      if (!extension) {
+        return NextResponse.json(
+          { error: 'Invalid file type. Please upload a PNG, JPEG, or WebP image.' },
+          { status: 400 }
+        )
+      }
 
-    if (uploadError) {
-      return NextResponse.json({ error: uploadError.message }, { status: 500 })
+      if (winImageFile.size > MAX_FILE_SIZE) {
+        return NextResponse.json({ error: 'File size must be 5MB or less.' }, { status: 400 })
+      }
+
+      const objectPath = `wins/${playId}/${randomUUID()}.${extension}`
+      const buffer = Buffer.from(await winImageFile.arrayBuffer())
+
+      const { error: uploadError } = await supabaseServiceRole.storage
+        .from('images')
+        .upload(objectPath, buffer, {
+          contentType: winImageFile.type,
+          upsert: true,
+        })
+
+      if (uploadError) {
+        return NextResponse.json({ error: uploadError.message }, { status: 500 })
+      }
+
+      uploadedPaths.push(objectPath)
     }
 
-    winImagePath = objectPath
+    winImageValue = uploadedPaths.length === 1 ? uploadedPaths[0] : JSON.stringify(uploadedPaths)
   }
 
   // 2) Replace winners for this play (delete then insert)
@@ -127,7 +132,7 @@ export async function POST(req: Request) {
     const rows = winnerPlayerIds.map((playerId) => ({
       play_id: playId,
       player_id: playerId,
-      ...(winImagePath ? { win_image: winImagePath } : {}),
+      ...(winImageValue ? { win_image: winImageValue } : {}),
     }))
     const ins = await supabaseServer.from('game_winners').insert(rows)
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 })

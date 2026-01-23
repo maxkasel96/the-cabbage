@@ -18,7 +18,7 @@ type HistoryRow = {
   played_at: string
   winners: Winner[]
   notes: string | null
-  win_image: string | null
+  win_images: string[]
 }
 
 type ScoreRow = {
@@ -41,7 +41,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null)
 
   // Tournament navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([])
@@ -394,7 +394,9 @@ export default function HistoryPage() {
             {filtered.map((h, index) => {
               const winnersLabel =
                 (h.winners ?? []).length === 0 ? '—' : h.winners.map((w) => w.display_name).join(', ')
-              const winImageUrl = getAvatarPublicUrl(h.win_image)
+              const winImageUrls = (h.win_images ?? [])
+                .map((path) => getAvatarPublicUrl(path))
+                .filter((url): url is string => Boolean(url))
 
               return (
                 <div
@@ -411,15 +413,20 @@ export default function HistoryPage() {
                   <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
                   <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
                   <div>
-                    {winImageUrl ? (
-                      <button
-                        type="button"
-                        className="history-image-button"
-                        onClick={() => setLightboxImage(winImageUrl)}
-                        aria-label={`View win image for ${h.name}`}
-                      >
-                        <img src={winImageUrl} alt={`Win image for ${h.name}`} className="history-image-thumb" />
-                      </button>
+                    {winImageUrls.length > 0 ? (
+                      <div className="history-image-grid">
+                        {winImageUrls.map((url, imageIndex) => (
+                          <button
+                            key={`${h.id}-${imageIndex}`}
+                            type="button"
+                            className="history-image-button"
+                            onClick={() => setLightbox({ images: winImageUrls, index: imageIndex })}
+                            aria-label={`View win image ${imageIndex + 1} for ${h.name}`}
+                          >
+                            <img src={url} alt={`Win image ${imageIndex + 1} for ${h.name}`} className="history-image-thumb" />
+                          </button>
+                        ))}
+                      </div>
                     ) : (
                       <span style={{ opacity: 0.6 }}>—</span>
                     )}
@@ -433,22 +440,57 @@ export default function HistoryPage() {
           </div>
         </>
       )}
-      {lightboxImage && (
-        <div className="history-lightbox" onClick={() => setLightboxImage(null)} role="presentation">
+      {lightbox && (
+        <div className="history-lightbox" onClick={() => setLightbox(null)} role="presentation">
           <div
             className="history-lightbox__content"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
           >
-            <button
-              type="button"
-              className="history-lightbox__close"
-              onClick={() => setLightboxImage(null)}
-            >
-              Close
-            </button>
-            <img src={lightboxImage} alt="Win image" className="history-lightbox__image" />
+            <div className="history-lightbox__header">
+              <span className="history-lightbox__count">
+                Image {lightbox.index + 1} of {lightbox.images.length}
+              </span>
+              <button
+                type="button"
+                className="history-lightbox__close"
+                onClick={() => setLightbox(null)}
+              >
+                Close
+              </button>
+            </div>
+            <img src={lightbox.images[lightbox.index]} alt="Win image" className="history-lightbox__image" />
+            {lightbox.images.length > 1 && (
+              <div className="history-lightbox__nav">
+                <button
+                  type="button"
+                  className="history-lightbox__nav-button"
+                  onClick={() =>
+                    setLightbox((prev) =>
+                      prev ? { images: prev.images, index: Math.max(prev.index - 1, 0) } : prev
+                    )
+                  }
+                  disabled={lightbox.index === 0}
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  className="history-lightbox__nav-button"
+                  onClick={() =>
+                    setLightbox((prev) =>
+                      prev
+                        ? { images: prev.images, index: Math.min(prev.index + 1, prev.images.length - 1) }
+                        : prev
+                    )
+                  }
+                  disabled={lightbox.index === lightbox.images.length - 1}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -459,6 +501,12 @@ export default function HistoryPage() {
           padding: 0;
           background: none;
           cursor: pointer;
+        }
+
+        .history-image-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
         }
 
         .history-image-thumb {
@@ -484,7 +532,7 @@ export default function HistoryPage() {
           position: relative;
           background: var(--surface);
           border-radius: 16px;
-          padding: 16px;
+          padding: 16px 16px 24px;
           border: 1px solid var(--border-strong);
           max-width: min(90vw, 860px);
           max-height: min(85vh, 720px);
@@ -493,8 +541,20 @@ export default function HistoryPage() {
           box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
         }
 
+        .history-lightbox__header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .history-lightbox__count {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-secondary);
+        }
+
         .history-lightbox__close {
-          justify-self: end;
           border-radius: 999px;
           border: none;
           background: var(--primary);
@@ -510,6 +570,27 @@ export default function HistoryPage() {
           border-radius: 12px;
           object-fit: contain;
           max-height: 70vh;
+        }
+
+        .history-lightbox__nav {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .history-lightbox__nav-button {
+          border-radius: 999px;
+          border: 1px solid var(--border-strong);
+          background: var(--surface-alt);
+          color: var(--text-primary);
+          padding: 8px 16px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .history-lightbox__nav-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       `}</style>
     </main>
