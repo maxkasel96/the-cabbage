@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 import PlayerAvatar from '../components/players/PlayerAvatar'
+import { getAvatarPublicUrl } from '@/lib/getAvatarPublicUrl'
 
 type Winner = {
   id: string
@@ -17,6 +18,7 @@ type HistoryRow = {
   played_at: string
   winners: Winner[]
   notes: string | null
+  win_images: string[]
 }
 
 type ScoreRow = {
@@ -39,6 +41,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null)
 
   // Tournament navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([])
@@ -384,12 +387,16 @@ export default function HistoryPage() {
               <div>Game</div>
               <div>Winners</div>
               <div>Notes</div>
+              <div>Image</div>
               <div>Played</div>
             </div>
 
             {filtered.map((h, index) => {
               const winnersLabel =
                 (h.winners ?? []).length === 0 ? '—' : h.winners.map((w) => w.display_name).join(', ')
+              const winImageUrls = (h.win_images ?? [])
+                .map((path) => getAvatarPublicUrl(path))
+                .filter((url): url is string => Boolean(url))
 
               return (
                 <div
@@ -405,6 +412,25 @@ export default function HistoryPage() {
                   <div style={{ fontWeight: 600 }}>{h.name}</div>
                   <div style={{ opacity: 0.9 }}>{winnersLabel}</div>
                   <div style={{ opacity: 0.9, whiteSpace: 'pre-wrap' }}>{h.notes ?? '—'}</div>
+                  <div>
+                    {winImageUrls.length > 0 ? (
+                      <div className="history-image-grid">
+                        {winImageUrls.map((url, imageIndex) => (
+                          <button
+                            key={`${h.id}-${imageIndex}`}
+                            type="button"
+                            className="history-image-button"
+                            onClick={() => setLightboxImage(url)}
+                            aria-label={`View win image ${imageIndex + 1} for ${h.name}`}
+                          >
+                            <img src={url} alt={`Win image ${imageIndex + 1} for ${h.name}`} className="history-image-thumb" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ opacity: 0.6 }}>—</span>
+                    )}
+                  </div>
                   <div style={{ opacity: 0.75 }}>
                     {h.played_at ? new Date(h.played_at).toLocaleString() : '—'}
                   </div>
@@ -414,7 +440,91 @@ export default function HistoryPage() {
           </div>
         </>
       )}
+      {lightboxImage && (
+        <div className="history-lightbox" onClick={() => setLightboxImage(null)} role="presentation">
+          <div
+            className="history-lightbox__content"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <button
+              type="button"
+              className="history-lightbox__close"
+              onClick={() => setLightboxImage(null)}
+            >
+              Close
+            </button>
+            <img src={lightboxImage} alt="Win image" className="history-lightbox__image" />
+          </div>
+        </div>
+      )}
       </div>
+      <style jsx>{`
+        .history-image-button {
+          border: none;
+          padding: 0;
+          background: none;
+          cursor: pointer;
+        }
+
+        .history-image-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .history-image-thumb {
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          object-fit: cover;
+          border: 1px solid var(--border-strong);
+          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.15);
+        }
+
+        .history-lightbox {
+          position: fixed;
+          inset: 0;
+          background: rgba(19, 14, 10, 0.8);
+          display: grid;
+          place-items: center;
+          z-index: 80;
+          padding: 20px;
+        }
+
+        .history-lightbox__content {
+          position: relative;
+          background: var(--surface);
+          border-radius: 16px;
+          padding: 16px;
+          border: 1px solid var(--border-strong);
+          max-width: min(90vw, 860px);
+          max-height: min(85vh, 720px);
+          display: grid;
+          gap: 12px;
+          box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+        }
+
+        .history-lightbox__close {
+          justify-self: end;
+          border-radius: 999px;
+          border: none;
+          background: var(--primary);
+          color: var(--text-inverse);
+          padding: 8px 14px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .history-lightbox__image {
+          width: 100%;
+          height: auto;
+          border-radius: 12px;
+          object-fit: contain;
+          max-height: 70vh;
+        }
+      `}</style>
     </main>
   )
 }

@@ -118,7 +118,7 @@ button:disabled {
 }
 
 .table-grid--history {
-  grid-template-columns: 2fr 1fr 2fr 1fr;
+  grid-template-columns: 2fr 1fr 2fr 0.7fr 1fr;
 }
 
 .table-grid--tags {
@@ -1490,7 +1490,7 @@ button:disabled {
   }
 
   .table-grid--history {
-    min-width: 720px;
+    min-width: 840px;
   }
 
   .table-grid--tags {
