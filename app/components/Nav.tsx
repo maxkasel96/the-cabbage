@@ -443,6 +443,16 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
       >
         <div className="main-nav__sheet-handle" />
         <div className="main-nav__sheet-links">
+          <button
+            type="button"
+            className="main-nav__sheet-link"
+            onClick={handleMobileClose}
+          >
+            <span className="main-nav__sheet-icon" aria-hidden="true">
+              ☰
+            </span>
+            <span className="main-nav__sheet-label">Menu</span>
+          </button>
           {primaryLinks.map((link) => renderMobileLink(link.href, link.label, link.icon))}
         </div>
         <div className="main-nav__sheet-section">
