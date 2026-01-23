@@ -159,12 +159,14 @@ const MegaMenuItemCard = ({ item, onNavigate }: MegaMenuItemProps) => (
 
 export default function Nav({ showAdminMenu = true }: NavProps) {
   const pathname = usePathname()
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
   const desktopNavRef = useRef<HTMLDivElement>(null)
   const scrollStateRef = useRef({
     lastPosition: 0,
     ticking: false,
   })
+  const wasMenuOpenRef = useRef(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
@@ -214,8 +216,14 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
+      if (wasMenuOpenRef.current) {
+        menuButtonRef.current?.focus()
+      }
+      wasMenuOpenRef.current = false
       return
     }
+
+    wasMenuOpenRef.current = true
 
     const sheet = sheetRef.current
     const focusableElements = sheet
@@ -405,6 +413,16 @@ export default function Nav({ showAdminMenu = true }: NavProps) {
             ))}
           </div>
         </div>
+        <button
+          type="button"
+          className="main-nav__menu-button"
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          ref={menuButtonRef}
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+        >
+          <span aria-hidden="true">{isMobileMenuOpen ? '✕' : '☰'}</span>
+        </button>
       </div>
 
       <button
