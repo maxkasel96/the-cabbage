@@ -711,6 +711,16 @@ button:disabled {
     background-image: url('https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jan%2023,%202026,%2011_50_59%20PM%201.png');
     aspect-ratio: auto;
   }
+
+  .player-card-modal__table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .player-card-modal__table {
+    min-width: 560px;
+  }
 }
 
 .player-card-modal__bio {
