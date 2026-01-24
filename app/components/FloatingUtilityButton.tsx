@@ -20,6 +20,33 @@ const modalTaglines = [
   'Fuck Around & Find Out',
 ]
 
+const resultTaglines = [
+  'Go get my shit',
+  'Time to get off your ass',
+  'Move it or lose it',
+  'This is your problem now:',
+  'Up you go:',
+  'Eyes open, legs working:',
+  'By order of the cabbage:',
+  'Cry later, walk now:',
+  'Blame the algorithm:',
+]
+
+const outcomeTaglines = [
+  'Chosen by Math, Not Mercy',
+  'Fair and Unfortunate',
+  'The Cabbage Is Drunk With Power',
+  'Statistically, This Was Inevitable',
+  'Science Demands It',
+  'Judgment From the Produce Aisle',
+  'Welp. That’s That.',
+  'Sucks To Be You',
+  'This App Actively Hates You',
+  'The Algorithm Said “Fuck This Guy”',
+  'We Ran the Numbers. They Hate You.',
+  'The Cabbage Chose You Out of Spite',
+]
+
 type Player = {
   id: string
   display_name: string
@@ -33,6 +60,8 @@ export default function FloatingUtilityButton() {
   const [selectionStatus, setSelectionStatus] = useState('')
   const [isSelecting, setIsSelecting] = useState(false)
   const [modalTagline, setModalTagline] = useState('')
+  const [resultTagline, setResultTagline] = useState('')
+  const [outcomeTagline, setOutcomeTagline] = useState('')
   const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -77,6 +106,8 @@ export default function FloatingUtilityButton() {
     setSelectedPlayer(null)
     setSelectionStatus('')
     setIsSelecting(false)
+    setResultTagline('')
+    setOutcomeTagline('')
     if (selectionTimerRef.current) {
       clearTimeout(selectionTimerRef.current)
       selectionTimerRef.current = null
@@ -102,7 +133,11 @@ export default function FloatingUtilityButton() {
 
     selectionTimerRef.current = setTimeout(() => {
       const nextPlayer = players[Math.floor(Math.random() * players.length)]
+      const nextResultTagline = resultTaglines[Math.floor(Math.random() * resultTaglines.length)]
+      const nextOutcomeTagline = outcomeTaglines[Math.floor(Math.random() * outcomeTaglines.length)]
       setSelectedPlayer(nextPlayer)
+      setResultTagline(nextResultTagline)
+      setOutcomeTagline(nextOutcomeTagline)
       setSelectionStatus('')
       setIsSelecting(false)
     }, 700)
@@ -146,9 +181,13 @@ export default function FloatingUtilityButton() {
                     {isSelecting ? 'Choosing from the cabbage… 🥬' : 'Pick a player from the cabbage 🥬'}
                   </button>
                   {selectedPlayer ? (
-                    <p className="floating-utility-modal__result">
-                      Selected player: <strong>{selectedPlayer.display_name}</strong>
-                    </p>
+                    <div className="floating-utility-modal__result">
+                      <p className="text-base font-semibold">{resultTagline}</p>
+                      <p>
+                        <strong>{selectedPlayer.display_name}</strong>
+                      </p>
+                      <p className="text-sm text-slate-500">{outcomeTagline}</p>
+                    </div>
                   ) : null}
                   {selectionStatus ? (
                     <p className="floating-utility-modal__status">{selectionStatus}</p>
