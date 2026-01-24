@@ -199,18 +199,19 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     }
 
     if (activeTournament?.id) {
-      const { data: selectionCounts, error: selectionCountsError } = await supabaseServer
-        .from('player_selection_counts')
-        .select('player_id, selection_count')
+      const { data: selectionEvents, error: selectionEventsError } = await supabaseServer
+        .from('player_selection_events')
+        .select('player_id')
         .eq('tournament_id', activeTournament.id)
 
-      if (selectionCountsError) {
-        statusMessages.push(selectionCountsError.message)
+      if (selectionEventsError) {
+        statusMessages.push(selectionEventsError.message)
       }
 
-      ;(selectionCounts ?? []).forEach((entry) => {
+      ;(selectionEvents ?? []).forEach((entry) => {
         if (!entry?.player_id) return
-        selectionCountsByPlayer.set(entry.player_id, entry.selection_count ?? 0)
+        const current = selectionCountsByPlayer.get(entry.player_id) ?? 0
+        selectionCountsByPlayer.set(entry.player_id, current + 1)
       })
     }
   }
