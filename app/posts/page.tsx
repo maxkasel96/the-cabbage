@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -35,7 +35,7 @@ type PostRecord = {
   created_at: string
 }
 
-const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
+const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'IMG', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
 
 const sanitizeRichText = (value: string) => {
   if (!value) return ''
@@ -60,8 +60,23 @@ const sanitizeRichText = (value: string) => {
       }
     }
 
+    if (node.tagName === 'IMG') {
+      const src = node.getAttribute('src') ?? ''
+      const isSafe =
+        /^https?:\/\//i.test(src) ||
+        /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(src)
+      if (!isSafe) {
+        node.remove()
+        return
+      }
+    }
+
     Array.from(node.attributes).forEach((attr) => {
       if (node.tagName === 'A' && (attr.name === 'href' || attr.name === 'rel' || attr.name === 'target')) {
+        return
+      }
+
+      if (node.tagName === 'IMG' && (attr.name === 'src' || attr.name === 'alt')) {
         return
       }
 
@@ -77,6 +92,16 @@ const getPlainText = (value: string) => {
   const wrapper = document.createElement('div')
   wrapper.innerHTML = value
   return wrapper.textContent?.replace(/\u00a0/g, ' ').trim() ?? ''
+}
+
+const escapeHtmlAttribute = (value: string) =>
+  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+const hasImages = (value: string) => {
+  if (!value) return false
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(value, 'text/html')
+  return doc.body.querySelector('img') !== null
 }
 
 const formatDateTime = (value: string) => {
@@ -105,6 +130,7 @@ export default function PostsPage() {
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [status, setStatus] = useState('')
   const editorRef = useRef<HTMLDivElement | null>(null)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -188,6 +214,7 @@ export default function PostsPage() {
   const handleSubmit = async () => {
     const sanitized = sanitizeRichText(draftMessage)
     const plainText = getPlainText(sanitized)
+    const containsImages = hasImages(sanitized)
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
       return
@@ -198,8 +225,8 @@ export default function PostsPage() {
       return
     }
 
-    if (!plainText) {
-      setStatus('Write a message before posting.')
+    if (!plainText && !containsImages) {
+      setStatus('Write a message or attach images before posting.')
       return
     }
 
@@ -272,6 +299,45 @@ export default function PostsPage() {
 
     document.execCommand(command, false)
     updateDraftMessage()
+  }
+
+  const insertHtml = (html: string) => {
+    if (!editorRef.current) return
+    editorRef.current.focus()
+    document.execCommand('insertHTML', false, html)
+    updateDraftMessage()
+  }
+
+  const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    if (!files.length) return
+
+    const images = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result ?? ''))
+            reader.onerror = () => reject(new Error('Failed to read image.'))
+            reader.readAsDataURL(file)
+          })
+      )
+    ).catch(() => [])
+
+    images.forEach((src, index) => {
+      if (!src) return
+      const file = files[index]
+      const alt = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'Post image'
+      insertHtml(`<p><img src="${src}" alt="${escapeHtmlAttribute(alt)}" /></p>`)
+    })
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
+  }
+
+  const triggerImagePicker = () => {
+    imageInputRef.current?.click()
   }
 
   const handleAddLink = () => {
@@ -408,6 +474,9 @@ export default function PostsPage() {
                   <button type="button" onClick={handleAddLink} aria-label="Insert link">
                     Link
                   </button>
+                  <button type="button" onClick={triggerImagePicker} aria-label="Attach images">
+                    Images
+                  </button>
                 </div>
                 <div
                   ref={editorRef}
@@ -417,6 +486,14 @@ export default function PostsPage() {
                   aria-label="Message"
                   data-placeholder="Drop your thoughts here..."
                   onInput={updateDraftMessage}
+                />
+                <input
+                  ref={imageInputRef}
+                  className="posts__editor-input-file"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleAddImages}
                 />
               </div>
             </label>

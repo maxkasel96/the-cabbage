@@ -1953,6 +1953,13 @@ button:disabled {
   text-decoration: underline;
 }
 
+.posts__entry-message img {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+  margin: 10px 0;
+}
+
 .posts__empty {
   padding: 18px;
   border-radius: 16px;
@@ -2024,6 +2031,17 @@ button:disabled {
   line-height: 1.6;
   color: var(--text-primary);
   outline: none;
+}
+
+.posts__editor-input img {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+  margin: 8px 0;
+}
+
+.posts__editor-input-file {
+  display: none;
 }
 
 .posts__editor-input:empty::before {
