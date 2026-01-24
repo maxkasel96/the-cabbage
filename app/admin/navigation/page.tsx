@@ -199,7 +199,7 @@ export default function NavigationBuilderPage() {
 
       setConfig(json.config ?? defaultNavConfig)
       setInitialConfig(json.config ?? defaultNavConfig)
-      setStatus('')
+      setStatus(json?.warning ?? '')
     }
 
     loadConfig()
