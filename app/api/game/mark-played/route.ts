@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       [{ tournament_id: tournamentId, game_id: gameId }],
       { onConflict: 'tournament_id,game_id' }
     )
-    .select('id')
+    .select('id, played_at')
     .single()
 
   if (playUpsert.error) {
@@ -85,6 +85,7 @@ export async function POST(req: Request) {
   }
 
   const playId = playUpsert.data.id as string
+  const previouslyPlayedAt = playUpsert.data.played_at as string | null
   let winImageValue: string | null = null
 
   if (winImageFiles.length > 0) {
@@ -149,6 +150,61 @@ export async function POST(req: Request) {
 
   if (upd.error) {
     return NextResponse.json({ error: upd.error.message }, { status: 500 })
+  }
+
+  // 4) Record losses for the active tournament (skip if the play was already finalized)
+  if (!previouslyPlayedAt) {
+    const { data: participants, error: participantsError } = await supabaseServer
+      .from('play_players')
+      .select('player_id')
+      .eq('play_id', playId)
+
+    if (participantsError) {
+      return NextResponse.json({ error: participantsError.message }, { status: 500 })
+    }
+
+    const participantIds = Array.from(
+      new Set(
+        (participants ?? [])
+          .map((entry) => entry.player_id)
+          .filter((playerId): playerId is string => typeof playerId === 'string' && uuidRegex.test(playerId))
+      )
+    )
+    const winners = new Set<string>(winnerPlayerIds)
+    const loserIds = participantIds.filter((playerId) => !winners.has(playerId))
+
+    if (loserIds.length > 0) {
+      const { data: existingLosses, error: existingLossesError } = await supabaseServer
+        .from('player_losses_by_tournament')
+        .select('player_id, losses')
+        .eq('tournament_id', tournamentId)
+        .in('player_id', loserIds)
+
+      if (existingLossesError) {
+        return NextResponse.json({ error: existingLossesError.message }, { status: 500 })
+      }
+
+      const lossesByPlayer = new Map<string, number>()
+      ;(existingLosses ?? []).forEach((row) => {
+        if (row.player_id && typeof row.losses === 'number') {
+          lossesByPlayer.set(row.player_id, row.losses)
+        }
+      })
+
+      const rows = loserIds.map((playerId) => ({
+        tournament_id: tournamentId,
+        player_id: playerId,
+        losses: (lossesByPlayer.get(playerId) ?? 0) + 1,
+      }))
+
+      const lossUpsert = await supabaseServer
+        .from('player_losses_by_tournament')
+        .upsert(rows, { onConflict: 'tournament_id,player_id' })
+
+      if (lossUpsert.error) {
+        return NextResponse.json({ error: lossUpsert.error.message }, { status: 500 })
+      }
+    }
   }
 
   return NextResponse.json({ ok: true, tournamentId, gameId, playId, winnerPlayerIds })
