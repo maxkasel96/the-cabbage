@@ -170,7 +170,7 @@ export default function FloatingUtilityButton() {
                 >
                   ×
                 </button>
-                <p className="text-base font-semibold">{modalTagline}</p>
+                <p className="text-base font-semibold floating-utility-modal__tagline">{modalTagline}</p>
                 <div className="floating-utility-modal__picker">
                   <button
                     type="button"
