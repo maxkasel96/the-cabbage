@@ -155,7 +155,7 @@ export default function FloatingUtilityButton() {
       </button>
       {isModalOpen && isMounted
         ? createPortal(
-            <div className="player-card-modal" role="dialog" aria-modal="true">
+            <div className="player-card-modal floating-utility-modal" role="dialog" aria-modal="true">
               <div className="player-card-modal__backdrop" onClick={closeModal} />
               <div
                 className="player-card-modal__content floating-utility-modal__content"
