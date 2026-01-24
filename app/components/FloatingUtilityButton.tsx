@@ -170,7 +170,7 @@ export default function FloatingUtilityButton() {
                 >
                   ×
                 </button>
-                <p className="text-base font-semibold">{modalTagline}</p>
+                <p className="text-base font-semibold floating-utility-modal__tagline">{modalTagline}</p>
                 <div className="floating-utility-modal__picker">
                   <button
                     type="button"
@@ -186,9 +186,7 @@ export default function FloatingUtilityButton() {
                       <p className="floating-utility-modal__selected-player">
                         <strong>{selectedPlayer.display_name}</strong>
                       </p>
-                      <p className="floating-utility-modal__outcome text-sm text-slate-500">
-                        {outcomeTagline}
-                      </p>
+                      <p className="floating-utility-modal__outcome">{outcomeTagline}</p>
                     </div>
                   ) : null}
                   {selectionStatus ? (
