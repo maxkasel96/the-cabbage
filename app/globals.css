@@ -2232,43 +2232,19 @@ button:disabled {
   font-weight: 600;
 }
 
-.rules__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.rules__toolbar-button {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: inherit;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.rules__toolbar-button:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
 .rules__editor-input {
   min-height: 140px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.6);
   border-radius: 12px;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
+  background: #0f172a;
+  color: #f8fafc;
   line-height: 1.5;
 }
 
 .rules__editor-input:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline: 2px solid rgba(148, 163, 184, 0.9);
   outline-offset: 2px;
-}
-
-.rules__editor-input[data-placeholder]:empty::before {
-  content: attr(data-placeholder);
-  color: rgba(255, 255, 255, 0.4);
 }
 
 .rules__editor-actions {
@@ -2329,6 +2305,8 @@ button:disabled {
 
 .rules__content {
   line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
 }
 
 .rules__content ul,

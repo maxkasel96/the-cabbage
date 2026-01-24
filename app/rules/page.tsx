@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -30,50 +30,6 @@ type RuleRecord = {
   updated_at: string
 }
 
-const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
-
-const sanitizeRichText = (value: string) => {
-  if (!value) return ''
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(value, 'text/html')
-  const nodes = Array.from(doc.body.querySelectorAll('*'))
-
-  nodes.forEach((node) => {
-    if (!allowedRichTextTags.has(node.tagName)) {
-      node.replaceWith(...Array.from(node.childNodes))
-      return
-    }
-
-    if (node.tagName === 'A') {
-      const href = node.getAttribute('href') ?? ''
-      const isSafe = /^https?:\/\//i.test(href) || href.startsWith('mailto:')
-      if (!isSafe) {
-        node.removeAttribute('href')
-      } else {
-        node.setAttribute('rel', 'noreferrer noopener')
-        node.setAttribute('target', '_blank')
-      }
-    }
-
-    Array.from(node.attributes).forEach((attr) => {
-      if (node.tagName === 'A' && (attr.name === 'href' || attr.name === 'rel' || attr.name === 'target')) {
-        return
-      }
-
-      node.removeAttribute(attr.name)
-    })
-  })
-
-  return doc.body.innerHTML
-}
-
-const getPlainText = (value: string) => {
-  if (!value) return ''
-  const wrapper = document.createElement('div')
-  wrapper.innerHTML = value
-  return wrapper.textContent?.replace(/\u00a0/g, ' ').trim() ?? ''
-}
-
 const formatDateTime = (value: string) => {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
@@ -87,10 +43,9 @@ export default function RulesPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [activeTournamentId, setActiveTournamentId] = useState('')
   const [rules, setRules] = useState<RuleEntry[]>([])
-  const [editorHtml, setEditorHtml] = useState('')
+  const [draftText, setDraftText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const editorRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -194,27 +149,14 @@ export default function RulesPage() {
     )
   }, [])
 
-  const handleToolbarAction = (command: string, value?: string) => {
-    if (!editorRef.current) return
-    editorRef.current.focus()
-    document.execCommand(command, false, value)
-    setEditorHtml(editorRef.current.innerHTML)
-  }
-
-  const handleLinkInsert = () => {
-    const url = window.prompt('Enter a URL', 'https://')?.trim()
-    if (!url) return
-    handleToolbarAction('createLink', url)
-  }
-
   const handleSubmit = async () => {
     if (!activeTournamentId) {
       setStatusMessage('No active tournament is available for this rule.')
       return
     }
 
-    const sanitized = sanitizeRichText(editorHtml)
-    if (!getPlainText(sanitized)) {
+    const trimmed = draftText.trim()
+    if (!trimmed) {
       setStatusMessage('Please enter the rule details before submitting.')
       return
     }
@@ -225,7 +167,7 @@ export default function RulesPage() {
     const res = await fetch('/api/rules', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tournament_id: activeTournamentId, content: sanitized }),
+      body: JSON.stringify({ tournament_id: activeTournamentId, content: trimmed }),
     })
 
     const json = await res.json().catch(() => ({}))
@@ -251,10 +193,7 @@ export default function RulesPage() {
       ])
     }
 
-    setEditorHtml('')
-    if (editorRef.current) {
-      editorRef.current.innerHTML = ''
-    }
+    setDraftText('')
     setIsSubmitting(false)
     setStatusMessage('Rule submitted in Proposed status.')
   }
@@ -281,37 +220,13 @@ export default function RulesPage() {
 
           <div className="rules__editor">
             <p className="rules__editor-label">Propose a new rule</p>
-            <div className="rules__toolbar">
-              <button type="button" className="rules__toolbar-button" onClick={() => handleToolbarAction('bold')}>
-                Bold
-              </button>
-              <button type="button" className="rules__toolbar-button" onClick={() => handleToolbarAction('italic')}>
-                Italic
-              </button>
-              <button type="button" className="rules__toolbar-button" onClick={() => handleToolbarAction('underline')}>
-                Underline
-              </button>
-              <button type="button" className="rules__toolbar-button" onClick={() => handleToolbarAction('insertUnorderedList')}>
-                Bullets
-              </button>
-              <button type="button" className="rules__toolbar-button" onClick={() => handleToolbarAction('insertOrderedList')}>
-                Numbered
-              </button>
-              <button type="button" className="rules__toolbar-button" onClick={handleLinkInsert}>
-                Link
-              </button>
-            </div>
-            <div
-              ref={editorRef}
+            <textarea
               className="rules__editor-input"
-              contentEditable
-              role="textbox"
-              aria-multiline="true"
-              aria-label="Rule editor"
-              onInput={(event) => setEditorHtml((event.target as HTMLDivElement).innerHTML)}
-              onBlur={(event) => setEditorHtml((event.target as HTMLDivElement).innerHTML)}
-              data-placeholder="Write the rule details..."
-              suppressContentEditableWarning
+              placeholder="Write the rule details..."
+              aria-label="Rule details"
+              rows={6}
+              value={draftText}
+              onChange={(event) => setDraftText(event.target.value)}
             />
             <div className="rules__editor-actions">
               <button type="button" className="rules__submit" onClick={handleSubmit} disabled={isSubmitting}>
@@ -330,10 +245,7 @@ export default function RulesPage() {
             <div className="rules__list">
               {groupedRules.Proposed.map((rule) => (
                 <article key={rule.id} className="rules__card">
-                  <div
-                    className="rules__content"
-                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(rule.content) }}
-                  />
+                  <p className="rules__content">{rule.content}</p>
                   <div className="rules__meta">
                     <span>Proposed on {formatDateTime(rule.createdAt)}</span>
                     <label className="rules__status-control">
@@ -362,10 +274,7 @@ export default function RulesPage() {
             <div className="rules__list">
               {groupedRules.Accepted.map((rule) => (
                 <article key={rule.id} className="rules__card rules__card--accepted">
-                  <div
-                    className="rules__content"
-                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(rule.content) }}
-                  />
+                  <p className="rules__content">{rule.content}</p>
                   <div className="rules__meta">
                     <span>Accepted on {formatDateTime(rule.updatedAt)}</span>
                     <label className="rules__status-control">
@@ -394,10 +303,7 @@ export default function RulesPage() {
             <div className="rules__list">
               {groupedRules.Rejected.map((rule) => (
                 <article key={rule.id} className="rules__card rules__card--rejected">
-                  <div
-                    className="rules__content"
-                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(rule.content) }}
-                  />
+                  <p className="rules__content">{rule.content}</p>
                   <div className="rules__meta">
                     <span>Rejected on {formatDateTime(rule.updatedAt)}</span>
                     <label className="rules__status-control">
