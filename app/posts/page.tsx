@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -35,6 +35,50 @@ type PostRecord = {
   created_at: string
 }
 
+const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
+
+const sanitizeRichText = (value: string) => {
+  if (!value) return ''
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(value, 'text/html')
+  const nodes = Array.from(doc.body.querySelectorAll('*'))
+
+  nodes.forEach((node) => {
+    if (!allowedRichTextTags.has(node.tagName)) {
+      node.replaceWith(...Array.from(node.childNodes))
+      return
+    }
+
+    if (node.tagName === 'A') {
+      const href = node.getAttribute('href') ?? ''
+      const isSafe = /^https?:\/\//i.test(href) || href.startsWith('mailto:')
+      if (!isSafe) {
+        node.removeAttribute('href')
+      } else {
+        node.setAttribute('rel', 'noreferrer noopener')
+        node.setAttribute('target', '_blank')
+      }
+    }
+
+    Array.from(node.attributes).forEach((attr) => {
+      if (node.tagName === 'A' && (attr.name === 'href' || attr.name === 'rel' || attr.name === 'target')) {
+        return
+      }
+
+      node.removeAttribute(attr.name)
+    })
+  })
+
+  return doc.body.innerHTML
+}
+
+const getPlainText = (value: string) => {
+  if (!value) return ''
+  const wrapper = document.createElement('div')
+  wrapper.innerHTML = value
+  return wrapper.textContent?.replace(/\u00a0/g, ' ').trim() ?? ''
+}
+
 const formatDateTime = (value: string) => {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
@@ -60,6 +104,7 @@ export default function PostsPage() {
   const [draftMessage, setDraftMessage] = useState('')
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [status, setStatus] = useState('')
+  const editorRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -141,7 +186,8 @@ export default function PostsPage() {
   }, [selectedTournamentId, tournaments])
 
   const handleSubmit = async () => {
-    const trimmed = draftMessage.trim()
+    const sanitized = sanitizeRichText(draftMessage)
+    const plainText = getPlainText(sanitized)
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
       return
@@ -152,7 +198,7 @@ export default function PostsPage() {
       return
     }
 
-    if (!trimmed) {
+    if (!plainText) {
       setStatus('Write a message before posting.')
       return
     }
@@ -170,7 +216,7 @@ export default function PostsPage() {
         tournament_id: selectedTournamentId,
         author_id: draftAuthorId,
         author_name: authorName,
-        message: trimmed,
+        message: sanitized,
       }),
     })
     const json = await res.json().catch(() => ({}))
@@ -201,7 +247,37 @@ export default function PostsPage() {
     }))
 
     setDraftMessage('')
+    if (editorRef.current) {
+      editorRef.current.innerHTML = ''
+    }
     setStatus('')
+  }
+
+  const updateDraftMessage = () => {
+    if (!editorRef.current) return
+    setDraftMessage(editorRef.current.innerHTML)
+  }
+
+  const applyFormatting = (command: string, value?: string) => {
+    if (!editorRef.current) return
+    editorRef.current.focus()
+
+    if (command === 'createLink') {
+      const url = value?.trim() ?? ''
+      if (!url) return
+      document.execCommand(command, false, url)
+      updateDraftMessage()
+      return
+    }
+
+    document.execCommand(command, false)
+    updateDraftMessage()
+  }
+
+  const handleAddLink = () => {
+    const url = window.prompt('Enter a URL to link to:')
+    if (!url) return
+    applyFormatting('createLink', url)
   }
 
   return (
@@ -279,7 +355,10 @@ export default function PostsPage() {
                     </div>
                     <span className="posts__entry-index">#{index + 1}</span>
                   </header>
-                  <p className="posts__entry-message">{post.message}</p>
+                  <div
+                    className="posts__entry-message"
+                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.message) }}
+                  />
                 </div>
               </article>
             ))
@@ -309,12 +388,37 @@ export default function PostsPage() {
 
             <label className="posts__control posts__control--full">
               <span className="posts__control-label">Message</span>
-              <textarea
-                value={draftMessage}
-                onChange={(event) => setDraftMessage(event.target.value)}
-                placeholder="Drop your thoughts here..."
-                rows={4}
-              />
+              <div className="posts__editor">
+                <div className="posts__editor-toolbar" role="toolbar" aria-label="Formatting">
+                  <button type="button" onClick={() => applyFormatting('bold')} aria-label="Bold">
+                    <strong>B</strong>
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('italic')} aria-label="Italic">
+                    <em>I</em>
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('underline')} aria-label="Underline">
+                    <span style={{ textDecoration: 'underline' }}>U</span>
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('insertUnorderedList')} aria-label="Bulleted list">
+                    • List
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('insertOrderedList')} aria-label="Numbered list">
+                    1. List
+                  </button>
+                  <button type="button" onClick={handleAddLink} aria-label="Insert link">
+                    Link
+                  </button>
+                </div>
+                <div
+                  ref={editorRef}
+                  className="posts__editor-input"
+                  contentEditable
+                  role="textbox"
+                  aria-label="Message"
+                  data-placeholder="Drop your thoughts here..."
+                  onInput={updateDraftMessage}
+                />
+              </div>
             </label>
 
             <div className="posts__composer-actions">
