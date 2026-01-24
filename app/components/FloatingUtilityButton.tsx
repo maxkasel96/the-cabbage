@@ -6,6 +6,13 @@ import { createPortal } from 'react-dom'
 const FLOATING_IMAGE_URL =
   'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
 
+const modalTaglines = [
+  'Choose your victim.',
+  "Who's the go-fer boy this time?",
+  'Let the cabbage decide.',
+  "Don't draw yourself again, dumb ass",
+]
+
 type Player = {
   id: string
   display_name: string
@@ -18,6 +25,7 @@ export default function FloatingUtilityButton() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
   const [selectionStatus, setSelectionStatus] = useState('')
   const [isSelecting, setIsSelecting] = useState(false)
+  const [modalTagline, setModalTagline] = useState('')
   const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -51,6 +59,8 @@ export default function FloatingUtilityButton() {
   }, [])
 
   function openModal() {
+    const nextTagline = modalTaglines[Math.floor(Math.random() * modalTaglines.length)]
+    setModalTagline(nextTagline)
     setIsModalOpen(true)
   }
 
@@ -118,7 +128,7 @@ export default function FloatingUtilityButton() {
                 >
                   ×
                 </button>
-                <p className="text-base font-semibold">Test</p>
+                <p className="text-base font-semibold">{modalTagline}</p>
                 <div className="floating-utility-modal__picker">
                   <button
                     type="button"
