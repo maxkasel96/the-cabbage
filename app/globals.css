@@ -2044,6 +2044,11 @@ button:disabled {
   cursor: pointer;
 }
 
+.posts__editor-toolbar button[aria-pressed='true'] {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .posts__editor-toolbar button:hover {
   background: rgba(255, 255, 255, 0.06);
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, type MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -201,6 +201,9 @@ export default function PostsPage() {
       setDraftMessage(html)
     },
   })
+  const handleToolbarMouseDown = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+  }
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -357,7 +360,7 @@ export default function PostsPage() {
 
     setDraftMessage('')
     setAttachedImages([])
-    editor?.commands.clearContent()
+    editor?.chain().clearContent().unsetAllMarks().run()
     lastValidContentRef.current = { html: '', text: '' }
     setEditorStatus('')
     setStatus('')
@@ -547,65 +550,87 @@ export default function PostsPage() {
                 <div className="posts__editor-toolbar" role="toolbar" aria-label="Formatting">
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleBold().run()}
                     aria-label="Bold"
+                    aria-pressed={editor?.isActive('bold') ?? false}
                     disabled={!editor}
                   >
                     <strong>B</strong>
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleItalic().run()}
                     aria-label="Italic"
+                    aria-pressed={editor?.isActive('italic') ?? false}
                     disabled={!editor}
                   >
                     <em>I</em>
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleUnderline().run()}
                     aria-label="Underline"
+                    aria-pressed={editor?.isActive('underline') ?? false}
                     disabled={!editor}
                   >
                     <span style={{ textDecoration: 'underline' }}>U</span>
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleStrike().run()}
                     aria-label="Strikethrough"
+                    aria-pressed={editor?.isActive('strike') ?? false}
                     disabled={!editor}
                   >
                     <span style={{ textDecoration: 'line-through' }}>S</span>
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleBulletList().run()}
                     aria-label="Bulleted list"
+                    aria-pressed={editor?.isActive('bulletList') ?? false}
                     disabled={!editor}
                   >
                     • List
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleOrderedList().run()}
                     aria-label="Numbered list"
+                    aria-pressed={editor?.isActive('orderedList') ?? false}
                     disabled={!editor}
                   >
                     1. List
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().toggleBlockquote().run()}
                     aria-label="Blockquote"
+                    aria-pressed={editor?.isActive('blockquote') ?? false}
                     disabled={!editor}
                   >
                     “Quote”
                   </button>
-                  <button type="button" onClick={handleAddLink} aria-label="Insert link" disabled={!editor}>
+                  <button
+                    type="button"
+                    onMouseDown={handleToolbarMouseDown}
+                    onClick={handleAddLink}
+                    aria-label="Insert link"
+                    aria-pressed={editor?.isActive('link') ?? false}
+                    disabled={!editor}
+                  >
                     Link
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().undo().run()}
                     aria-label="Undo"
                     disabled={!editor}
@@ -614,6 +639,7 @@ export default function PostsPage() {
                   </button>
                   <button
                     type="button"
+                    onMouseDown={handleToolbarMouseDown}
                     onClick={() => editor?.chain().focus().redo().run()}
                     aria-label="Redo"
                     disabled={!editor}
