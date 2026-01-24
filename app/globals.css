@@ -684,6 +684,18 @@ button:disabled {
   text-align: center;
 }
 
+@media (max-width: 720px) {
+  .player-card-modal {
+    padding: 16px;
+  }
+
+  .player-card-modal__content {
+    width: 100%;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+}
+
 .player-card-modal__bio {
   width: 100%;
   text-align: left;
