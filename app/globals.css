@@ -687,13 +687,14 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
+  .player-card-modal {
+    padding: 16px;
+  }
+
   .player-card-modal__content {
-    background: url('https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jan%2023,%202026,%2011_50_59%20PM%201.png')
-      center / cover no-repeat;
-    background-color: #f8f7f0;
-    animation: none;
-    transition: none;
-    transform: none;
+    width: 100%;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
   }
 }
 
@@ -894,7 +895,7 @@ button:disabled {
   border: none;
   padding: 0;
   background: transparent;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 18px rgba(86, 179, 92, 0.35);
+  box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
   cursor: pointer;
 }
 

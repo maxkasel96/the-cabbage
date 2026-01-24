@@ -178,7 +178,7 @@ export default function FloatingUtilityButton() {
                     onClick={handleShuffle}
                     disabled={isSelecting}
                   >
-                    {isSelecting ? 'Choosing from the cabbage… 🥬' : 'Pick a player from the cabbage 🥬'}
+                    {isSelecting ? 'Choosing from the cabbage…' : 'Pick a player from the cabbage'}
                   </button>
                   {selectedPlayer ? (
                     <div className="floating-utility-modal__result">
