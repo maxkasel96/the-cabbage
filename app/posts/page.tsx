@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -23,6 +23,7 @@ type PostEntry = {
   authorId: string
   authorName: string
   message: string
+  images: string[]
   createdAt: string
 }
 
@@ -32,7 +33,66 @@ type PostRecord = {
   author_id: string
   author_name: string
   message: string
+  images?: string[] | null
   created_at: string
+}
+
+const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
+const allowedImageSources = [/^https?:\/\//i, /^data:image\/(png|jpe?g|gif|webp);base64,/i]
+
+const sanitizeRichText = (value: string) => {
+  if (!value) return ''
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(value, 'text/html')
+  const nodes = Array.from(doc.body.querySelectorAll('*'))
+
+  nodes.forEach((node) => {
+    if (!allowedRichTextTags.has(node.tagName)) {
+      node.replaceWith(...Array.from(node.childNodes))
+      return
+    }
+
+    if (node.tagName === 'A') {
+      const href = node.getAttribute('href') ?? ''
+      const isSafe = /^https?:\/\//i.test(href) || href.startsWith('mailto:')
+      if (!isSafe) {
+        node.removeAttribute('href')
+      } else {
+        node.setAttribute('rel', 'noreferrer noopener')
+        node.setAttribute('target', '_blank')
+      }
+    }
+
+    Array.from(node.attributes).forEach((attr) => {
+      if (node.tagName === 'A' && (attr.name === 'href' || attr.name === 'rel' || attr.name === 'target')) {
+        return
+      }
+
+      node.removeAttribute(attr.name)
+    })
+  })
+
+  return doc.body.innerHTML
+}
+
+const getPlainText = (value: string) => {
+  if (!value) return ''
+  const wrapper = document.createElement('div')
+  wrapper.innerHTML = value
+  return wrapper.textContent?.replace(/\u00a0/g, ' ').trim() ?? ''
+}
+
+const escapeHtmlAttribute = (value: string) =>
+  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+const extractImageSources = (value: string) => {
+  if (!value) return []
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(value, 'text/html')
+  const images = Array.from(doc.body.querySelectorAll('img'))
+    .map((img) => img.getAttribute('src') ?? '')
+    .filter(Boolean)
+  return images.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
 }
 
 const formatDateTime = (value: string) => {
@@ -60,6 +120,11 @@ export default function PostsPage() {
   const [draftMessage, setDraftMessage] = useState('')
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [status, setStatus] = useState('')
+  const [lightboxImages, setLightboxImages] = useState<string[]>([])
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const editorRef = useRef<HTMLDivElement | null>(null)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -107,12 +172,15 @@ export default function PostsPage() {
 
       const list: PostRecord[] = json.posts ?? []
       const grouped = list.reduce<Record<string, PostEntry[]>>((acc, post) => {
+        const storedImages = Array.isArray(post.images) ? post.images : []
+        const fallbackImages = storedImages.length ? storedImages : extractImageSources(post.message)
         const entry: PostEntry = {
           id: post.id,
           tournamentId: post.tournament_id,
           authorId: post.author_id,
           authorName: post.author_name,
-          message: post.message,
+          message: sanitizeRichText(post.message),
+          images: fallbackImages,
           createdAt: post.created_at,
         }
         acc[entry.tournamentId] = [...(acc[entry.tournamentId] ?? []), entry]
@@ -141,7 +209,9 @@ export default function PostsPage() {
   }, [selectedTournamentId, tournaments])
 
   const handleSubmit = async () => {
-    const trimmed = draftMessage.trim()
+    const sanitized = sanitizeRichText(draftMessage)
+    const images = extractImageSources(draftMessage)
+    const plainText = getPlainText(sanitized)
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
       return
@@ -152,8 +222,8 @@ export default function PostsPage() {
       return
     }
 
-    if (!trimmed) {
-      setStatus('Write a message before posting.')
+    if (!plainText && images.length === 0) {
+      setStatus('Write a message or attach images before posting.')
       return
     }
 
@@ -170,7 +240,8 @@ export default function PostsPage() {
         tournament_id: selectedTournamentId,
         author_id: draftAuthorId,
         author_name: authorName,
-        message: trimmed,
+        message: sanitized,
+        images,
       }),
     })
     const json = await res.json().catch(() => ({}))
@@ -191,7 +262,8 @@ export default function PostsPage() {
       tournamentId: post.tournament_id,
       authorId: post.author_id,
       authorName: post.author_name,
-      message: post.message,
+      message: sanitizeRichText(post.message),
+      images: Array.isArray(post.images) ? post.images : images,
       createdAt: post.created_at,
     }
 
@@ -201,7 +273,97 @@ export default function PostsPage() {
     }))
 
     setDraftMessage('')
+    if (editorRef.current) {
+      editorRef.current.innerHTML = ''
+    }
     setStatus('')
+  }
+
+  const updateDraftMessage = () => {
+    if (!editorRef.current) return
+    setDraftMessage(editorRef.current.innerHTML)
+  }
+
+  const applyFormatting = (command: string, value?: string) => {
+    if (!editorRef.current) return
+    editorRef.current.focus()
+
+    if (command === 'createLink') {
+      const url = value?.trim() ?? ''
+      if (!url) return
+      document.execCommand(command, false, url)
+      updateDraftMessage()
+      return
+    }
+
+    document.execCommand(command, false)
+    updateDraftMessage()
+  }
+
+  const insertHtml = (html: string) => {
+    if (!editorRef.current) return
+    editorRef.current.focus()
+    document.execCommand('insertHTML', false, html)
+    updateDraftMessage()
+  }
+
+  const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    if (!files.length) return
+
+    const images = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result ?? ''))
+            reader.onerror = () => reject(new Error('Failed to read image.'))
+            reader.readAsDataURL(file)
+          })
+      )
+    ).catch(() => [])
+
+    images.forEach((src, index) => {
+      if (!src) return
+      const file = files[index]
+      const alt = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'Post image'
+      insertHtml(`<p><img src="${src}" alt="${escapeHtmlAttribute(alt)}" /></p>`)
+    })
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
+  }
+
+  const triggerImagePicker = () => {
+    imageInputRef.current?.click()
+  }
+
+  const handleAddLink = () => {
+    const url = window.prompt('Enter a URL to link to:')
+    if (!url) return
+    applyFormatting('createLink', url)
+  }
+
+  const openLightbox = (images: string[], index: number) => {
+    if (!images.length) return
+    setLightboxImages(images)
+    setLightboxIndex(index)
+    setIsLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false)
+    setLightboxImages([])
+    setLightboxIndex(0)
+  }
+
+  const showPreviousImage = () => {
+    setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length)
+  }
+
+  const showNextImage = () => {
+    setLightboxIndex((prev) => (prev + 1) % lightboxImages.length)
   }
 
   return (
@@ -279,7 +441,25 @@ export default function PostsPage() {
                     </div>
                     <span className="posts__entry-index">#{index + 1}</span>
                   </header>
-                  <p className="posts__entry-message">{post.message}</p>
+                  <div
+                    className="posts__entry-message"
+                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.message) }}
+                  />
+                  {Array.isArray(post.images) && post.images.length > 0 && (
+                    <div className="posts__entry-images">
+                      {post.images.map((src, imageIndex) => (
+                        <button
+                          key={`${post.id}-image-${imageIndex}`}
+                          type="button"
+                          className="posts__entry-thumbnail"
+                          onClick={() => openLightbox(post.images, imageIndex)}
+                          aria-label={`Open image ${imageIndex + 1} of ${post.images.length}`}
+                        >
+                          <img src={src} alt="" loading="lazy" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </article>
             ))
@@ -309,13 +489,54 @@ export default function PostsPage() {
 
             <label className="posts__control posts__control--full">
               <span className="posts__control-label">Message</span>
-              <textarea
-                value={draftMessage}
-                onChange={(event) => setDraftMessage(event.target.value)}
-                placeholder="Drop your thoughts here..."
-                rows={4}
-              />
+              <div className="posts__editor">
+                <div className="posts__editor-toolbar" role="toolbar" aria-label="Formatting">
+                  <button type="button" onClick={() => applyFormatting('bold')} aria-label="Bold">
+                    <strong>B</strong>
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('italic')} aria-label="Italic">
+                    <em>I</em>
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('underline')} aria-label="Underline">
+                    <span style={{ textDecoration: 'underline' }}>U</span>
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('insertUnorderedList')} aria-label="Bulleted list">
+                    • List
+                  </button>
+                  <button type="button" onClick={() => applyFormatting('insertOrderedList')} aria-label="Numbered list">
+                    1. List
+                  </button>
+                  <button type="button" onClick={handleAddLink} aria-label="Insert link">
+                    Link
+                  </button>
+                </div>
+                <div
+                  ref={editorRef}
+                  className="posts__editor-input"
+                  contentEditable
+                  role="textbox"
+                  aria-label="Message"
+                  data-placeholder="Drop your thoughts here..."
+                  onInput={updateDraftMessage}
+                />
+              </div>
             </label>
+
+            <div className="posts__attachments">
+              <span className="posts__control-label">Post attachments</span>
+              <p className="posts__attachments-note">Upload images to include as thumbnails in your post.</p>
+              <button type="button" className="posts__attachments-button" onClick={triggerImagePicker}>
+                Add images
+              </button>
+              <input
+                ref={imageInputRef}
+                className="posts__editor-input-file"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleAddImages}
+              />
+            </div>
 
             <div className="posts__composer-actions">
               <button type="button" onClick={handleSubmit} className="posts__submit">
@@ -324,6 +545,45 @@ export default function PostsPage() {
             </div>
           </div>
         </section>
+        {isLightboxOpen && (
+          <div className="posts__lightbox" role="dialog" aria-modal="true">
+            <button type="button" className="posts__lightbox-backdrop" onClick={closeLightbox} aria-label="Close" />
+            <div className="posts__lightbox-content">
+              <button type="button" className="posts__lightbox-close" onClick={closeLightbox} aria-label="Close gallery">
+                ×
+              </button>
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  className="posts__lightbox-nav posts__lightbox-nav--prev"
+                  onClick={showPreviousImage}
+                  aria-label="Previous image"
+                >
+                  ‹
+                </button>
+              )}
+              <img
+                className="posts__lightbox-image"
+                src={lightboxImages[lightboxIndex]}
+                alt=""
+                loading="lazy"
+              />
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  className="posts__lightbox-nav posts__lightbox-nav--next"
+                  onClick={showNextImage}
+                  aria-label="Next image"
+                >
+                  ›
+                </button>
+              )}
+              <div className="posts__lightbox-counter">
+                {lightboxIndex + 1} / {lightboxImages.length}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )

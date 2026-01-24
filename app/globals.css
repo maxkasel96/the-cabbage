@@ -1934,6 +1934,56 @@ button:disabled {
   white-space: pre-wrap;
 }
 
+.posts__entry-message p {
+  margin: 0 0 10px;
+}
+
+.posts__entry-message p:last-child {
+  margin-bottom: 0;
+}
+
+.posts__entry-message ul,
+.posts__entry-message ol {
+  margin: 0 0 10px 20px;
+  padding: 0;
+}
+
+.posts__entry-message a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.posts__entry-message img {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+  margin: 10px 0;
+}
+
+.posts__entry-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  max-width: 320px;
+}
+
+.posts__entry-thumbnail {
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.posts__entry-images img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
 .posts__empty {
   padding: 18px;
   border-radius: 16px;
@@ -1963,6 +2013,174 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+.posts__editor {
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--page-background);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
+}
+
+.posts__editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.posts__editor-toolbar button {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.posts__editor-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.posts__editor-input {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.posts__editor-input img {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+  margin: 8px 0;
+}
+
+.posts__editor-input-file {
+  display: none;
+}
+
+.posts__attachments {
+  width: 100%;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.posts__attachments-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.posts__attachments-button {
+  align-self: flex-start;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.posts__attachments-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.posts__editor-input:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-secondary);
+}
+
+.posts__lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.posts__lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(5, 8, 16, 0.75);
+}
+
+.posts__lightbox-content {
+  position: relative;
+  z-index: 1;
+  max-width: min(90vw, 920px);
+  max-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.posts__lightbox-image {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.posts__lightbox-close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 20, 30, 0.8);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.posts__lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 20, 30, 0.8);
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.posts__lightbox-nav--prev {
+  left: -52px;
+}
+
+.posts__lightbox-nav--next {
+  right: -52px;
+}
+
+.posts__lightbox-counter {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 13px;
 }
 
 .posts__composer-actions {
