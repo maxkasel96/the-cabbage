@@ -4,6 +4,9 @@ import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { supabaseServer } from '@/lib/supabaseServer'
 
+const isMissingNavigationTable = (message?: string | null) =>
+  Boolean(message && message.includes("Could not find the table 'public.navigation_configs'"))
+
 export async function GET(req: Request) {
   const auth = await requireAdmin(req)
 
@@ -21,6 +24,13 @@ export async function GET(req: Request) {
     .maybeSingle()
 
   if (error) {
+    if (isMissingNavigationTable(error.message)) {
+      return NextResponse.json({
+        name,
+        config: defaultNavConfig,
+        warning: 'navigation_configs table is missing. Run the migration to persist changes.',
+      })
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
@@ -57,6 +67,15 @@ export async function PUT(req: Request) {
     .single()
 
   if (error) {
+    if (isMissingNavigationTable(error.message)) {
+      return NextResponse.json(
+        {
+          error:
+            'navigation_configs table is missing. Run the migration before saving navigation changes.',
+        },
+        { status: 400 }
+      )
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
