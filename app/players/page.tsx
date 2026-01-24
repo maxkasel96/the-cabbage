@@ -22,6 +22,7 @@ type PlayerStats = {
   totalWins: number
   totalLosses: number
   winsBySeason: SeasonSummary[]
+  activeTournamentSelections: number
 }
 
 type PlayerWithStats = Player & {
@@ -134,6 +135,8 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     statusMessages.push(winsError.message)
   }
 
+  const selectionCountsByPlayer = new Map<string, number>()
+
   if ((playersData ?? []).length > 0) {
     const { data: activeTournament, error: activeTournamentError } = await supabaseServer
       .from('tournaments')
@@ -194,6 +197,22 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
         })
       }
     }
+
+    if (activeTournament?.id) {
+      const { data: selectionCounts, error: selectionCountsError } = await supabaseServer
+        .from('player_selection_counts')
+        .select('player_id, selection_count')
+        .eq('tournament_id', activeTournament.id)
+
+      if (selectionCountsError) {
+        statusMessages.push(selectionCountsError.message)
+      }
+
+      ;(selectionCounts ?? []).forEach((entry) => {
+        if (!entry?.player_id) return
+        selectionCountsByPlayer.set(entry.player_id, entry.selection_count ?? 0)
+      })
+    }
   }
 
   const players = (playersData ?? []).map((player) => {
@@ -205,6 +224,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
       stats: {
         totalWins: stats?.totalWins ?? 0,
         totalLosses: stats?.totalLosses ?? 0,
+        activeTournamentSelections: selectionCountsByPlayer.get(player.id) ?? 0,
         winsBySeason,
       },
     }
@@ -254,6 +274,12 @@ export default async function PlayersLandingPage() {
                   <p className="text-sm text-[color:var(--text-secondary)]">
                     Active tournament losses:{' '}
                     <span className="font-semibold">{player.stats.totalLosses}</span>
+                  </p>
+                  <p className="text-sm text-[color:var(--text-secondary)]">
+                    Active tournament selections:{' '}
+                    <span className="font-semibold">
+                      {player.stats.activeTournamentSelections}
+                    </span>
                   </p>
                 </div>
                 <div className="mt-4">
