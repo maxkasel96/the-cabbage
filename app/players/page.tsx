@@ -155,6 +155,9 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
             winners_finalized_at,
             game_winners (
               player_id
+            ),
+            play_players (
+              player_id
             )
           `
         )
@@ -166,37 +169,17 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
       }
 
       if (!playedGamesError && playedGames) {
-        const playIds = playedGames.map((play: any) => play.id).filter(Boolean)
-        let playPlayerEntries: { play_id: string; player_id: string }[] = []
-        if (playIds.length > 0) {
-          const { data: playPlayersData, error: playPlayersLookupError } = await supabaseServer
-            .from('play_players')
-            .select('play_id, player_id')
-            .in('play_id', playIds)
-
-          if (playPlayersLookupError) {
-            statusMessages.push(playPlayersLookupError.message)
-          } else {
-            playPlayerEntries = playPlayersData ?? []
-          }
-        }
-
-        const playersByPlay = new Map<string, Set<string>>()
-        playPlayerEntries.forEach((entry) => {
-          if (!entry.play_id || !entry.player_id) return
-          const current = playersByPlay.get(entry.play_id) ?? new Set<string>()
-          current.add(entry.player_id)
-          playersByPlay.set(entry.play_id, current)
-        })
-
         playedGames.forEach((play: any) => {
-          const playTimestamp = play.winners_finalized_at ?? play.played_at
-          if (!playTimestamp) return
+          if (!play.winners_finalized_at && !play.played_at) return
           const winnerIds = (play.game_winners ?? [])
             .map((winner: any) => winner.player_id)
             .filter((playerId: string | null): playerId is string => Boolean(playerId))
+          if (winnerIds.length === 0) return
           const winners = new Set<string>(winnerIds)
-          const participants = playersByPlay.get(play.id) ?? new Set<string>()
+          const participantIds = (play.play_players ?? [])
+            .map((entry: any) => entry.player_id)
+            .filter((playerId: string | null): playerId is string => Boolean(playerId))
+          const participants = new Set<string>(participantIds)
 
           participants.forEach((playerId) => {
             if (winners.has(playerId)) return
