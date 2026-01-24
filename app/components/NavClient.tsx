@@ -181,11 +181,11 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       }))
   }, [navConfig])
 
-  const adminMenu = useMemo(
-    () => megaMenus.find((menu) => menu.id === 'admin'),
-    [megaMenus]
-  )
   const desktopMegaMenus = useMemo(() => {
+    if (showAdminMenu) return megaMenus
+    return megaMenus.filter((menu) => menu.id !== 'admin')
+  }, [megaMenus, showAdminMenu])
+  const mobileMegaMenus = useMemo(() => {
     if (showAdminMenu) return megaMenus
     return megaMenus.filter((menu) => menu.id !== 'admin')
   }, [megaMenus, showAdminMenu])
@@ -480,10 +480,10 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
           <div className="main-nav__sheet-links">
             {primaryLinks.map((link) => renderMobileLink(link.href, link.label))}
           </div>
-          {showAdminMenu && adminMenu ? (
-            <div className="main-nav__sheet-section">
-              <div className="main-nav__sheet-section-title">Admin</div>
-              {adminMenu.groups.map((group) => (
+          {mobileMegaMenus.map((menu) => (
+            <div key={menu.id} className="main-nav__sheet-section">
+              <div className="main-nav__sheet-section-title">{menu.label}</div>
+              {menu.groups.map((group) => (
                 <div key={group.title} className="main-nav__sheet-group">
                   <div className="main-nav__sheet-group-title">{group.title}</div>
                   <div className="main-nav__sheet-links">
@@ -492,7 +492,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 </div>
               ))}
             </div>
-          ) : null}
+          ))}
         </div>
       </div>
     </nav>
