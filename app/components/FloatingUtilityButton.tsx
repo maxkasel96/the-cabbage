@@ -137,9 +137,6 @@ export default function FloatingUtilityButton() {
                     <p className="floating-utility-modal__status">{selectionStatus}</p>
                   ) : null}
                 </div>
-                <button type="button" className="player-card-modal__close" onClick={closeModal}>
-                  Close
-                </button>
               </div>
             </div>,
             document.body
