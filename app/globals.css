@@ -913,7 +913,7 @@ button:disabled {
 .floating-utility-modal__selected-player {
   margin-top: 12px;
   margin-bottom: 12px;
-  font-size: 1.5rem;
+  font-size: 42px;
   line-height: 1.5;
 }
 
@@ -921,8 +921,9 @@ button:disabled {
   margin-top: auto;
   margin-bottom: 12px;
   color: #2e3f2a;
-  font-size: 0.95rem;
+  font-size: 14px;
   font-style: italic;
+  font-weight: 700;
 }
 
 .player-card--skeleton {
