@@ -146,64 +146,67 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     }
 
     if (activeTournament?.id) {
-      const [{ data: playedGames, error: playedGamesError }, { data: tournamentPlays, error: tournamentPlaysError }] =
-        await Promise.all([
-          supabaseServer
-            .from('plays')
-            .select(
-              `
-                id,
-                played_at,
-                winners_finalized_at,
-                game_winners (
-                  player_id
-                )
-              `
+      const { data: playedGames, error: playedGamesError } = await supabaseServer
+        .from('plays')
+        .select(
+          `
+            id,
+            played_at,
+            winners_finalized_at,
+            game_winners (
+              player_id
             )
-            .eq('tournament_id', activeTournament.id)
-            .not('played_at', 'is', null),
-          supabaseServer
-            .from('tournament_plays')
-            .select('player_id, joined_at, left_at')
-            .eq('tournament_id', activeTournament.id),
-        ])
+          `
+        )
+        .eq('tournament_id', activeTournament.id)
+        .not('played_at', 'is', null)
 
       if (playedGamesError) {
         statusMessages.push(playedGamesError.message)
       }
 
-      if (tournamentPlaysError) {
-        statusMessages.push(tournamentPlaysError.message)
-      }
+      if (!playedGamesError && playedGames) {
+        const playIds = playedGames.map((play: any) => play.id).filter(Boolean)
+        let playPlayerEntries: { play_id: string; player_id: string }[] = []
+        if (playIds.length > 0) {
+          const { data: playPlayersData, error: playPlayersLookupError } = await supabaseServer
+            .from('play_players')
+            .select('play_id, player_id')
+            .in('play_id', playIds)
 
-      if (!playedGamesError && !tournamentPlaysError && playedGames && tournamentPlays) {
-        const tournamentRoster = tournamentPlays.map((entry: any) => ({
-          playerId: entry.player_id as string,
-          joinedAt: entry.joined_at ? new Date(entry.joined_at) : null,
-          leftAt: entry.left_at ? new Date(entry.left_at) : null,
-        }))
+          if (playPlayersLookupError) {
+            statusMessages.push(playPlayersLookupError.message)
+          } else {
+            playPlayerEntries = playPlayersData ?? []
+          }
+        }
+
+        const playersByPlay = new Map<string, Set<string>>()
+        playPlayerEntries.forEach((entry) => {
+          if (!entry.play_id || !entry.player_id) return
+          const current = playersByPlay.get(entry.play_id) ?? new Set<string>()
+          current.add(entry.player_id)
+          playersByPlay.set(entry.play_id, current)
+        })
 
         playedGames.forEach((play: any) => {
           const playTimestamp = play.winners_finalized_at ?? play.played_at
           if (!playTimestamp) return
-          const playedAt = new Date(playTimestamp)
           const winnerIds = (play.game_winners ?? [])
             .map((winner: any) => winner.player_id)
             .filter((playerId: string | null): playerId is string => Boolean(playerId))
           const winners = new Set<string>(winnerIds)
+          const participants = playersByPlay.get(play.id) ?? new Set<string>()
 
-          tournamentRoster.forEach((entry) => {
-            if (!entry.playerId) return
-            if (entry.joinedAt && entry.joinedAt > playedAt) return
-            if (entry.leftAt && entry.leftAt <= playedAt) return
-            if (winners.has(entry.playerId)) return
+          participants.forEach((playerId) => {
+            if (winners.has(playerId)) return
 
             const current =
-              statsByPlayer.get(entry.playerId) ??
+              statsByPlayer.get(playerId) ??
               { totalWins: 0, totalLosses: 0, winsBySeason: new Map<string, SeasonSummary>() }
 
             current.totalLosses += 1
-            statsByPlayer.set(entry.playerId, current)
+            statsByPlayer.set(playerId, current)
           })
         })
       }
