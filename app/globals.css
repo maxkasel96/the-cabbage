@@ -2057,6 +2057,14 @@ button:disabled {
   outline: none;
 }
 
+.posts__editor-input.is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-secondary);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 .posts__editor-input img {
   max-width: 100%;
   border-radius: 12px;
@@ -2115,9 +2123,10 @@ button:disabled {
   background: var(--surface);
 }
 
-.posts__editor-input:empty::before {
-  content: attr(data-placeholder);
-  color: var(--text-secondary);
+.posts__editor-status {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #ffb4b4;
 }
 
 .posts__lightbox {

@@ -1,6 +1,11 @@
 'use client'
 
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
+import Link from '@tiptap/extension-link'
+import Placeholder from '@tiptap/extension-placeholder'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -39,6 +44,7 @@ type PostRecord = {
 
 const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
 const allowedImageSources = [/^https?:\/\//i, /^data:image\/(png|jpe?g|gif|webp);base64,/i]
+const MAX_POST_LENGTH = 5000
 
 const sanitizeRichText = (value: string) => {
   if (!value) return ''
@@ -147,11 +153,54 @@ export default function PostsPage() {
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [attachedImages, setAttachedImages] = useState<string[]>([])
   const [status, setStatus] = useState('')
+  const [editorStatus, setEditorStatus] = useState('')
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
-  const editorRef = useRef<HTMLDivElement | null>(null)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
+  const lastValidContentRef = useRef({ html: '', text: '' })
+  const isRevertingRef = useRef(false)
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Link.configure({
+        openOnClick: false,
+      }),
+      Placeholder.configure({
+        placeholder: 'Drop your thoughts here...',
+      }),
+    ],
+    content: '',
+    editorProps: {
+      attributes: {
+        class: 'posts__editor-input',
+        'data-placeholder': 'Drop your thoughts here...',
+        'aria-label': 'Message',
+      },
+    },
+    onUpdate: ({ editor }) => {
+      if (isRevertingRef.current) {
+        isRevertingRef.current = false
+        return
+      }
+
+      const text = editor.getText()
+      if (text.length > MAX_POST_LENGTH) {
+        setEditorStatus(`Messages are limited to ${MAX_POST_LENGTH.toLocaleString()} characters.`)
+        isRevertingRef.current = true
+        editor.commands.setContent(lastValidContentRef.current.html, false)
+        editor.commands.focus('end')
+        return
+      }
+
+      setEditorStatus('')
+      const html = editor.getHTML()
+      lastValidContentRef.current = { html, text }
+      setDraftMessage(html)
+    },
+  })
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -236,9 +285,10 @@ export default function PostsPage() {
   }, [selectedTournamentId, tournaments])
 
   const handleSubmit = async () => {
-    const sanitized = sanitizeRichText(draftMessage)
+    const rawMessage = editor?.getHTML() ?? draftMessage
+    const sanitized = sanitizeRichText(rawMessage)
     const images = attachedImages
-    const plainText = getPlainText(sanitized)
+    const plainText = (editor?.getText() ?? getPlainText(sanitized)).replace(/\u00a0/g, ' ').trim()
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
       return
@@ -251,6 +301,11 @@ export default function PostsPage() {
 
     if (!plainText && images.length === 0) {
       setStatus('Write a message or attach images before posting.')
+      return
+    }
+
+    if (plainText.length > MAX_POST_LENGTH) {
+      setEditorStatus(`Messages are limited to ${MAX_POST_LENGTH.toLocaleString()} characters.`)
       return
     }
 
@@ -302,31 +357,10 @@ export default function PostsPage() {
 
     setDraftMessage('')
     setAttachedImages([])
-    if (editorRef.current) {
-      editorRef.current.innerHTML = ''
-    }
+    editor?.commands.clearContent()
+    lastValidContentRef.current = { html: '', text: '' }
+    setEditorStatus('')
     setStatus('')
-  }
-
-  const updateDraftMessage = () => {
-    if (!editorRef.current) return
-    setDraftMessage(editorRef.current.innerHTML)
-  }
-
-  const applyFormatting = (command: string, value?: string) => {
-    if (!editorRef.current) return
-    editorRef.current.focus()
-
-    if (command === 'createLink') {
-      const url = value?.trim() ?? ''
-      if (!url) return
-      document.execCommand(command, false, url)
-      updateDraftMessage()
-      return
-    }
-
-    document.execCommand(command, false)
-    updateDraftMessage()
   }
 
   const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -362,7 +396,7 @@ export default function PostsPage() {
   const handleAddLink = () => {
     const url = window.prompt('Enter a URL to link to:')
     if (!url) return
-    applyFormatting('createLink', url)
+    editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
   }
 
   const openLightbox = (images: string[], index: number) => {
@@ -511,35 +545,85 @@ export default function PostsPage() {
               <span className="posts__control-label">Message</span>
               <div className="posts__editor">
                 <div className="posts__editor-toolbar" role="toolbar" aria-label="Formatting">
-                  <button type="button" onClick={() => applyFormatting('bold')} aria-label="Bold">
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleBold().run()}
+                    aria-label="Bold"
+                    disabled={!editor}
+                  >
                     <strong>B</strong>
                   </button>
-                  <button type="button" onClick={() => applyFormatting('italic')} aria-label="Italic">
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleItalic().run()}
+                    aria-label="Italic"
+                    disabled={!editor}
+                  >
                     <em>I</em>
                   </button>
-                  <button type="button" onClick={() => applyFormatting('underline')} aria-label="Underline">
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleUnderline().run()}
+                    aria-label="Underline"
+                    disabled={!editor}
+                  >
                     <span style={{ textDecoration: 'underline' }}>U</span>
                   </button>
-                  <button type="button" onClick={() => applyFormatting('insertUnorderedList')} aria-label="Bulleted list">
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleStrike().run()}
+                    aria-label="Strikethrough"
+                    disabled={!editor}
+                  >
+                    <span style={{ textDecoration: 'line-through' }}>S</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                    aria-label="Bulleted list"
+                    disabled={!editor}
+                  >
                     • List
                   </button>
-                  <button type="button" onClick={() => applyFormatting('insertOrderedList')} aria-label="Numbered list">
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                    aria-label="Numbered list"
+                    disabled={!editor}
+                  >
                     1. List
                   </button>
-                  <button type="button" onClick={handleAddLink} aria-label="Insert link">
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+                    aria-label="Blockquote"
+                    disabled={!editor}
+                  >
+                    “Quote”
+                  </button>
+                  <button type="button" onClick={handleAddLink} aria-label="Insert link" disabled={!editor}>
                     Link
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().undo().run()}
+                    aria-label="Undo"
+                    disabled={!editor}
+                  >
+                    Undo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor?.chain().focus().redo().run()}
+                    aria-label="Redo"
+                    disabled={!editor}
+                  >
+                    Redo
+                  </button>
                 </div>
-                <div
-                  ref={editorRef}
-                  className="posts__editor-input"
-                  contentEditable
-                  role="textbox"
-                  aria-label="Message"
-                  data-placeholder="Drop your thoughts here..."
-                  onInput={updateDraftMessage}
-                />
+                <EditorContent editor={editor} />
               </div>
+              {editorStatus && <div className="posts__editor-status">{editorStatus}</div>}
             </label>
 
             <div className="posts__attachments">
