@@ -207,12 +207,17 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
 
       scrollStateRef.current.ticking = true
       window.requestAnimationFrame(() => {
-        const currentPosition = window.scrollY
+        const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+        const maxScroll = Math.max(
+          0,
+          document.documentElement.scrollHeight - viewportHeight
+        )
+        const currentPosition = Math.min(Math.max(window.scrollY, 0), maxScroll)
         const delta = currentPosition - scrollStateRef.current.lastPosition
         const threshold = 8
 
         // Scroll direction detection with a small threshold to prevent jitter.
-        if (currentPosition <= 4) {
+        if (currentPosition <= 4 || currentPosition >= maxScroll - 4) {
           setIsNavHidden(false)
         } else if (delta > threshold) {
           setIsNavHidden(true)
@@ -225,7 +230,12 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       })
     }
 
-    scrollStateRef.current.lastPosition = window.scrollY
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+    const maxScroll = Math.max(
+      0,
+      document.documentElement.scrollHeight - viewportHeight
+    )
+    scrollStateRef.current.lastPosition = Math.min(Math.max(window.scrollY, 0), maxScroll)
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
