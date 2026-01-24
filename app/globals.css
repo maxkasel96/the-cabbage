@@ -812,6 +812,7 @@ button:disabled {
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  flex: 1;
 }
 
 .floating-utility-modal__tagline {
@@ -823,7 +824,7 @@ button:disabled {
   flex-direction: column;
   font-size: 1rem;
   color: #2e3f2a;
-  min-height: 140px;
+  flex: 1;
 }
 
 .floating-utility-modal__status {
