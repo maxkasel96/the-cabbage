@@ -273,6 +273,13 @@ export default function Home() {
     setWinnerPlayerIds(new Set(selectedTeam?.players.map((player) => player.id) ?? []))
   }
 
+  function resolveParticipantIds() {
+    const roster =
+      teamMode === 'teams' && teams.length > 0
+        ? teams.flatMap((team) => team.players)
+        : players
+    return Array.from(new Set(roster.map((player) => player.id)))
+  }
 
   async function markPlayed() {
     if (!game) return
@@ -282,6 +289,7 @@ export default function Home() {
     setNoteModalOpen(true)
 
     const winnerIds = Array.from(winnerPlayerIds)
+    const participantIds = resolveParticipantIds()
 
     const res = await fetch('/api/game/mark-played', {
       method: 'POST',
@@ -289,6 +297,7 @@ export default function Home() {
       body: JSON.stringify({
         gameId: game.id,
         winnerPlayerIds: winnerIds,
+        participantPlayerIds: participantIds,
       }),
     })
 
@@ -372,12 +381,14 @@ export default function Home() {
     setStatus('')
 
     const note = noteDraft.trim()
+    const participantIds = resolveParticipantIds()
 
     const requestInit: RequestInit = winImageFiles.length > 0
       ? (() => {
           const formData = new FormData()
           formData.append('gameId', game.id)
           formData.append('winnerPlayerIds', JSON.stringify(winnerIds))
+          formData.append('participantPlayerIds', JSON.stringify(participantIds))
           if (note.length) {
             formData.append('note', note)
           }
@@ -395,6 +406,7 @@ export default function Home() {
           body: JSON.stringify({
             gameId: game.id,
             winnerPlayerIds: winnerIds,
+            participantPlayerIds: participantIds,
             note: note.length ? note : null,
           }),
         }
