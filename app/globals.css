@@ -870,7 +870,7 @@ button:disabled {
   border: none;
   padding: 0;
   background: transparent;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 18px rgba(86, 179, 92, 0.35);
   cursor: pointer;
 }
 
