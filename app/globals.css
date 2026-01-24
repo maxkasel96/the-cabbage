@@ -670,7 +670,9 @@ button:disabled {
 .player-card-modal__content {
   position: relative;
   z-index: 1;
-  background: #f8f7f0;
+  background: url('https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jan%2021,%202026,%2010_05_29%20PM.png')
+    center / cover no-repeat;
+  background-color: #f8f7f0;
   color: #1d2417;
   padding: 24px;
   border-radius: 12px;
@@ -870,7 +872,7 @@ button:disabled {
   border: none;
   padding: 0;
   background: transparent;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 18px rgba(86, 179, 92, 0.35);
   cursor: pointer;
 }
 
@@ -885,6 +887,17 @@ button:disabled {
 .floating-utility-button:focus-visible {
   outline: 3px solid rgba(46, 63, 42, 0.6);
   outline-offset: 4px;
+}
+
+.floating-utility-modal__selected-player {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.floating-utility-modal__outcome {
+  margin-bottom: 12px;
 }
 
 .player-card--skeleton {
