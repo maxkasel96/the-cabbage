@@ -39,7 +39,6 @@ type PostRecord = {
 
 const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
 const allowedImageSources = [/^https?:\/\//i, /^data:image\/(png|jpe?g|gif|webp);base64,/i]
-
 const sanitizeRichText = (value: string) => {
   if (!value) return ''
   const parser = new DOMParser()
@@ -150,7 +149,6 @@ export default function PostsPage() {
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
-  const editorRef = useRef<HTMLDivElement | null>(null)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -236,7 +234,8 @@ export default function PostsPage() {
   }, [selectedTournamentId, tournaments])
 
   const handleSubmit = async () => {
-    const sanitized = sanitizeRichText(draftMessage)
+    const rawMessage = draftMessage
+    const sanitized = sanitizeRichText(rawMessage)
     const images = attachedImages
     const plainText = getPlainText(sanitized)
     if (!selectedTournamentId) {
@@ -302,31 +301,7 @@ export default function PostsPage() {
 
     setDraftMessage('')
     setAttachedImages([])
-    if (editorRef.current) {
-      editorRef.current.innerHTML = ''
-    }
     setStatus('')
-  }
-
-  const updateDraftMessage = () => {
-    if (!editorRef.current) return
-    setDraftMessage(editorRef.current.innerHTML)
-  }
-
-  const applyFormatting = (command: string, value?: string) => {
-    if (!editorRef.current) return
-    editorRef.current.focus()
-
-    if (command === 'createLink') {
-      const url = value?.trim() ?? ''
-      if (!url) return
-      document.execCommand(command, false, url)
-      updateDraftMessage()
-      return
-    }
-
-    document.execCommand(command, false)
-    updateDraftMessage()
   }
 
   const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -357,12 +332,6 @@ export default function PostsPage() {
 
   const triggerImagePicker = () => {
     imageInputRef.current?.click()
-  }
-
-  const handleAddLink = () => {
-    const url = window.prompt('Enter a URL to link to:')
-    if (!url) return
-    applyFormatting('createLink', url)
   }
 
   const openLightbox = (images: string[], index: number) => {
@@ -509,37 +478,13 @@ export default function PostsPage() {
 
             <label className="posts__control posts__control--full">
               <span className="posts__control-label">Message</span>
-              <div className="posts__editor">
-                <div className="posts__editor-toolbar" role="toolbar" aria-label="Formatting">
-                  <button type="button" onClick={() => applyFormatting('bold')} aria-label="Bold">
-                    <strong>B</strong>
-                  </button>
-                  <button type="button" onClick={() => applyFormatting('italic')} aria-label="Italic">
-                    <em>I</em>
-                  </button>
-                  <button type="button" onClick={() => applyFormatting('underline')} aria-label="Underline">
-                    <span style={{ textDecoration: 'underline' }}>U</span>
-                  </button>
-                  <button type="button" onClick={() => applyFormatting('insertUnorderedList')} aria-label="Bulleted list">
-                    • List
-                  </button>
-                  <button type="button" onClick={() => applyFormatting('insertOrderedList')} aria-label="Numbered list">
-                    1. List
-                  </button>
-                  <button type="button" onClick={handleAddLink} aria-label="Insert link">
-                    Link
-                  </button>
-                </div>
-                <div
-                  ref={editorRef}
-                  className="posts__editor-input"
-                  contentEditable
-                  role="textbox"
-                  aria-label="Message"
-                  data-placeholder="Drop your thoughts here..."
-                  onInput={updateDraftMessage}
-                />
-              </div>
+              <textarea
+                className="posts__editor-input posts__editor-input--textarea"
+                value={draftMessage}
+                onChange={(event) => setDraftMessage(event.target.value)}
+                placeholder="Drop your thoughts here..."
+                rows={6}
+              />
             </label>
 
             <div className="posts__attachments">

@@ -12,6 +12,7 @@ type PostPayload = {
 const isSafeImageSource = (value: string) =>
   /^https?:\/\//i.test(value) || /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(value)
 
+
 export async function GET() {
   const { data, error } = await supabaseServer
     .from('posts')
