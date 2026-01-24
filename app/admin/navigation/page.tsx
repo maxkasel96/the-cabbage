@@ -60,9 +60,13 @@ const getSupabaseAccessToken = () => {
   return null
 }
 
-const getAuthHeaders = () => {
+const getAuthHeaders = (): HeadersInit => {
   const token = getSupabaseAccessToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
 }
 
 const editorSchema = z.object({
