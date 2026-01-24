@@ -870,7 +870,7 @@ button:disabled {
   border: none;
   padding: 0;
   background: transparent;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 18px rgba(86, 179, 92, 0.35);
   cursor: pointer;
 }
 
@@ -885,6 +885,17 @@ button:disabled {
 .floating-utility-button:focus-visible {
   outline: 3px solid rgba(46, 63, 42, 0.6);
   outline-offset: 4px;
+}
+
+.floating-utility-modal__selected-player {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.floating-utility-modal__outcome {
+  margin-bottom: 12px;
 }
 
 .player-card--skeleton {
