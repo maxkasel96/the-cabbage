@@ -120,6 +120,9 @@ export default function PostsPage() {
   const [draftMessage, setDraftMessage] = useState('')
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [status, setStatus] = useState('')
+  const [lightboxImages, setLightboxImages] = useState<string[]>([])
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const editorRef = useRef<HTMLDivElement | null>(null)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -342,6 +345,27 @@ export default function PostsPage() {
     applyFormatting('createLink', url)
   }
 
+  const openLightbox = (images: string[], index: number) => {
+    if (!images.length) return
+    setLightboxImages(images)
+    setLightboxIndex(index)
+    setIsLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false)
+    setLightboxImages([])
+    setLightboxIndex(0)
+  }
+
+  const showPreviousImage = () => {
+    setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length)
+  }
+
+  const showNextImage = () => {
+    setLightboxIndex((prev) => (prev + 1) % lightboxImages.length)
+  }
+
   return (
     <main
       style={{
@@ -424,7 +448,15 @@ export default function PostsPage() {
                   {Array.isArray(post.images) && post.images.length > 0 && (
                     <div className="posts__entry-images">
                       {post.images.map((src, imageIndex) => (
-                        <img key={`${post.id}-image-${imageIndex}`} src={src} alt="" loading="lazy" />
+                        <button
+                          key={`${post.id}-image-${imageIndex}`}
+                          type="button"
+                          className="posts__entry-thumbnail"
+                          onClick={() => openLightbox(post.images, imageIndex)}
+                          aria-label={`Open image ${imageIndex + 1} of ${post.images.length}`}
+                        >
+                          <img src={src} alt="" loading="lazy" />
+                        </button>
                       ))}
                     </div>
                   )}
@@ -508,6 +540,45 @@ export default function PostsPage() {
             </div>
           </div>
         </section>
+        {isLightboxOpen && (
+          <div className="posts__lightbox" role="dialog" aria-modal="true">
+            <button type="button" className="posts__lightbox-backdrop" onClick={closeLightbox} aria-label="Close" />
+            <div className="posts__lightbox-content">
+              <button type="button" className="posts__lightbox-close" onClick={closeLightbox} aria-label="Close gallery">
+                ×
+              </button>
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  className="posts__lightbox-nav posts__lightbox-nav--prev"
+                  onClick={showPreviousImage}
+                  aria-label="Previous image"
+                >
+                  ‹
+                </button>
+              )}
+              <img
+                className="posts__lightbox-image"
+                src={lightboxImages[lightboxIndex]}
+                alt=""
+                loading="lazy"
+              />
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  className="posts__lightbox-nav posts__lightbox-nav--next"
+                  onClick={showNextImage}
+                  aria-label="Next image"
+                >
+                  ›
+                </button>
+              )}
+              <div className="posts__lightbox-counter">
+                {lightboxIndex + 1} / {lightboxImages.length}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )
