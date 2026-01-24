@@ -23,6 +23,7 @@ type PostEntry = {
   authorId: string
   authorName: string
   message: string
+  images: string[]
   createdAt: string
 }
 
@@ -32,10 +33,12 @@ type PostRecord = {
   author_id: string
   author_name: string
   message: string
+  images?: string[] | null
   created_at: string
 }
 
-const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'IMG', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
+const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
+const allowedImageSources = [/^https?:\/\//i, /^data:image\/(png|jpe?g|gif|webp);base64,/i]
 
 const sanitizeRichText = (value: string) => {
   if (!value) return ''
@@ -60,23 +63,8 @@ const sanitizeRichText = (value: string) => {
       }
     }
 
-    if (node.tagName === 'IMG') {
-      const src = node.getAttribute('src') ?? ''
-      const isSafe =
-        /^https?:\/\//i.test(src) ||
-        /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(src)
-      if (!isSafe) {
-        node.remove()
-        return
-      }
-    }
-
     Array.from(node.attributes).forEach((attr) => {
       if (node.tagName === 'A' && (attr.name === 'href' || attr.name === 'rel' || attr.name === 'target')) {
-        return
-      }
-
-      if (node.tagName === 'IMG' && (attr.name === 'src' || attr.name === 'alt')) {
         return
       }
 
@@ -97,11 +85,14 @@ const getPlainText = (value: string) => {
 const escapeHtmlAttribute = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-const hasImages = (value: string) => {
-  if (!value) return false
+const extractImageSources = (value: string) => {
+  if (!value) return []
   const parser = new DOMParser()
   const doc = parser.parseFromString(value, 'text/html')
-  return doc.body.querySelector('img') !== null
+  const images = Array.from(doc.body.querySelectorAll('img'))
+    .map((img) => img.getAttribute('src') ?? '')
+    .filter(Boolean)
+  return images.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
 }
 
 const formatDateTime = (value: string) => {
@@ -178,12 +169,15 @@ export default function PostsPage() {
 
       const list: PostRecord[] = json.posts ?? []
       const grouped = list.reduce<Record<string, PostEntry[]>>((acc, post) => {
+        const storedImages = post.images ?? []
+        const fallbackImages = storedImages.length ? storedImages : extractImageSources(post.message)
         const entry: PostEntry = {
           id: post.id,
           tournamentId: post.tournament_id,
           authorId: post.author_id,
           authorName: post.author_name,
-          message: post.message,
+          message: sanitizeRichText(post.message),
+          images: fallbackImages,
           createdAt: post.created_at,
         }
         acc[entry.tournamentId] = [...(acc[entry.tournamentId] ?? []), entry]
@@ -213,8 +207,8 @@ export default function PostsPage() {
 
   const handleSubmit = async () => {
     const sanitized = sanitizeRichText(draftMessage)
+    const images = extractImageSources(draftMessage)
     const plainText = getPlainText(sanitized)
-    const containsImages = hasImages(sanitized)
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
       return
@@ -225,7 +219,7 @@ export default function PostsPage() {
       return
     }
 
-    if (!plainText && !containsImages) {
+    if (!plainText && images.length === 0) {
       setStatus('Write a message or attach images before posting.')
       return
     }
@@ -244,6 +238,7 @@ export default function PostsPage() {
         author_id: draftAuthorId,
         author_name: authorName,
         message: sanitized,
+        images,
       }),
     })
     const json = await res.json().catch(() => ({}))
@@ -264,7 +259,8 @@ export default function PostsPage() {
       tournamentId: post.tournament_id,
       authorId: post.author_id,
       authorName: post.author_name,
-      message: post.message,
+      message: sanitizeRichText(post.message),
+      images: post.images ?? images,
       createdAt: post.created_at,
     }
 
@@ -425,6 +421,13 @@ export default function PostsPage() {
                     className="posts__entry-message"
                     dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.message) }}
                   />
+                  {post.images.length > 0 && (
+                    <div className="posts__entry-images">
+                      {post.images.map((src, imageIndex) => (
+                        <img key={`${post.id}-image-${imageIndex}`} src={src} alt="" loading="lazy" />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </article>
             ))

@@ -1960,6 +1960,18 @@ button:disabled {
   margin: 10px 0;
 }
 
+.posts__entry-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.posts__entry-images img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
 .posts__empty {
   padding: 18px;
   border-radius: 16px;
