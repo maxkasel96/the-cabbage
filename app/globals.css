@@ -692,12 +692,20 @@ button:disabled {
 @media (max-width: 720px) {
   .player-card-modal {
     padding: 16px;
+    align-items: flex-start;
+    overflow-y: auto;
   }
 
   .player-card-modal__content {
     width: 100%;
-    max-height: calc(100vh - 32px);
-    overflow-y: auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .floating-utility-modal__content {
+    background-image: url('https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jan%2023,%202026,%2011_50_59%20PM%201.png');
+    aspect-ratio: auto;
   }
 }
 
