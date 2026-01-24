@@ -184,69 +184,72 @@ export default function NavigationBuilderPage() {
     [config, initialConfig]
   )
 
-  const selectedNode = useMemo(() => {
-    if (!selected) return null
-    if (selected.type === 'primary') {
-      return config.primaryLinks.find((link) => link.id === selected.id) ?? null
-    }
-    if (selected.type === 'menu') {
-      return config.megaMenus.find((menu) => menu.id === selected.id) ?? null
-    }
-    if (selected.type === 'group') {
-      const menu = config.megaMenus.find((m) => m.id === selected.menuId)
-      return menu?.groups.find((g) => g.id === selected.id) ?? null
-    }
-    if (selected.type === 'item') {
-      const menu = config.megaMenus.find((m) => m.id === selected.menuId)
-      const group = menu?.groups.find((g) => g.id === selected.groupId)
-      return group?.items.find((i) => i.id === selected.id) ?? null
-    }
-    return null
-  }, [config, selected])
-
   useEffect(() => {
-    if (!selected || !selectedNode) {
+    if (!selected) {
       reset({})
       return
     }
 
     if (selected.type === 'primary') {
+      const link = config.primaryLinks.find((item) => item.id === selected.id)
+      if (!link) {
+        reset({})
+        return
+      }
       reset({
-        label: selectedNode.label,
-        href: selectedNode.href,
-        icon: selectedNode.icon,
-        isVisible: selectedNode.isVisible,
+        label: link.label,
+        href: link.href,
+        icon: link.icon,
+        isVisible: link.isVisible,
       })
       return
     }
 
     if (selected.type === 'menu') {
+      const menu = config.megaMenus.find((item) => item.id === selected.id)
+      if (!menu) {
+        reset({})
+        return
+      }
       reset({
-        label: selectedNode.label,
-        isVisible: selectedNode.isVisible,
+        label: menu.label,
+        isVisible: menu.isVisible,
       })
       return
     }
 
     if (selected.type === 'group') {
+      const menu = config.megaMenus.find((item) => item.id === selected.menuId)
+      const group = menu?.groups.find((item) => item.id === selected.id)
+      if (!group) {
+        reset({})
+        return
+      }
       reset({
-        title: selectedNode.title,
-        isVisible: selectedNode.isVisible,
+        title: group.title,
+        isVisible: group.isVisible,
       })
       return
     }
 
     if (selected.type === 'item') {
+      const menu = config.megaMenus.find((item) => item.id === selected.menuId)
+      const group = menu?.groups.find((item) => item.id === selected.groupId)
+      const item = group?.items.find((entry) => entry.id === selected.id)
+      if (!item) {
+        reset({})
+        return
+      }
       reset({
-        title: selectedNode.title,
-        description: selectedNode.description,
-        href: selectedNode.href,
-        icon: selectedNode.icon,
-        tone: selectedNode.tone,
-        isVisible: selectedNode.isVisible,
+        title: item.title,
+        description: item.description,
+        href: item.href,
+        icon: item.icon,
+        tone: item.tone,
+        isVisible: item.isVisible,
       })
     }
-  }, [reset, selected, selectedNode])
+  }, [config, reset, selected])
 
   const handleSaveEditor = handleSubmit((values) => {
     if (!selected) return
