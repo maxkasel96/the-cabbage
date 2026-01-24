@@ -11,6 +11,13 @@ const modalTaglines = [
   "Who's the go-fer boy this time?",
   'Let the cabbage decide.',
   "Don't draw yourself again, dumb ass",
+  'And Tonight’s Sacrifice Is…',
+  'We Now Begin the Ritual',
+  'Please Rise for the Selection of the Unfortunate',
+  'Someone’s About to Be Mad',
+  'Silence. The Cabbage Demands Respect.',
+  'Godspeed, You Moron',
+  'Fuck Around & Find Out',
 ]
 
 type Player = {
