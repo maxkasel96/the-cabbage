@@ -64,6 +64,18 @@ export default function FloatingUtilityButton() {
   const [outcomeTagline, setOutcomeTagline] = useState('')
   const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  async function logSelection(playerId: string) {
+    try {
+      await fetch('/api/player-selections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId }),
+      })
+    } catch (error) {
+      console.warn('Failed to log player selection.', error)
+    }
+  }
+
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -140,6 +152,7 @@ export default function FloatingUtilityButton() {
       setOutcomeTagline(nextOutcomeTagline)
       setSelectionStatus('')
       setIsSelecting(false)
+      void logSelection(nextPlayer.id)
     }, 700)
   }
 

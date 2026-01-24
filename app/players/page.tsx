@@ -22,6 +22,7 @@ type PlayerStats = {
   totalWins: number
   totalLosses: number
   winsBySeason: SeasonSummary[]
+  activeTournamentSelections: number
 }
 
 type PlayerWithStats = Player & {
@@ -134,6 +135,8 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     statusMessages.push(winsError.message)
   }
 
+  const selectionCountsByPlayer = new Map<string, number>()
+
   if ((playersData ?? []).length > 0) {
     const { data: activeTournament, error: activeTournamentError } = await supabaseServer
       .from('tournaments')
@@ -194,6 +197,23 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
         })
       }
     }
+
+    if (activeTournament?.id) {
+      const { data: selectionEvents, error: selectionEventsError } = await supabaseServer
+        .from('player_selection_events')
+        .select('player_id')
+        .eq('tournament_id', activeTournament.id)
+
+      if (selectionEventsError) {
+        statusMessages.push(selectionEventsError.message)
+      }
+
+      ;(selectionEvents ?? []).forEach((entry) => {
+        if (!entry?.player_id) return
+        const current = selectionCountsByPlayer.get(entry.player_id) ?? 0
+        selectionCountsByPlayer.set(entry.player_id, current + 1)
+      })
+    }
   }
 
   const players = (playersData ?? []).map((player) => {
@@ -205,6 +225,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
       stats: {
         totalWins: stats?.totalWins ?? 0,
         totalLosses: stats?.totalLosses ?? 0,
+        activeTournamentSelections: selectionCountsByPlayer.get(player.id) ?? 0,
         winsBySeason,
       },
     }
@@ -254,6 +275,12 @@ export default async function PlayersLandingPage() {
                   <p className="text-sm text-[color:var(--text-secondary)]">
                     Active tournament losses:{' '}
                     <span className="font-semibold">{player.stats.totalLosses}</span>
+                  </p>
+                  <p className="text-sm text-[color:var(--text-secondary)]">
+                    # of Cabbage draws:{' '}
+                    <span className="font-semibold">
+                      {player.stats.activeTournamentSelections}
+                    </span>
                   </p>
                 </div>
                 <div className="mt-4">
