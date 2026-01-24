@@ -817,6 +817,7 @@ button:disabled {
 
 .floating-utility-modal__tagline {
   padding-top: 6px;
+  font-style: italic;
 }
 
 .floating-utility-modal__result {
