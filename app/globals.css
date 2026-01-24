@@ -887,6 +887,17 @@ button:disabled {
   outline-offset: 4px;
 }
 
+.floating-utility-modal__selected-player {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.floating-utility-modal__outcome {
+  margin-bottom: 12px;
+}
+
 .player-card--skeleton {
   pointer-events: none;
   box-shadow: none;
