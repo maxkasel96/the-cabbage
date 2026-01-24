@@ -33,7 +33,7 @@ type PostRecord = {
   author_id: string
   author_name: string
   message: string
-  images?: string[] | null
+  images?: string[] | string | null
   created_at: string
 }
 
@@ -93,6 +93,35 @@ const extractImageSources = (value: string) => {
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean)
   return images.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+}
+
+const normalizeImageList = (value: PostRecord['images']) => {
+  const list = Array.isArray(value)
+    ? value.filter((image): image is string => typeof image === 'string')
+    : []
+
+  if (list.length > 0) {
+    return list.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((image): image is string => typeof image === 'string')
+          .filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+      }
+    } catch {
+      // Ignore malformed JSON and fall through to direct string handling.
+    }
+
+    if (allowedImageSources.some((pattern) => pattern.test(value))) {
+      return [value]
+    }
+  }
+
+  return []
 }
 
 const formatDateTime = (value: string) => {
@@ -172,7 +201,7 @@ export default function PostsPage() {
 
       const list: PostRecord[] = json.posts ?? []
       const grouped = list.reduce<Record<string, PostEntry[]>>((acc, post) => {
-        const storedImages = Array.isArray(post.images) ? post.images : []
+        const storedImages = normalizeImageList(post.images)
         const fallbackImages = storedImages.length ? storedImages : extractImageSources(post.message)
         const entry: PostEntry = {
           id: post.id,
@@ -257,13 +286,14 @@ export default function PostsPage() {
       return
     }
 
+    const normalizedImages = normalizeImageList(post.images)
     const entry: PostEntry = {
       id: post.id,
       tournamentId: post.tournament_id,
       authorId: post.author_id,
       authorName: post.author_name,
       message: sanitizeRichText(post.message),
-      images: Array.isArray(post.images) ? post.images : images,
+      images: normalizedImages.length > 0 ? normalizedImages : images,
       createdAt: post.created_at,
     }
 
