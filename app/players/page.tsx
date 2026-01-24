@@ -20,6 +20,7 @@ type SeasonSummary = {
 
 type PlayerStats = {
   totalWins: number
+  totalLosses: number
   winsBySeason: SeasonSummary[]
 }
 
@@ -67,6 +68,8 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     return { players: [], status: playersError.message }
   }
 
+  const statusMessages: string[] = []
+
   // Aggregation uses plays + game_winners.player_id joined with tournaments for season labels.
   const { data: winsData, error: winsError } = await supabaseServer
     .from('plays')
@@ -92,6 +95,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     string,
     {
       totalWins: number
+      totalLosses: number
       winsBySeason: Map<string, SeasonSummary>
     }
   >()
@@ -107,7 +111,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
       winners.forEach((playerId) => {
         const current =
           statsByPlayer.get(playerId) ??
-          { totalWins: 0, winsBySeason: new Map<string, SeasonSummary>() }
+          { totalWins: 0, totalLosses: 0, winsBySeason: new Map<string, SeasonSummary>() }
 
         current.totalWins += 1
         const existing = current.winsBySeason.get(seasonInfo.id)
@@ -126,6 +130,64 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
         statsByPlayer.set(playerId, current)
       })
     })
+  } else if (winsError) {
+    statusMessages.push(winsError.message)
+  }
+
+  const activePlayerIds = new Set(
+    (playersData ?? []).filter((player) => player.is_active).map((player) => player.id)
+  )
+
+  if (activePlayerIds.size > 0) {
+    const { data: activeTournament, error: activeTournamentError } = await supabaseServer
+      .from('tournaments')
+      .select('id')
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (activeTournamentError) {
+      statusMessages.push(activeTournamentError.message)
+    }
+
+    if (activeTournament?.id) {
+      const { data: playedGames, error: playedGamesError } = await supabaseServer
+        .from('plays')
+        .select(
+          `
+            id,
+            played_at,
+            game_winners (
+              player_id
+            )
+          `
+        )
+        .eq('tournament_id', activeTournament.id)
+        .not('played_at', 'is', null)
+
+      if (playedGamesError) {
+        statusMessages.push(playedGamesError.message)
+      }
+
+      if (!playedGamesError && playedGames) {
+        playedGames.forEach((play: any) => {
+          const winnerIds = (play.game_winners ?? [])
+            .map((winner: any) => winner.player_id)
+            .filter((playerId: string | null): playerId is string => Boolean(playerId))
+          const winners = new Set<string>(winnerIds)
+
+          activePlayerIds.forEach((playerId) => {
+            if (winners.has(playerId)) return
+
+            const current =
+              statsByPlayer.get(playerId) ??
+              { totalWins: 0, totalLosses: 0, winsBySeason: new Map<string, SeasonSummary>() }
+
+            current.totalLosses += 1
+            statsByPlayer.set(playerId, current)
+          })
+        })
+      }
+    }
   }
 
   const players = (playersData ?? []).map((player) => {
@@ -136,6 +198,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
       ...player,
       stats: {
         totalWins: stats?.totalWins ?? 0,
+        totalLosses: stats?.totalLosses ?? 0,
         winsBySeason,
       },
     }
@@ -143,7 +206,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
 
   return {
     players,
-    status: winsError?.message,
+    status: statusMessages.length > 0 ? statusMessages.join(' | ') : undefined,
   }
 }
 
@@ -181,6 +244,10 @@ export default async function PlayersLandingPage() {
                   </h2>
                   <p className="text-sm text-[color:var(--text-secondary)]">
                     Total wins: <span className="font-semibold">{player.stats.totalWins}</span>
+                  </p>
+                  <p className="text-sm text-[color:var(--text-secondary)]">
+                    Active tournament losses:{' '}
+                    <span className="font-semibold">{player.stats.totalLosses}</span>
                   </p>
                 </div>
                 <div className="mt-4">
