@@ -158,7 +158,7 @@ export default function FloatingUtilityButton() {
             <div className="player-card-modal" role="dialog" aria-modal="true">
               <div className="player-card-modal__backdrop" onClick={closeModal} />
               <div
-                className="player-card-modal__content"
+                className="player-card-modal__content floating-utility-modal__content"
                 role="document"
                 onClick={(event) => event.stopPropagation()}
               >
