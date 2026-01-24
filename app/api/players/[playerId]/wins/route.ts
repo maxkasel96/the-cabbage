@@ -9,6 +9,8 @@ type SeasonSummary = {
   id: string
   label: string
   wins: number
+  losses: number
+  cabbageDraws: number
   yearStart?: number | null
   yearEnd?: number | null
 }
@@ -22,40 +24,79 @@ export async function GET(_: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Invalid player id.' }, { status: 400 })
   }
 
-  const [{ data: tournaments, error: tournamentsError }, { data: wins, error: winsError }] =
-    await Promise.all([
-      supabaseServer
-        .from('tournaments')
-        .select('id,label,year_start,year_end')
-        .order('year_start', { ascending: false })
-        .order('year_end', { ascending: false }),
-      supabaseServer
-        .from('plays')
-        .select(
-          `
+  const [
+    { data: tournaments, error: tournamentsError },
+    { data: wins, error: winsError },
+    { data: losses, error: lossesError },
+    { data: selectionEvents, error: selectionEventsError },
+  ] = await Promise.all([
+    supabaseServer
+      .from('tournaments')
+      .select('id,label,year_start,year_end')
+      .order('year_start', { ascending: false })
+      .order('year_end', { ascending: false }),
+    supabaseServer
+      .from('plays')
+      .select(
+        `
+          id,
+          played_at,
+          tournament_id,
+          tournaments:tournament_id (
             id,
-            played_at,
-            tournament_id,
-            tournaments:tournament_id (
-              id,
-              label,
-              year_start,
-              year_end
-            ),
-            game_winners!inner (
-              player_id
-            )
-          `
-        )
-        .eq('game_winners.player_id', playerId)
-        .not('played_at', 'is', null),
-    ])
+            label,
+            year_start,
+            year_end
+          ),
+          game_winners!inner (
+            player_id
+          )
+        `
+      )
+      .eq('game_winners.player_id', playerId)
+      .not('played_at', 'is', null),
+    supabaseServer
+      .from('player_losses_by_tournament')
+      .select(
+        `
+          tournament_id,
+          losses,
+          tournaments:tournament_id (
+            id,
+            label,
+            year_start,
+            year_end
+          )
+        `
+      )
+      .eq('player_id', playerId),
+    supabaseServer
+      .from('player_selection_events')
+      .select(
+        `
+          tournament_id,
+          tournaments:tournament_id (
+            id,
+            label,
+            year_start,
+            year_end
+          )
+        `
+      )
+      .eq('player_id', playerId),
+  ])
 
   if (tournamentsError) {
     return NextResponse.json({ error: tournamentsError.message }, { status: 500 })
   }
 
   if (winsError) return NextResponse.json({ error: winsError.message }, { status: 500 })
+
+  if (lossesError) return NextResponse.json({ error: lossesError.message }, { status: 500 })
+
+  if (selectionEventsError) {
+    return NextResponse.json({ error: selectionEventsError.message }, { status: 500 })
+  }
 
   const totalsBySeason = new Map<string, SeasonSummary>()
 
@@ -68,6 +109,8 @@ export async function GET(_: NextRequest, { params }: Params) {
       id: season.id,
       label,
       wins: 0,
+      losses: 0,
+      cabbageDraws: 0,
       yearStart,
       yearEnd,
     })
@@ -88,6 +131,54 @@ export async function GET(_: NextRequest, { params }: Params) {
         id: seasonId,
         label,
         wins: 1,
+        losses: 0,
+        cabbageDraws: 0,
+        yearStart,
+        yearEnd,
+      })
+    }
+  })
+
+  ;(losses ?? []).forEach((entry: any) => {
+    const season = entry.tournaments
+    const seasonId = season?.id ?? entry.tournament_id ?? 'unknown'
+    const yearStart = season?.year_start ?? null
+    const yearEnd = season?.year_end ?? null
+    const label = season?.label ?? 'Unknown tournament'
+
+    const existing = totalsBySeason.get(seasonId)
+    if (existing) {
+      existing.losses += entry.losses ?? 0
+    } else {
+      totalsBySeason.set(seasonId, {
+        id: seasonId,
+        label,
+        wins: 0,
+        losses: entry.losses ?? 0,
+        cabbageDraws: 0,
+        yearStart,
+        yearEnd,
+      })
+    }
+  })
+
+  ;(selectionEvents ?? []).forEach((entry: any) => {
+    const season = entry.tournaments
+    const seasonId = season?.id ?? entry.tournament_id ?? 'unknown'
+    const yearStart = season?.year_start ?? null
+    const yearEnd = season?.year_end ?? null
+    const label = season?.label ?? 'Unknown tournament'
+
+    const existing = totalsBySeason.get(seasonId)
+    if (existing) {
+      existing.cabbageDraws += 1
+    } else {
+      totalsBySeason.set(seasonId, {
+        id: seasonId,
+        label,
+        wins: 0,
+        losses: 0,
+        cabbageDraws: 1,
         yearStart,
         yearEnd,
       })
@@ -101,8 +192,10 @@ export async function GET(_: NextRequest, { params }: Params) {
     return b.label.localeCompare(a.label)
   })
 
+  const totalWins = winsBySeason.reduce((sum, season) => sum + season.wins, 0)
+
   return NextResponse.json({
-    totalWins: wins?.length ?? 0,
+    totalWins,
     winsBySeason,
   })
 }

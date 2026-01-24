@@ -17,6 +17,8 @@ type TournamentWin = {
   id: string
   label: string
   wins: number
+  losses: number
+  cabbageDraws: number
 }
 
 type PlayerWinsResponse = {
@@ -94,6 +96,14 @@ export default function PlayerCard({ player }: PlayerCardProps) {
 
   const winsByTournament = wins?.winsBySeason ?? []
   const totalWins = wins?.totalWins ?? 0
+  const totalLosses = winsByTournament.reduce((sum, season) => sum + season.losses, 0)
+  const totalCabbageDraws = winsByTournament.reduce((sum, season) => sum + season.cabbageDraws, 0)
+
+  const formatWinPercentage = (winsCount: number, lossesCount: number) => {
+    const totalGames = winsCount + lossesCount
+    if (totalGames === 0) return '—'
+    return `${((winsCount / totalGames) * 100).toFixed(1)}%`
+  }
 
   return (
     <div
@@ -174,38 +184,49 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                     {player.player_bio?.trim() ? player.player_bio : 'No biography available.'}
                   </p>
                 </section>
-                <table className="player-card-modal__table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Tournament</th>
-                      <th scope="col">Wins</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {isWinsLoading ? (
+                <div className="player-card-modal__table-scroll">
+                  <table className="player-card-modal__table">
+                    <thead>
                       <tr>
-                        <td colSpan={2}>Loading wins...</td>
+                        <th scope="col">Tournament</th>
+                        <th scope="col">Wins</th>
+                        <th scope="col">Losses</th>
+                        <th scope="col">Win %</th>
+                        <th scope="col"># of Cabbage Drawings</th>
                       </tr>
-                    ) : winsByTournament.length === 0 ? (
-                      <tr>
-                        <td colSpan={2}>No wins recorded yet.</td>
-                      </tr>
-                    ) : (
-                      winsByTournament.map((season) => (
-                        <tr key={season.id}>
-                          <td>{season.label}</td>
-                          <td>{season.wins}</td>
+                    </thead>
+                    <tbody>
+                      {isWinsLoading ? (
+                        <tr>
+                          <td colSpan={5}>Loading stats...</td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th scope="row">Total</th>
-                      <td>{totalWins}</td>
-                    </tr>
-                  </tfoot>
-                </table>
+                      ) : winsByTournament.length === 0 ? (
+                        <tr>
+                          <td colSpan={5}>No stats recorded yet.</td>
+                        </tr>
+                      ) : (
+                        winsByTournament.map((season) => (
+                          <tr key={season.id}>
+                            <td>{season.label}</td>
+                            <td>{season.wins}</td>
+                            <td>{season.losses}</td>
+                            <td>{formatWinPercentage(season.wins, season.losses)}</td>
+                            <td>{season.cabbageDraws}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th scope="row">Total</th>
+                        <td>{totalWins}</td>
+                        <td>{totalLosses}</td>
+                        <td>{formatWinPercentage(totalWins, totalLosses)}</td>
+                        <td>{totalCabbageDraws}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
                 {winsStatus ? <p className="player-card-modal__status">{winsStatus}</p> : null}
                 <button type="button" className="player-card-modal__close" onClick={closeModal}>
                   Close
