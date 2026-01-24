@@ -35,6 +35,36 @@ type SelectedNode =
   | { type: 'item'; menuId: string; groupId: string; id: string }
   | null
 
+const getSupabaseAccessToken = () => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null
+  }
+
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index)
+    if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) {
+      continue
+    }
+    const raw = window.localStorage.getItem(key)
+    if (!raw) continue
+    try {
+      const parsed = JSON.parse(raw) as { access_token?: string }
+      if (parsed.access_token) {
+        return parsed.access_token
+      }
+    } catch {
+      continue
+    }
+  }
+
+  return null
+}
+
+const getAuthHeaders = () => {
+  const token = getSupabaseAccessToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 const editorSchema = z.object({
   label: z.string().optional(),
   title: z.string().optional(),
@@ -151,7 +181,9 @@ export default function NavigationBuilderPage() {
 
     async function loadConfig() {
       setStatus('Loading navigation...')
-      const res = await fetch('/api/admin/navigation?name=main')
+      const res = await fetch('/api/admin/navigation?name=main', {
+        headers: getAuthHeaders(),
+      })
       const json = await res.json().catch(() => null)
 
       if (!isMounted) return
@@ -438,7 +470,7 @@ export default function NavigationBuilderPage() {
     setStatus('Saving...')
     const res = await fetch('/api/admin/navigation?name=main', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(config),
     })
     const json = await res.json().catch(() => null)
