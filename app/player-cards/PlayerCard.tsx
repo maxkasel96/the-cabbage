@@ -184,6 +184,10 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                     {player.player_bio?.trim() ? player.player_bio : 'No biography available.'}
                   </p>
                 </section>
+                <div className="player-card-modal__table-hint">
+                  <span className="player-card-modal__table-hint-icon">↔</span>
+                  <span>Swipe to view more stats</span>
+                </div>
                 <div className="player-card-modal__table-scroll">
                   <table className="player-card-modal__table">
                     <thead>
