@@ -1,11 +1,6 @@
 'use client'
 
-import { type ChangeEvent, type MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
-import Placeholder from '@tiptap/extension-placeholder'
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -44,8 +39,6 @@ type PostRecord = {
 
 const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
 const allowedImageSources = [/^https?:\/\//i, /^data:image\/(png|jpe?g|gif|webp);base64,/i]
-const MAX_POST_LENGTH = 5000
-
 const sanitizeRichText = (value: string) => {
   if (!value) return ''
   const parser = new DOMParser()
@@ -153,57 +146,10 @@ export default function PostsPage() {
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [attachedImages, setAttachedImages] = useState<string[]>([])
   const [status, setStatus] = useState('')
-  const [editorStatus, setEditorStatus] = useState('')
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
-  const lastValidContentRef = useRef({ html: '', text: '' })
-  const isRevertingRef = useRef(false)
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      Link.configure({
-        openOnClick: false,
-      }),
-      Placeholder.configure({
-        placeholder: 'Drop your thoughts here...',
-      }),
-    ],
-    content: '',
-    editorProps: {
-      attributes: {
-        class: 'posts__editor-input',
-        'data-placeholder': 'Drop your thoughts here...',
-        'aria-label': 'Message',
-      },
-    },
-    onUpdate: ({ editor }) => {
-      if (isRevertingRef.current) {
-        isRevertingRef.current = false
-        return
-      }
-
-      const text = editor.getText()
-      if (text.length > MAX_POST_LENGTH) {
-        setEditorStatus(`Messages are limited to ${MAX_POST_LENGTH.toLocaleString()} characters.`)
-        isRevertingRef.current = true
-        editor.commands.setContent(lastValidContentRef.current.html, false)
-        editor.commands.focus('end')
-        return
-      }
-
-      setEditorStatus('')
-      const html = editor.getHTML()
-      lastValidContentRef.current = { html, text }
-      setDraftMessage(html)
-    },
-  })
-  const handleToolbarMouseDown = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault()
-  }
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -288,10 +234,10 @@ export default function PostsPage() {
   }, [selectedTournamentId, tournaments])
 
   const handleSubmit = async () => {
-    const rawMessage = editor?.getHTML() ?? draftMessage
+    const rawMessage = draftMessage
     const sanitized = sanitizeRichText(rawMessage)
     const images = attachedImages
-    const plainText = (editor?.getText() ?? getPlainText(sanitized)).replace(/\u00a0/g, ' ').trim()
+    const plainText = getPlainText(sanitized)
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
       return
@@ -304,11 +250,6 @@ export default function PostsPage() {
 
     if (!plainText && images.length === 0) {
       setStatus('Write a message or attach images before posting.')
-      return
-    }
-
-    if (plainText.length > MAX_POST_LENGTH) {
-      setEditorStatus(`Messages are limited to ${MAX_POST_LENGTH.toLocaleString()} characters.`)
       return
     }
 
@@ -360,9 +301,6 @@ export default function PostsPage() {
 
     setDraftMessage('')
     setAttachedImages([])
-    editor?.chain().clearContent().unsetAllMarks().run()
-    lastValidContentRef.current = { html: '', text: '' }
-    setEditorStatus('')
     setStatus('')
   }
 
@@ -394,12 +332,6 @@ export default function PostsPage() {
 
   const triggerImagePicker = () => {
     imageInputRef.current?.click()
-  }
-
-  const handleAddLink = () => {
-    const url = window.prompt('Enter a URL to link to:')
-    if (!url) return
-    editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
   }
 
   const openLightbox = (images: string[], index: number) => {
@@ -546,110 +478,13 @@ export default function PostsPage() {
 
             <label className="posts__control posts__control--full">
               <span className="posts__control-label">Message</span>
-              <div className="posts__editor">
-                <div className="posts__editor-toolbar" role="toolbar" aria-label="Formatting">
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleBold().run()}
-                    aria-label="Bold"
-                    aria-pressed={editor?.isActive('bold') ?? false}
-                    disabled={!editor}
-                  >
-                    <strong>B</strong>
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleItalic().run()}
-                    aria-label="Italic"
-                    aria-pressed={editor?.isActive('italic') ?? false}
-                    disabled={!editor}
-                  >
-                    <em>I</em>
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleUnderline().run()}
-                    aria-label="Underline"
-                    aria-pressed={editor?.isActive('underline') ?? false}
-                    disabled={!editor}
-                  >
-                    <span style={{ textDecoration: 'underline' }}>U</span>
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleStrike().run()}
-                    aria-label="Strikethrough"
-                    aria-pressed={editor?.isActive('strike') ?? false}
-                    disabled={!editor}
-                  >
-                    <span style={{ textDecoration: 'line-through' }}>S</span>
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                    aria-label="Bulleted list"
-                    aria-pressed={editor?.isActive('bulletList') ?? false}
-                    disabled={!editor}
-                  >
-                    • List
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                    aria-label="Numbered list"
-                    aria-pressed={editor?.isActive('orderedList') ?? false}
-                    disabled={!editor}
-                  >
-                    1. List
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-                    aria-label="Blockquote"
-                    aria-pressed={editor?.isActive('blockquote') ?? false}
-                    disabled={!editor}
-                  >
-                    “Quote”
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={handleAddLink}
-                    aria-label="Insert link"
-                    aria-pressed={editor?.isActive('link') ?? false}
-                    disabled={!editor}
-                  >
-                    Link
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().undo().run()}
-                    aria-label="Undo"
-                    disabled={!editor}
-                  >
-                    Undo
-                  </button>
-                  <button
-                    type="button"
-                    onMouseDown={handleToolbarMouseDown}
-                    onClick={() => editor?.chain().focus().redo().run()}
-                    aria-label="Redo"
-                    disabled={!editor}
-                  >
-                    Redo
-                  </button>
-                </div>
-                <EditorContent editor={editor} />
-              </div>
-              {editorStatus && <div className="posts__editor-status">{editorStatus}</div>}
+              <textarea
+                className="posts__editor-input posts__editor-input--textarea"
+                value={draftMessage}
+                onChange={(event) => setDraftMessage(event.target.value)}
+                placeholder="Drop your thoughts here..."
+                rows={6}
+              />
             </label>
 
             <div className="posts__attachments">

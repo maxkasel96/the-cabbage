@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { DOMParser } from 'linkedom'
 
 type PostPayload = {
   tournament_id?: string
@@ -13,42 +12,6 @@ type PostPayload = {
 const isSafeImageSource = (value: string) =>
   /^https?:\/\//i.test(value) || /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(value)
 
-const allowedRichTextTags = new Set(['A', 'B', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'STRONG', 'U', 'UL'])
-
-const sanitizeRichText = (value: string) => {
-  if (!value) return ''
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(value, 'text/html')
-  const nodes = Array.from(doc.body.querySelectorAll('*'))
-
-  nodes.forEach((node) => {
-    if (!allowedRichTextTags.has(node.tagName)) {
-      node.replaceWith(...Array.from(node.childNodes))
-      return
-    }
-
-    if (node.tagName === 'A') {
-      const href = node.getAttribute('href') ?? ''
-      const isSafe = /^https?:\/\//i.test(href) || href.startsWith('mailto:')
-      if (!isSafe) {
-        node.removeAttribute('href')
-      } else {
-        node.setAttribute('rel', 'noreferrer noopener')
-        node.setAttribute('target', '_blank')
-      }
-    }
-
-    Array.from(node.attributes).forEach((attr) => {
-      if (node.tagName === 'A' && (attr.name === 'href' || attr.name === 'rel' || attr.name === 'target')) {
-        return
-      }
-
-      node.removeAttribute(attr.name)
-    })
-  })
-
-  return doc.body.innerHTML
-}
 
 export async function GET() {
   const { data, error } = await supabaseServer
@@ -67,8 +30,7 @@ export async function POST(req: Request) {
   const tournament_id = body?.tournament_id?.trim() ?? ''
   const author_id = body?.author_id?.trim() ?? ''
   const author_name = body?.author_name?.trim() ?? ''
-  const rawMessage = body?.message?.trim() ?? ''
-  const message = sanitizeRichText(rawMessage).trim()
+  const message = body?.message?.trim() ?? ''
   const images = Array.isArray(body?.images) ? body.images.filter((image) => typeof image === 'string') : []
   const invalidImages = images.filter((image) => !isSafeImageSource(image))
 
