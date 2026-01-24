@@ -116,6 +116,18 @@ const adminMenu: MegaMenuConfig = {
         },
       ],
     },
+    {
+      title: 'App Ops',
+      items: [
+        {
+          href: '/admin/app-configurations',
+          title: 'App configurations',
+          description: 'Review platform settings.',
+          icon: 'guide',
+          tone: 'sage',
+        },
+      ],
+    },
   ],
 }
 

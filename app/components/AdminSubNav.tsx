@@ -62,6 +62,9 @@ export default function AdminSubNav() {
       <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
         Tournaments
       </Link>
+      <Link href="/admin/app-configurations" style={linkStyle('/admin/app-configurations')}>
+        App configurations
+      </Link>
     </div>
   )
 }
