@@ -2100,6 +2100,21 @@ button:disabled {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.posts__attachments-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.posts__attachments-thumbnail {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+
 .posts__editor-input:empty::before {
   content: attr(data-placeholder);
   color: var(--text-secondary);
