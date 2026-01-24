@@ -1616,6 +1616,10 @@ button:disabled {
   gap: 6px;
 }
 
+.main-nav__sheet-links--separated {
+  margin-top: 12px;
+}
+
 .main-nav__sheet-link {
   display: flex;
   align-items: center;

@@ -500,10 +500,16 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
           </button>
         </div>
         <div className="main-nav__sheet-content">
-          {navItems.map((item) => {
+          {navItems.map((item, index) => {
             if (item.type === 'link') {
+              const isAfterMenu = index > 0 && navItems[index - 1].type === 'menu'
               return (
-                <div key={item.link.href} className="main-nav__sheet-links">
+                <div
+                  key={item.link.href}
+                  className={`main-nav__sheet-links${
+                    isAfterMenu ? ' main-nav__sheet-links--separated' : ''
+                  }`}
+                >
                   {renderMobileLink(item.link.href, item.link.label)}
                 </div>
               )
