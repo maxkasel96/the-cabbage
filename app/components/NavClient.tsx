@@ -332,7 +332,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
     }
   }, [activeMenu])
 
-  const renderMobileLink = (href: string, label: string, icon: string) => (
+  const renderMobileLink = (href: string, label: string) => (
     <Link
       key={href}
       href={href}
@@ -340,9 +340,6 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       data-active={pathname === href}
       onClick={handleMobileClose}
     >
-      <span className="main-nav__sheet-icon" aria-hidden="true">
-        {icon}
-      </span>
       <span className="main-nav__sheet-label">{label}</span>
     </Link>
   )
@@ -470,40 +467,33 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
         ref={sheetRef}
         tabIndex={-1}
       >
-        <div className="main-nav__sheet-handle" />
-        <div className="main-nav__sheet-links">
+        <div className="main-nav__sheet-header">
           <button
             type="button"
-            className="main-nav__sheet-link"
+            className="main-nav__sheet-close"
             onClick={handleMobileClose}
           >
-            <span className="main-nav__sheet-icon" aria-hidden="true">
-              ☰
-            </span>
-            <span className="main-nav__sheet-label">Menu</span>
+            Close
           </button>
-          {primaryLinks.map((link) => renderMobileLink(link.href, link.label, link.icon))}
         </div>
-        {showAdminMenu && adminMenu ? (
-          <div className="main-nav__sheet-section">
-            <div className="main-nav__sheet-section-title">Admin</div>
-            {adminMenu.groups.map((group) => (
-              <div key={group.title} className="main-nav__sheet-group">
-                <div className="main-nav__sheet-group-title">{group.title}</div>
-                <div className="main-nav__sheet-links">
-                  {group.items.map((item) => renderMobileLink(item.href, item.title, '⚙️'))}
-                </div>
-              </div>
-            ))}
+        <div className="main-nav__sheet-content">
+          <div className="main-nav__sheet-links">
+            {primaryLinks.map((link) => renderMobileLink(link.href, link.label))}
           </div>
-        ) : null}
-        <button
-          type="button"
-          className="main-nav__sheet-close"
-          onClick={handleMobileClose}
-        >
-          Close
-        </button>
+          {showAdminMenu && adminMenu ? (
+            <div className="main-nav__sheet-section">
+              <div className="main-nav__sheet-section-title">Admin</div>
+              {adminMenu.groups.map((group) => (
+                <div key={group.title} className="main-nav__sheet-group">
+                  <div className="main-nav__sheet-group-title">{group.title}</div>
+                  <div className="main-nav__sheet-links">
+                    {group.items.map((item) => renderMobileLink(item.href, item.title))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
     </nav>
   )
