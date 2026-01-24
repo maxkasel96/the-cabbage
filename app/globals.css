@@ -1522,27 +1522,11 @@ button:disabled {
   border-radius: 0;
 }
 
-.main-nav__sheet-handle {
-  width: 42px;
-  height: 4px;
-  border-radius: 999px;
-  background: #9eaa86;
-  align-self: center;
-}
-
 .main-nav__sheet-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
-}
-
-.main-nav__sheet-title {
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #5a4a2e;
 }
 
 .main-nav__sheet-content {

@@ -467,9 +467,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
         ref={sheetRef}
         tabIndex={-1}
       >
-        <div className="main-nav__sheet-handle" />
         <div className="main-nav__sheet-header">
-          <span className="main-nav__sheet-title">Navigation</span>
           <button
             type="button"
             className="main-nav__sheet-close"
