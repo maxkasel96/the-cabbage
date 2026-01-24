@@ -186,9 +186,7 @@ export default function FloatingUtilityButton() {
                       <p className="floating-utility-modal__selected-player">
                         <strong>{selectedPlayer.display_name}</strong>
                       </p>
-                      <p className="floating-utility-modal__outcome text-sm text-slate-500">
-                        {outcomeTagline}
-                      </p>
+                      <p className="floating-utility-modal__outcome">{outcomeTagline}</p>
                     </div>
                   ) : null}
                   {selectionStatus ? (
