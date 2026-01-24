@@ -277,7 +277,7 @@ export default async function PlayersLandingPage() {
                     <span className="font-semibold">{player.stats.totalLosses}</span>
                   </p>
                   <p className="text-sm text-[color:var(--text-secondary)]">
-                    Active tournament selections:{' '}
+                    # of Cabbage draws:{' '}
                     <span className="font-semibold">
                       {player.stats.activeTournamentSelections}
                     </span>
