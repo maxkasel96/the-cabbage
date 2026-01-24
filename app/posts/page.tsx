@@ -33,7 +33,7 @@ type PostRecord = {
   author_id: string
   author_name: string
   message: string
-  images?: string[] | null
+  images?: string[] | string | null
   created_at: string
 }
 
@@ -82,9 +82,6 @@ const getPlainText = (value: string) => {
   return wrapper.textContent?.replace(/\u00a0/g, ' ').trim() ?? ''
 }
 
-const escapeHtmlAttribute = (value: string) =>
-  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
 const extractImageSources = (value: string) => {
   if (!value) return []
   const parser = new DOMParser()
@@ -93,6 +90,35 @@ const extractImageSources = (value: string) => {
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean)
   return images.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+}
+
+const normalizeImageList = (value: PostRecord['images']) => {
+  const list = Array.isArray(value)
+    ? value.filter((image): image is string => typeof image === 'string')
+    : []
+
+  if (list.length > 0) {
+    return list.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((image): image is string => typeof image === 'string')
+          .filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+      }
+    } catch {
+      // Ignore malformed JSON and fall through to direct string handling.
+    }
+
+    if (allowedImageSources.some((pattern) => pattern.test(value))) {
+      return [value]
+    }
+  }
+
+  return []
 }
 
 const formatDateTime = (value: string) => {
@@ -119,6 +145,7 @@ export default function PostsPage() {
   const [postsByTournament, setPostsByTournament] = useState<Record<string, PostEntry[]>>({})
   const [draftMessage, setDraftMessage] = useState('')
   const [draftAuthorId, setDraftAuthorId] = useState('')
+  const [attachedImages, setAttachedImages] = useState<string[]>([])
   const [status, setStatus] = useState('')
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -172,7 +199,7 @@ export default function PostsPage() {
 
       const list: PostRecord[] = json.posts ?? []
       const grouped = list.reduce<Record<string, PostEntry[]>>((acc, post) => {
-        const storedImages = Array.isArray(post.images) ? post.images : []
+        const storedImages = normalizeImageList(post.images)
         const fallbackImages = storedImages.length ? storedImages : extractImageSources(post.message)
         const entry: PostEntry = {
           id: post.id,
@@ -210,7 +237,7 @@ export default function PostsPage() {
 
   const handleSubmit = async () => {
     const sanitized = sanitizeRichText(draftMessage)
-    const images = extractImageSources(draftMessage)
+    const images = attachedImages
     const plainText = getPlainText(sanitized)
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
@@ -257,13 +284,14 @@ export default function PostsPage() {
       return
     }
 
+    const normalizedImages = normalizeImageList(post.images)
     const entry: PostEntry = {
       id: post.id,
       tournamentId: post.tournament_id,
       authorId: post.author_id,
       authorName: post.author_name,
       message: sanitizeRichText(post.message),
-      images: Array.isArray(post.images) ? post.images : images,
+      images: normalizedImages.length > 0 ? normalizedImages : images,
       createdAt: post.created_at,
     }
 
@@ -273,6 +301,7 @@ export default function PostsPage() {
     }))
 
     setDraftMessage('')
+    setAttachedImages([])
     if (editorRef.current) {
       editorRef.current.innerHTML = ''
     }
@@ -300,13 +329,6 @@ export default function PostsPage() {
     updateDraftMessage()
   }
 
-  const insertHtml = (html: string) => {
-    if (!editorRef.current) return
-    editorRef.current.focus()
-    document.execCommand('insertHTML', false, html)
-    updateDraftMessage()
-  }
-
   const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
     if (!files.length) return
@@ -323,12 +345,10 @@ export default function PostsPage() {
       )
     ).catch(() => [])
 
-    images.forEach((src, index) => {
-      if (!src) return
-      const file = files[index]
-      const alt = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'Post image'
-      insertHtml(`<p><img src="${src}" alt="${escapeHtmlAttribute(alt)}" /></p>`)
-    })
+    const validImages = images.filter((src) => allowedImageSources.some((pattern) => pattern.test(src)))
+    if (validImages.length) {
+      setAttachedImages((prev) => [...prev, ...validImages])
+    }
 
     if (imageInputRef.current) {
       imageInputRef.current.value = ''
@@ -528,6 +548,19 @@ export default function PostsPage() {
               <button type="button" className="posts__attachments-button" onClick={triggerImagePicker}>
                 Add images
               </button>
+              {attachedImages.length > 0 && (
+                <div className="posts__attachments-preview" aria-label="Attached images">
+                  {attachedImages.map((src, index) => (
+                    <img
+                      key={`attachment-${index}`}
+                      className="posts__attachments-thumbnail"
+                      src={src}
+                      alt={`Attachment ${index + 1}`}
+                      loading="lazy"
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 ref={imageInputRef}
                 className="posts__editor-input-file"
