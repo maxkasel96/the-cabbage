@@ -169,7 +169,7 @@ export default function PostsPage() {
 
       const list: PostRecord[] = json.posts ?? []
       const grouped = list.reduce<Record<string, PostEntry[]>>((acc, post) => {
-        const storedImages = post.images ?? []
+        const storedImages = Array.isArray(post.images) ? post.images : []
         const fallbackImages = storedImages.length ? storedImages : extractImageSources(post.message)
         const entry: PostEntry = {
           id: post.id,
@@ -260,7 +260,7 @@ export default function PostsPage() {
       authorId: post.author_id,
       authorName: post.author_name,
       message: sanitizeRichText(post.message),
-      images: post.images ?? images,
+      images: Array.isArray(post.images) ? post.images : images,
       createdAt: post.created_at,
     }
 
@@ -421,7 +421,7 @@ export default function PostsPage() {
                     className="posts__entry-message"
                     dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.message) }}
                   />
-                  {post.images.length > 0 && (
+                  {Array.isArray(post.images) && post.images.length > 0 && (
                     <div className="posts__entry-images">
                       {post.images.map((src, imageIndex) => (
                         <img key={`${post.id}-image-${imageIndex}`} src={src} alt="" loading="lazy" />
