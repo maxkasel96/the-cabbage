@@ -65,6 +65,9 @@ export default function AdminSubNav() {
       <Link href="/admin/app-configurations" style={linkStyle('/admin/app-configurations')}>
         App configurations
       </Link>
+      <Link href="/admin/navigation" style={linkStyle('/admin/navigation')}>
+        Navigation
+      </Link>
     </div>
   )
 }
