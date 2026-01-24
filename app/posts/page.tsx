@@ -509,9 +509,6 @@ export default function PostsPage() {
                   <button type="button" onClick={handleAddLink} aria-label="Insert link">
                     Link
                   </button>
-                  <button type="button" onClick={triggerImagePicker} aria-label="Attach images">
-                    Images
-                  </button>
                 </div>
                 <div
                   ref={editorRef}
@@ -522,16 +519,24 @@ export default function PostsPage() {
                   data-placeholder="Drop your thoughts here..."
                   onInput={updateDraftMessage}
                 />
-                <input
-                  ref={imageInputRef}
-                  className="posts__editor-input-file"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleAddImages}
-                />
               </div>
             </label>
+
+            <div className="posts__attachments">
+              <span className="posts__control-label">Post attachments</span>
+              <p className="posts__attachments-note">Upload images to include as thumbnails in your post.</p>
+              <button type="button" className="posts__attachments-button" onClick={triggerImagePicker}>
+                Add images
+              </button>
+              <input
+                ref={imageInputRef}
+                className="posts__editor-input-file"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleAddImages}
+              />
+            </div>
 
             <div className="posts__composer-actions">
               <button type="button" onClick={handleSubmit} className="posts__submit">

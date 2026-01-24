@@ -1962,8 +1962,9 @@ button:disabled {
 
 .posts__entry-images {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  max-width: 320px;
 }
 
 .posts__entry-thumbnail {
@@ -2065,6 +2066,38 @@ button:disabled {
 
 .posts__editor-input-file {
   display: none;
+}
+
+.posts__attachments {
+  width: 100%;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.posts__attachments-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.posts__attachments-button {
+  align-self: flex-start;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.posts__attachments-button:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .posts__editor-input:empty::before {
