@@ -15,7 +15,7 @@ export const defaultNavConfig: NavConfig = {
       href: '/player-cards',
       label: 'Player Cards',
       icon: '🃏',
-      sortOrder: 2,
+      sortOrder: 3,
       isVisible: true,
     },
     {
@@ -23,7 +23,7 @@ export const defaultNavConfig: NavConfig = {
       href: '/players',
       label: 'Players',
       icon: '👤',
-      sortOrder: 3,
+      sortOrder: 4,
       isVisible: false,
     },
     {
@@ -31,7 +31,7 @@ export const defaultNavConfig: NavConfig = {
       href: '/bracket',
       label: 'Bracket Generator',
       icon: '🏆',
-      sortOrder: 4,
+      sortOrder: 5,
       isVisible: true,
     },
   ],
@@ -39,7 +39,7 @@ export const defaultNavConfig: NavConfig = {
     {
       id: 'annals',
       label: 'The Annals',
-      sortOrder: 1,
+      sortOrder: 2,
       isVisible: true,
       groups: [
         {
@@ -85,7 +85,7 @@ export const defaultNavConfig: NavConfig = {
     {
       id: 'admin',
       label: 'Admin',
-      sortOrder: 2,
+      sortOrder: 6,
       isVisible: true,
       groups: [
         {
