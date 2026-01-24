@@ -40,7 +40,7 @@ export const defaultNavConfig: NavConfig = {
       label: 'Players',
       icon: '👤',
       sortOrder: 5,
-      isVisible: true,
+      isVisible: false,
     },
     {
       id: '6f9e61a7-9f12-4989-8c7b-1c9b4fa1a3a4',
