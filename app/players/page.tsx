@@ -134,11 +134,7 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     statusMessages.push(winsError.message)
   }
 
-  const activePlayerIds = new Set(
-    (playersData ?? []).filter((player) => player.is_active).map((player) => player.id)
-  )
-
-  if (activePlayerIds.size > 0) {
+  if ((playersData ?? []).length > 0) {
     const { data: activeTournament, error: activeTournamentError } = await supabaseServer
       .from('tournaments')
       .select('id')
@@ -150,40 +146,64 @@ async function loadPlayersWithStats(): Promise<{ players: PlayerWithStats[]; sta
     }
 
     if (activeTournament?.id) {
-      const { data: playedGames, error: playedGamesError } = await supabaseServer
-        .from('plays')
-        .select(
-          `
-            id,
-            played_at,
-            game_winners (
-              player_id
+      const [{ data: playedGames, error: playedGamesError }, { data: tournamentPlays, error: tournamentPlaysError }] =
+        await Promise.all([
+          supabaseServer
+            .from('plays')
+            .select(
+              `
+                id,
+                played_at,
+                winners_finalized_at,
+                game_winners (
+                  player_id
+                )
+              `
             )
-          `
-        )
-        .eq('tournament_id', activeTournament.id)
-        .not('played_at', 'is', null)
+            .eq('tournament_id', activeTournament.id)
+            .not('played_at', 'is', null),
+          supabaseServer
+            .from('tournament_plays')
+            .select('player_id, joined_at, left_at')
+            .eq('tournament_id', activeTournament.id),
+        ])
 
       if (playedGamesError) {
         statusMessages.push(playedGamesError.message)
       }
 
-      if (!playedGamesError && playedGames) {
+      if (tournamentPlaysError) {
+        statusMessages.push(tournamentPlaysError.message)
+      }
+
+      if (!playedGamesError && !tournamentPlaysError && playedGames && tournamentPlays) {
+        const tournamentRoster = tournamentPlays.map((entry: any) => ({
+          playerId: entry.player_id as string,
+          joinedAt: entry.joined_at ? new Date(entry.joined_at) : null,
+          leftAt: entry.left_at ? new Date(entry.left_at) : null,
+        }))
+
         playedGames.forEach((play: any) => {
+          const playTimestamp = play.winners_finalized_at ?? play.played_at
+          if (!playTimestamp) return
+          const playedAt = new Date(playTimestamp)
           const winnerIds = (play.game_winners ?? [])
             .map((winner: any) => winner.player_id)
             .filter((playerId: string | null): playerId is string => Boolean(playerId))
           const winners = new Set<string>(winnerIds)
 
-          activePlayerIds.forEach((playerId) => {
-            if (winners.has(playerId)) return
+          tournamentRoster.forEach((entry) => {
+            if (!entry.playerId) return
+            if (entry.joinedAt && entry.joinedAt > playedAt) return
+            if (entry.leftAt && entry.leftAt <= playedAt) return
+            if (winners.has(entry.playerId)) return
 
             const current =
-              statsByPlayer.get(playerId) ??
+              statsByPlayer.get(entry.playerId) ??
               { totalWins: 0, totalLosses: 0, winsBySeason: new Map<string, SeasonSummary>() }
 
             current.totalLosses += 1
-            statsByPlayer.set(playerId, current)
+            statsByPlayer.set(entry.playerId, current)
           })
         })
       }
