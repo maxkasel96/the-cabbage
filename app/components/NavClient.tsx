@@ -515,7 +515,9 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 <div className="main-nav__sheet-section-title">{menu.label}</div>
                 {menu.groups.map((group) => (
                   <div key={group.title} className="main-nav__sheet-group">
-                    <div className="main-nav__sheet-group-title">{group.title}</div>
+                    {group.title === menu.label ? null : (
+                      <div className="main-nav__sheet-group-title">{group.title}</div>
+                    )}
                     <div className="main-nav__sheet-links">
                       {group.items.map((item) => renderMobileLink(item.href, item.title))}
                     </div>
