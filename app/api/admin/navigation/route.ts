@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { navConfigSchema } from '@/lib/navigation/schema'
 import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
-import { supabaseServer } from '@/lib/supabaseServer'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 
 const isMissingNavigationTable = (message?: string | null) =>
   Boolean(message && message.includes("Could not find the table 'public.navigation_configs'"))
@@ -16,8 +16,9 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url)
   const name = searchParams.get('name') ?? 'main'
+  const supabaseServiceRole = getSupabaseServiceRole()
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await supabaseServiceRole
     .from('navigation_configs')
     .select('name, config')
     .eq('name', name)
@@ -60,7 +61,8 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
+  const supabaseServiceRole = getSupabaseServiceRole()
+  const { data, error } = await supabaseServiceRole
     .from('navigation_configs')
     .upsert({ name, config: parsed.data }, { onConflict: 'name' })
     .select('name, config')
