@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
-const STORAGE_KEY = 'cabbagePostsByTournament'
-
 type Tournament = {
   id: string
   label: string
@@ -26,6 +24,15 @@ type PostEntry = {
   authorName: string
   message: string
   createdAt: string
+}
+
+type PostRecord = {
+  id: string
+  tournament_id: string
+  author_id: string
+  author_name: string
+  message: string
+  created_at: string
 }
 
 const formatDateTime = (value: string) => {
@@ -53,30 +60,6 @@ export default function PostsPage() {
   const [draftMessage, setDraftMessage] = useState('')
   const [draftAuthorId, setDraftAuthorId] = useState('')
   const [status, setStatus] = useState('')
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!isMounted) return
-
-    const saved = window.localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Record<string, PostEntry[]>
-        setPostsByTournament(parsed)
-      } catch {
-        setPostsByTournament({})
-      }
-    }
-  }, [isMounted])
-
-  useEffect(() => {
-    if (!isMounted) return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(postsByTournament))
-  }, [isMounted, postsByTournament])
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -113,8 +96,35 @@ export default function PostsPage() {
       setPlayers(json.players ?? [])
     }
 
+    const loadPosts = async () => {
+      const res = await fetch('/api/posts', { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setStatus(json.error || 'Failed to load posts')
+        return
+      }
+
+      const list: PostRecord[] = json.posts ?? []
+      const grouped = list.reduce<Record<string, PostEntry[]>>((acc, post) => {
+        const entry: PostEntry = {
+          id: post.id,
+          tournamentId: post.tournament_id,
+          authorId: post.author_id,
+          authorName: post.author_name,
+          message: post.message,
+          createdAt: post.created_at,
+        }
+        acc[entry.tournamentId] = [...(acc[entry.tournamentId] ?? []), entry]
+        return acc
+      }, {})
+
+      setPostsByTournament(grouped)
+    }
+
     loadTournaments()
     loadPlayers()
+    loadPosts()
   }, [])
 
   const activePosts = postsByTournament[selectedTournamentId] ?? []
@@ -130,7 +140,7 @@ export default function PostsPage() {
     )
   }, [selectedTournamentId, tournaments])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = draftMessage.trim()
     if (!selectedTournamentId) {
       setStatus('Select a tournament to post in.')
@@ -149,19 +159,45 @@ export default function PostsPage() {
 
     const author = players.find((player) => player.id === draftAuthorId)
     const authorName = author?.display_name ?? 'Unknown player'
+    setStatus('Posting...')
+
+    const res = await fetch('/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tournament_id: selectedTournamentId,
+        author_id: draftAuthorId,
+        author_name: authorName,
+        message: trimmed,
+      }),
+    })
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to save post')
+      return
+    }
+
+    const post = json.post as PostRecord | undefined
+    if (!post) {
+      setStatus('Post saved, but response was incomplete.')
+      return
+    }
 
     const entry: PostEntry = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
-      tournamentId: selectedTournamentId,
-      authorId: draftAuthorId,
-      authorName,
-      message: trimmed,
-      createdAt: new Date().toISOString(),
+      id: post.id,
+      tournamentId: post.tournament_id,
+      authorId: post.author_id,
+      authorName: post.author_name,
+      message: post.message,
+      createdAt: post.created_at,
     }
 
     setPostsByTournament((prev) => ({
       ...prev,
-      [selectedTournamentId]: [...(prev[selectedTournamentId] ?? []), entry],
+      [entry.tournamentId]: [...(prev[entry.tournamentId] ?? []), entry],
     }))
 
     setDraftMessage('')
