@@ -18,6 +18,7 @@ export async function POST(req: Request) {
   const contentType = req.headers.get('content-type') ?? ''
   let gameId: string | undefined
   let winnerPlayerIdsRaw: unknown = []
+  let participantPlayerIdsRaw: unknown = []
   let noteRaw: unknown
   let winImageFiles: File[] = []
 
@@ -32,6 +33,14 @@ export async function POST(req: Request) {
         winnerPlayerIdsRaw = []
       }
     }
+    const participantsValue = formData.get('participantPlayerIds')
+    if (typeof participantsValue === 'string') {
+      try {
+        participantPlayerIdsRaw = JSON.parse(participantsValue)
+      } catch {
+        participantPlayerIdsRaw = []
+      }
+    }
     noteRaw = formData.get('note')
     winImageFiles = formData.getAll('winImages').filter((file): file is File => file instanceof File)
   } else {
@@ -40,6 +49,9 @@ export async function POST(req: Request) {
     winnerPlayerIdsRaw =
       (body?.winnerPlayerIds as unknown) ??
       (body?.winnerPlayerId ? [body.winnerPlayerId] : [])
+    participantPlayerIdsRaw =
+      (body?.participantPlayerIds as unknown) ??
+      (body?.participantPlayerId ? [body.participantPlayerId] : [])
     noteRaw = body?.note
   }
   const note =
@@ -54,9 +66,17 @@ export async function POST(req: Request) {
   if (!Array.isArray(winnerPlayerIdsRaw)) {
     return NextResponse.json({ error: 'winnerPlayerIds must be an array' }, { status: 400 })
   }
+  if (!Array.isArray(participantPlayerIdsRaw)) {
+    return NextResponse.json({ error: 'participantPlayerIds must be an array' }, { status: 400 })
+  }
 
   const winnerPlayerIds = Array.from(
     new Set(winnerPlayerIdsRaw.filter((x: unknown): x is string => typeof x === 'string' && uuidRegex.test(x)))
+  )
+  const participantPlayerIds = Array.from(
+    new Set(
+      participantPlayerIdsRaw.filter((x: unknown): x is string => typeof x === 'string' && uuidRegex.test(x))
+    )
   )
 
   if (winImageFiles.length > 0 && winnerPlayerIds.length === 0) {
@@ -139,7 +159,24 @@ export async function POST(req: Request) {
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 })
   }
 
-  // 3) Mark the game as played + store the note
+  // 3) Replace participants for this play (delete then insert)
+  const participantsDelete = await supabaseServer.from('play_players').delete().eq('play_id', playId)
+  if (participantsDelete.error) {
+    return NextResponse.json({ error: participantsDelete.error.message }, { status: 500 })
+  }
+
+  if (participantPlayerIds.length > 0) {
+    const participantRows = participantPlayerIds.map((playerId) => ({
+      play_id: playId,
+      player_id: playerId,
+    }))
+    const participantsInsert = await supabaseServer.from('play_players').insert(participantRows)
+    if (participantsInsert.error) {
+      return NextResponse.json({ error: participantsInsert.error.message }, { status: 500 })
+    }
+  }
+
+  // 4) Mark the game as played + store the note
   const upd = await supabaseServer
     .from('plays')
     .update({
@@ -152,26 +189,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: upd.error.message }, { status: 500 })
   }
 
-  // 4) Record losses for the active tournament (skip if the play was already finalized)
+  // 5) Record losses for the active tournament (skip if the play was already finalized)
   if (!previouslyPlayedAt) {
-    const { data: participants, error: participantsError } = await supabaseServer
-      .from('play_players')
-      .select('player_id')
-      .eq('play_id', playId)
-
-    if (participantsError) {
-      return NextResponse.json({ error: participantsError.message }, { status: 500 })
-    }
-
-    const participantIds = Array.from(
-      new Set(
-        (participants ?? [])
-          .map((entry) => entry.player_id)
-          .filter((playerId): playerId is string => typeof playerId === 'string' && uuidRegex.test(playerId))
-      )
-    )
     const winners = new Set<string>(winnerPlayerIds)
-    const loserIds = participantIds.filter((playerId) => !winners.has(playerId))
+    const loserIds = participantPlayerIds.filter((playerId) => !winners.has(playerId))
 
     if (loserIds.length > 0) {
       const { data: existingLosses, error: existingLossesError } = await supabaseServer
