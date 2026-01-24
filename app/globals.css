@@ -686,6 +686,14 @@ button:disabled {
   text-align: center;
 }
 
+@media (max-width: 720px) {
+  .player-card-modal__content {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
+
 .player-card-modal__bio {
   width: 100%;
   text-align: left;
