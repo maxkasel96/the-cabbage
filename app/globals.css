@@ -696,6 +696,10 @@ button:disabled {
     overflow-y: auto;
   }
 
+  .player-card-modal.floating-utility-modal {
+    align-items: center;
+  }
+
   .player-card-modal__content {
     width: 100%;
     height: auto;
