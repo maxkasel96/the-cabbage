@@ -175,7 +175,7 @@ export default function HistoryPage() {
         <div className="stickyHeader">
           <Nav />
         </div>
-        <PageTitle>The Annals</PageTitle>
+        <PageTitle>SCOREBOARD</PageTitle>
 
       {/* Tournament navigation */}
       {tournaments.length > 0 && (
