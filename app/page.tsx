@@ -1533,7 +1533,10 @@ export default function Home() {
               </div>
 
               <div className="markPlayedModalField">
-                <label className="markPlayedModalLabel" htmlFor="win-image-input">
+                <label
+                  className="markPlayedModalLabel"
+                  onClick={(event) => event.preventDefault()}
+                >
                   Attach a win image (optional)
                 </label>
                 <input
