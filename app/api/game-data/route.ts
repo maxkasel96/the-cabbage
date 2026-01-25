@@ -5,16 +5,22 @@ import { getActiveTournamentId } from '@/lib/getActiveTournamentId'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const requestedTournamentId = searchParams.get('tournamentId')?.trim() || ''
   let tournamentId: string | null
 
-  try {
-    tournamentId = await getActiveTournamentId()
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to load active tournament.' },
-      { status: 500 }
-    )
+  if (requestedTournamentId) {
+    tournamentId = requestedTournamentId
+  } else {
+    try {
+      tournamentId = await getActiveTournamentId()
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Failed to load active tournament.' },
+        { status: 500 }
+      )
+    }
   }
 
   if (!tournamentId) {

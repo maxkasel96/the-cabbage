@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -11,16 +11,35 @@ type GameDataRow = {
   played: boolean
 }
 
+type Tournament = {
+  id: string
+  label: string
+  year_start: number
+  year_end: number
+  is_active: boolean
+}
+
+type SortKey = 'suggestions' | 'played'
+type SortDirection = 'asc' | 'desc'
+
 export default function GameDataPage() {
   const [rows, setRows] = useState<GameDataRow[]>([])
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
+  const [search, setSearch] = useState('')
+  const [sortKey, setSortKey] = useState<SortKey>('suggestions')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [tournaments, setTournaments] = useState<Tournament[]>([])
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string>('')
 
-  async function loadGameData() {
+  async function loadGameData(tournamentId?: string) {
     setLoading(true)
     setStatus('')
 
-    const res = await fetch('/api/game-data', { cache: 'no-store' })
+    const url = tournamentId
+      ? `/api/game-data?tournamentId=${encodeURIComponent(tournamentId)}`
+      : '/api/game-data'
+    const res = await fetch(url, { cache: 'no-store' })
     const json = await res.json().catch(() => ({}))
 
     if (!res.ok) {
@@ -34,9 +53,74 @@ export default function GameDataPage() {
     setLoading(false)
   }
 
+  async function loadTournaments() {
+    const res = await fetch('/api/tournaments', { cache: 'no-store' })
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to load tournaments')
+      return
+    }
+
+    const list: Tournament[] = json.tournaments ?? []
+    setTournaments(list)
+
+    if (!selectedTournamentId) {
+      const active = list.find((tournament) => tournament.is_active)
+      if (active) setSelectedTournamentId(active.id)
+    }
+  }
+
   useEffect(() => {
-    loadGameData()
+    loadTournaments()
   }, [])
+
+  useEffect(() => {
+    if (!selectedTournamentId) return
+    loadGameData(selectedTournamentId)
+  }, [selectedTournamentId])
+
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    if (!query) return rows
+    return rows.filter((row) => row.name.toLowerCase().includes(query))
+  }, [rows, search])
+
+  const sortedRows = useMemo(() => {
+    const sorted = [...filteredRows]
+    sorted.sort((a, b) => {
+      if (sortKey === 'suggestions') {
+        const diff = a.suggestionCount - b.suggestionCount
+        return sortDirection === 'asc' ? diff : -diff
+      }
+
+      if (a.played === b.played) {
+        return a.name.localeCompare(b.name)
+      }
+
+      if (sortDirection === 'asc') {
+        return a.played ? 1 : -1
+      }
+
+      return a.played ? -1 : 1
+    })
+
+    return sorted
+  }, [filteredRows, sortDirection, sortKey])
+
+  function toggleSort(nextKey: SortKey) {
+    if (nextKey === sortKey) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortKey(nextKey)
+    setSortDirection(nextKey === 'played' ? 'desc' : 'desc')
+  }
+
+  const selectedTournamentLabel =
+    tournaments.find((tournament) => tournament.id === selectedTournamentId)?.label ||
+    tournaments.find((tournament) => tournament.is_active)?.label ||
+    'Active tournament'
 
   return (
     <main
@@ -67,9 +151,111 @@ export default function GameDataPage() {
           <header style={{ marginBottom: 12 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Suggested Games</h2>
             <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)' }}>
-              Counts reflect how many times each game has been suggested to players in the active tournament.
+              Counts reflect how many times each game has been suggested to players in the selected tournament.
             </p>
           </header>
+
+          {tournaments.length > 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 12,
+                alignItems: 'center',
+                padding: 12,
+                borderRadius: 12,
+                border: '1px solid var(--border-strong)',
+                background: 'var(--page-background)',
+                marginBottom: 16,
+              }}
+            >
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Tournament year:</div>
+              <select
+                value={selectedTournamentId}
+                onChange={(event) => setSelectedTournamentId(event.target.value)}
+                style={{
+                  minWidth: 220,
+                  padding: '8px 10px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {tournaments.map((tournament) => (
+                  <option key={tournament.id} value={tournament.id}>
+                    {tournament.label || `${tournament.year_start}-${tournament.year_end}`}
+                    {tournament.is_active ? ' (Active)' : ''}
+                  </option>
+                ))}
+              </select>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                Viewing: {selectedTournamentLabel}
+              </span>
+            </div>
+          ) : null}
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 12,
+              alignItems: 'center',
+              marginBottom: 12,
+            }}
+          >
+            <label style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+              Search games
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search by game name"
+                style={{
+                  display: 'block',
+                  marginTop: 6,
+                  minWidth: 240,
+                  padding: '8px 10px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--page-background)',
+                  color: 'var(--text-primary)',
+                }}
+              />
+            </label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Sort by</span>
+              <button
+                type="button"
+                onClick={() => toggleSort('suggestions')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 999,
+                  border: '1px solid var(--border-strong)',
+                  background: sortKey === 'suggestions' ? 'var(--primary)' : 'var(--surface)',
+                  color: sortKey === 'suggestions' ? 'var(--text-inverse)' : 'var(--text-primary)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                # of Times Suggested {sortKey === 'suggestions' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleSort('played')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 999,
+                  border: '1px solid var(--border-strong)',
+                  background: sortKey === 'played' ? 'var(--primary)' : 'var(--surface)',
+                  color: sortKey === 'played' ? 'var(--text-inverse)' : 'var(--text-primary)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Played? {sortKey === 'played' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+              </button>
+            </div>
+          </div>
 
           {status ? (
             <div style={{ padding: 12, borderRadius: 12, background: 'rgba(220, 53, 69, 0.12)', color: '#b91c1c' }}>
@@ -79,8 +265,8 @@ export default function GameDataPage() {
 
           {loading ? (
             <p style={{ marginTop: 12 }}>Loading game data…</p>
-          ) : rows.length === 0 ? (
-            <p style={{ marginTop: 12 }}>No game data available for the active tournament.</p>
+          ) : sortedRows.length === 0 ? (
+            <p style={{ marginTop: 12 }}>No game data available for the selected tournament.</p>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table
@@ -99,7 +285,7 @@ export default function GameDataPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row) => (
+                  {sortedRows.map((row) => (
                     <tr key={row.id} style={{ borderBottom: '1px solid var(--divider-soft)' }}>
                       <td style={{ padding: '10px 8px' }}>{row.name}</td>
                       <td style={{ padding: '10px 8px', fontVariantNumeric: 'tabular-nums' }}>
