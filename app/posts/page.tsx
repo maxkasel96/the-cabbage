@@ -149,6 +149,7 @@ export default function PostsPage() {
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -221,6 +222,11 @@ export default function PostsPage() {
   }, [])
 
   const activePosts = postsByTournament[selectedTournamentId] ?? []
+  const pageSize = 10
+  const totalPages = Math.max(1, Math.ceil(activePosts.length / pageSize))
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages)
+  const pageStartIndex = (safePage - 1) * pageSize
+  const visiblePosts = activePosts.slice(pageStartIndex, pageStartIndex + pageSize)
 
   const selectedTournamentLabel = useMemo(() => {
     if (!tournaments.length) return 'Active tournament'
@@ -232,6 +238,16 @@ export default function PostsPage() {
       'Active tournament'
     )
   }, [selectedTournamentId, tournaments])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedTournamentId])
+
+  useEffect(() => {
+    if (currentPage !== safePage) {
+      setCurrentPage(safePage)
+    }
+  }, [currentPage, safePage])
 
   const handleSubmit = async () => {
     const rawMessage = draftMessage
@@ -371,19 +387,6 @@ export default function PostsPage() {
         </div>
         <PageTitle>Posts</PageTitle>
 
-        <section className="posts__header">
-          <div>
-            <h2 className="posts__headline">Cabbage Conversation Thread</h2>
-            <p className="posts__subhead">
-              Keep the chatter organized by tournament year. New posts default to the active season.
-            </p>
-          </div>
-          <div className="posts__header-status">
-            <span className="posts__header-label">Viewing posts from</span>
-            <strong>{selectedTournamentLabel}</strong>
-          </div>
-        </section>
-
         {tournaments.length > 0 && (
           <div className="posts__controls">
             <label className="posts__control">
@@ -406,54 +409,20 @@ export default function PostsPage() {
           </div>
         )}
 
-        {status && <div className="posts__status">{status}</div>}
-
-        <section className="posts__thread">
-          {activePosts.length === 0 ? (
-            <div className="posts__empty">
-              <p>No posts yet for this tournament year.</p>
-              <p>Kick things off below as the first commenter.</p>
-            </div>
-          ) : (
-            activePosts.map((post, index) => (
-              <article key={post.id} className="posts__entry">
-                <div className="posts__entry-meta">
-                  <div className="posts__avatar" aria-hidden="true">
-                    {getInitials(post.authorName) || '??'}
-                  </div>
-                </div>
-                <div className="posts__entry-body">
-                  <header className="posts__entry-header">
-                    <div>
-                      <strong className="posts__entry-author">{post.authorName}</strong>
-                      <span className="posts__entry-time">{formatDateTime(post.createdAt)}</span>
-                    </div>
-                    <span className="posts__entry-index">#{index + 1}</span>
-                  </header>
-                  <div
-                    className="posts__entry-message"
-                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.message) }}
-                  />
-                  {Array.isArray(post.images) && post.images.length > 0 && (
-                    <div className="posts__entry-images">
-                      {post.images.map((src, imageIndex) => (
-                        <button
-                          key={`${post.id}-image-${imageIndex}`}
-                          type="button"
-                          className="posts__entry-thumbnail"
-                          onClick={() => openLightbox(post.images, imageIndex)}
-                          aria-label={`Open image ${imageIndex + 1} of ${post.images.length}`}
-                        >
-                          <img src={src} alt="" loading="lazy" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))
-          )}
+        <section className="posts__header">
+          <div>
+            <h2 className="posts__headline">Cabbage Conversation Thread</h2>
+            <p className="posts__subhead">
+              Keep the chatter organized by tournament year. New posts default to the active season.
+            </p>
+          </div>
+          <div className="posts__header-status">
+            <span className="posts__header-label">Viewing posts from</span>
+            <strong>{selectedTournamentLabel}</strong>
+          </div>
         </section>
+
+        {status && <div className="posts__status">{status}</div>}
 
         <section className="posts__composer">
           <div className="posts__composer-header">
@@ -522,6 +491,78 @@ export default function PostsPage() {
               </button>
             </div>
           </div>
+        </section>
+
+        <section className="posts__thread">
+          {activePosts.length === 0 ? (
+            <div className="posts__empty">
+              <p>No posts yet for this tournament year.</p>
+              <p>Kick things off below as the first commenter.</p>
+            </div>
+          ) : (
+            <>
+              {visiblePosts.map((post, index) => (
+                <article key={post.id} className="posts__entry">
+                  <div className="posts__entry-meta">
+                    <div className="posts__avatar" aria-hidden="true">
+                      {getInitials(post.authorName) || '??'}
+                    </div>
+                  </div>
+                  <div className="posts__entry-body">
+                    <header className="posts__entry-header">
+                      <div>
+                        <strong className="posts__entry-author">{post.authorName}</strong>
+                        <span className="posts__entry-time">{formatDateTime(post.createdAt)}</span>
+                      </div>
+                      <span className="posts__entry-index">#{pageStartIndex + index + 1}</span>
+                    </header>
+                    <div
+                      className="posts__entry-message"
+                      dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.message) }}
+                    />
+                    {Array.isArray(post.images) && post.images.length > 0 && (
+                      <div className="posts__entry-images">
+                        {post.images.map((src, imageIndex) => (
+                          <button
+                            key={`${post.id}-image-${imageIndex}`}
+                            type="button"
+                            className="posts__entry-thumbnail"
+                            onClick={() => openLightbox(post.images, imageIndex)}
+                            aria-label={`Open image ${imageIndex + 1} of ${post.images.length}`}
+                          >
+                            <img src={src} alt="" loading="lazy" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+              {totalPages > 1 && (
+                <div className="posts__pagination" aria-label="Posts pagination">
+                  <button
+                    type="button"
+                    className="posts__pagination-button"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={safePage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="posts__pagination-status">
+                    Page {safePage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="posts__pagination-button"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={safePage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </section>
         {isLightboxOpen && (
           <div className="posts__lightbox" role="dialog" aria-modal="true">
