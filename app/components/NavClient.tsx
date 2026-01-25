@@ -501,10 +501,11 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
         <div className="main-nav__sheet-header">
           <button
             type="button"
-            className="main-nav__sheet-close"
+            className="modal-close"
             onClick={handleMobileClose}
+            aria-label="Close this nonsense"
           >
-            Close
+            ✕
           </button>
         </div>
         <div className="main-nav__sheet-content">

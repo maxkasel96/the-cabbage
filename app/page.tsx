@@ -758,16 +758,6 @@ export default function Home() {
           cursor: pointer;
         }
 
-        .markPlayedModalClose {
-          padding: 8px 12px;
-          cursor: pointer;
-          border-radius: 999px;
-          border: 1px solid var(--border-strong);
-          background: var(--surface);
-          color: var(--text-primary);
-          font-weight: 600;
-        }
-
         .markPlayedModalPrimary {
           padding: 10px 14px;
           cursor: pointer;
@@ -775,16 +765,6 @@ export default function Home() {
           border: none;
           background: var(--primary);
           color: var(--text-inverse);
-          font-weight: 700;
-        }
-
-        .markPlayedModalSecondary {
-          padding: 10px 14px;
-          cursor: pointer;
-          border-radius: 999px;
-          border: 1px solid var(--border-strong);
-          background: var(--page-background);
-          color: var(--text-primary);
           font-weight: 700;
         }
 
@@ -1451,24 +1431,17 @@ export default function Home() {
               boxShadow: '0 18px 50px rgba(63, 90, 42, 0.2)',
               textAlign: 'center',
               border: '1px solid var(--border-strong)',
+              position: 'relative',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                onClick={closeWelcomeModal}
-                style={{
-                  background: 'var(--primary)',
-                  color: 'var(--text-inverse)',
-                  border: 'none',
-                  borderRadius: 999,
-                  padding: '8px 14px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Close
-              </button>
-            </div>
+            <button
+              type="button"
+              className="modal-close"
+              onClick={closeWelcomeModal}
+              aria-label="Close this nonsense"
+            >
+              ✕
+            </button>
             <p style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
               Welcome, weary traveler. You have found yourself embarking on a quest for the hallowed cabbage — an
               ancient relic of great power and deeply unclear purpose. Many have sought it, few have returned
@@ -1495,18 +1468,20 @@ export default function Home() {
             className="markPlayedModal"
           >
             <div className="markPlayedModalInner">
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setNoteModalOpen(false)}
+                aria-label="Close this nonsense"
+                disabled={marking}
+              >
+                ✕
+              </button>
               <div className="markPlayedModalHeader">
                 <div>
                   <div className="markPlayedModalTitle">Add a note</div>
                   <div className="markPlayedModalSubtitle">{game.name}</div>
                 </div>
-                <button
-                  onClick={() => setNoteModalOpen(false)}
-                  className="markPlayedModalClose"
-                  disabled={marking}
-                >
-                  Close
-                </button>
               </div>
 
               <div className="markPlayedModalBody">
@@ -1575,14 +1550,6 @@ export default function Home() {
                   disabled={marking}
                 >
                   {marking ? 'Saving…' : 'Save & mark played'}
-                </button>
-
-                <button
-                  onClick={() => setNoteModalOpen(false)}
-                  className="markPlayedModalSecondary"
-                  disabled={marking}
-                >
-                  Cancel
                 </button>
               </div>
             </div>

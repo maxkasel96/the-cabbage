@@ -180,11 +180,11 @@ export default function FloatingUtilityButton() {
               >
                 <button
                   type="button"
-                  className="player-card-modal__close-icon"
+                  className="modal-close"
                   onClick={closeModal}
-                  aria-label="Close modal"
+                  aria-label="Close this nonsense"
                 >
-                  ×
+                  ✕
                 </button>
                 <p className="text-base font-semibold floating-utility-modal__tagline">{modalTagline}</p>
                 <div className="floating-utility-modal__picker">
