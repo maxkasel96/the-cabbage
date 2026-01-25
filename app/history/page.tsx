@@ -228,12 +228,7 @@ export default function HistoryPage() {
       {/* Scoreboard */}
       <div className="scoreboard">
         <div className="scoreboard__title">
-          <div className="scoreboard__title-badge">
-            <span className="scoreboard__title-icon" aria-hidden="true">
-              🥬
-            </span>
-            <span>Leaderboard</span>
-          </div>
+          <h2>Leaderboard</h2>
           <span className="scoreboard__season">{selectedTournamentLabel}</span>
         </div>
 
