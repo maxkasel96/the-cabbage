@@ -10,6 +10,7 @@ import type {
 } from 'react'
 import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import type { NavConfig } from '@/lib/navigation/schema'
+import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
 type NavProps = {
   showAdminMenu?: boolean
@@ -123,6 +124,8 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   const [navConfig, setNavConfig] = useState<NavConfig>(
     initialConfig ?? defaultNavConfig
   )
+
+  useBodyScrollLock(isMobileMenuOpen)
 
   useEffect(() => {
     if (initialConfig) {
