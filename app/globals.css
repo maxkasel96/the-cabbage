@@ -263,14 +263,8 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .admin-side-nav__links {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 6px;
-  }
-
-  .admin-side-nav__link {
-    white-space: nowrap;
+  .admin-side-nav {
+    display: none;
   }
 }
 
