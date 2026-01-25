@@ -379,7 +379,7 @@ export default function HistoryPage() {
               marginBottom: 12,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               maxWidth: 960,
               width: '100%',
               marginLeft: 'auto',
