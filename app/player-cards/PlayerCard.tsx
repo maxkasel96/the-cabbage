@@ -310,6 +310,14 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                 role="document"
                 onClick={(event) => event.stopPropagation()}
               >
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={closeModal}
+                  aria-label="Close this nonsense"
+                >
+                  ✕
+                </button>
                 <p className="text-base font-semibold">Expanded stats</p>
                 <section className="player-card-modal__bio" aria-label="Player biography">
                   <p className="player-card-modal__bio-title">Biography</p>
@@ -382,9 +390,6 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                   </table>
                 </div>
                 {winsStatus ? <p className="player-card-modal__status">{winsStatus}</p> : null}
-                <button type="button" className="player-card-modal__close" onClick={closeModal}>
-                  Close
-                </button>
               </div>
             </div>,
             document.body

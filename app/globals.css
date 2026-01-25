@@ -1226,46 +1226,54 @@ button:not(.cabbage-roll-button) svg,
   color: #7a1f1f;
 }
 
-.player-card-modal__close {
-  border: none;
-  background: #2e3f2a;
-  color: #f8f7f0;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.player-card-modal__close:focus-visible {
-  outline: 2px solid #2e3f2a;
-  outline-offset: 3px;
-}
-
-.player-card-modal__close-icon {
+.modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(46, 63, 42, 0.12);
-  color: #2e3f2a;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
+  top: -0.75rem;
+  right: -0.75rem;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-bebas-neue), "Bebas Neue", Arial, Helvetica, sans-serif;
+  font-size: 1.6rem;
+  line-height: 1;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--surface-alt) 85%, transparent);
+  color: var(--text-primary);
+  border: 3px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease;
 }
 
-.player-card-modal__close-icon:hover {
-  background: rgba(46, 63, 42, 0.2);
+.modal-close:hover {
+  background: var(--surface);
+  transform: translateY(-2px);
 }
 
-.player-card-modal__close-icon:focus-visible {
-  outline: 2px solid #2e3f2a;
+.modal-close:active {
+  transform: translateY(4px);
+}
+
+.modal-close:focus-visible {
+  outline: 4px solid rgba(110, 127, 74, 0.55);
   outline-offset: 3px;
+}
+
+.modal-close--rude {
+  background: color-mix(in srgb, var(--nav-surface) 85%, transparent);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+}
+
+.modal-close--label::after {
+  content: "CLOSE";
+  font-family: var(--font-geist-sans);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-left: 0.25rem;
 }
 
 .floating-utility-modal__picker {
@@ -2016,10 +2024,12 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .main-nav__sheet-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  min-height: 52px;
 }
 
 .main-nav__sheet-content {
@@ -2102,17 +2112,6 @@ button:not(.cabbage-roll-button) svg,
   color: rgba(90, 74, 46, 0.8);
   font-weight: 700;
   padding: 10px 0 0;
-}
-
-.main-nav__sheet-close {
-  background: none;
-  border: none;
-  color: #2e3f2a;
-  text-align: left;
-  padding: 6px 4px;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
 }
 
 @media (max-width: 960px) {
@@ -2543,20 +2542,6 @@ button:not(.cabbage-roll-button) svg,
   max-height: 80vh;
   border-radius: 16px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-}
-
-.posts__lightbox-close {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(15, 20, 30, 0.8);
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
 }
 
 .posts__lightbox-nav {

@@ -484,17 +484,18 @@ export default function HistoryPage() {
             role="dialog"
             aria-modal="true"
           >
+            <button
+              type="button"
+              className="modal-close"
+              onClick={() => setLightbox(null)}
+              aria-label="Close this nonsense"
+            >
+              ✕
+            </button>
             <div className="history-lightbox__header">
               <span className="history-lightbox__count">
                 Image {lightbox.index + 1} of {lightbox.images.length}
               </span>
-              <button
-                type="button"
-                className="history-lightbox__close"
-                onClick={() => setLightbox(null)}
-              >
-                Close
-              </button>
             </div>
             <img src={lightbox.images[lightbox.index]} alt="Win image" className="history-lightbox__image" />
             {lightbox.images.length > 1 && (
@@ -588,16 +589,6 @@ export default function HistoryPage() {
           font-size: 13px;
           font-weight: 600;
           color: var(--text-secondary);
-        }
-
-        .history-lightbox__close {
-          border-radius: 999px;
-          border: none;
-          background: var(--primary);
-          color: var(--text-inverse);
-          padding: 8px 14px;
-          font-weight: 700;
-          cursor: pointer;
         }
 
         .history-lightbox__image {

@@ -561,8 +561,13 @@ export default function PostsPage() {
           <div className="posts__lightbox" role="dialog" aria-modal="true">
             <button type="button" className="posts__lightbox-backdrop" onClick={closeLightbox} aria-label="Close" />
             <div className="posts__lightbox-content">
-              <button type="button" className="posts__lightbox-close" onClick={closeLightbox} aria-label="Close gallery">
-                ×
+              <button
+                type="button"
+                className="modal-close"
+                onClick={closeLightbox}
+                aria-label="Close this nonsense"
+              >
+                ✕
               </button>
               {lightboxImages.length > 1 && (
                 <button

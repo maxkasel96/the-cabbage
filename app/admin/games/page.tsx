@@ -644,16 +644,23 @@ export default function AdminGamesPage() {
             padding: 16,
             border: '1px solid var(--border-strong)',
             boxShadow: '0 18px 40px rgba(63, 90, 42, 0.25)',
+            position: 'relative',
           }}
         >
+          <button
+            type="button"
+            className="modal-close"
+            onClick={closeEditor}
+            aria-label="Close this nonsense"
+            disabled={saving}
+          >
+            ✕
+          </button>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800 }}>Edit tags</div>
               <div style={{ opacity: 0.8 }}>{editingGame.name}</div>
             </div>
-            <button onClick={closeEditor} style={{ padding: '8px 12px', cursor: 'pointer' }} disabled={saving}>
-              Close
-            </button>
           </div>
 
           <div style={{ marginTop: 14, display: 'grid', gap: 8 }}>
@@ -679,9 +686,6 @@ export default function AdminGamesPage() {
               disabled={saving || !editingGameId}
             >
               {saving ? 'Saving…' : 'Save'}
-            </button>
-            <button onClick={closeEditor} style={{ padding: '10px 14px', cursor: 'pointer' }} disabled={saving}>
-              Cancel
             </button>
           </div>
 
