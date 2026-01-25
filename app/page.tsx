@@ -610,6 +610,7 @@ export default function Home() {
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
           display: flex;
           flex-direction: column;
+          justify-content: center;
           gap: 16px;
           text-align: center;
           overflow-y: auto;
@@ -619,7 +620,6 @@ export default function Home() {
           content: '';
           position: absolute;
           inset: 0;
-          background: rgba(248, 247, 240, 0.9);
           border-radius: 12px;
           z-index: 0;
         }
@@ -633,6 +633,9 @@ export default function Home() {
           z-index: 1;
           width: min(420px, 100%);
           margin: 0 auto;
+          background: var(--page-background);
+          padding: 20px;
+          border-radius: 12px;
         }
 
         .markPlayedModalTitle {
