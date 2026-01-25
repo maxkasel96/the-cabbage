@@ -22,6 +22,30 @@ type TournamentWin = {
   totalGames: number
 }
 
+type HistoryPlayer = {
+  id: string
+  display_name: string
+  avatar_path?: string | null
+}
+
+type HistoryRow = {
+  id: string
+  name: string
+  played_at: string
+  winners: HistoryPlayer[]
+  participants: HistoryPlayer[]
+  notes: string | null
+  win_images: string[]
+}
+
+type ScoreRow = {
+  player_id: string
+  display_name: string
+  wins: number
+  losses: number
+  avatar_path?: string | null
+}
+
 type PlayerWinsResponse = {
   totalWins: number
   winsBySeason: TournamentWin[]
@@ -38,6 +62,8 @@ export default function PlayerCard({ player }: PlayerCardProps) {
   const [wins, setWins] = useState<PlayerWinsResponse | null>(null)
   const [winsStatus, setWinsStatus] = useState('')
   const [isWinsLoading, setIsWinsLoading] = useState(false)
+  const [rankingsByTournament, setRankingsByTournament] = useState<Record<string, number | null>>({})
+  const [isRankingsLoading, setIsRankingsLoading] = useState(false)
   const imageUrl = useMemo(
     () => getAvatarPublicUrl(player.card_path ?? player.avatar_path),
     [player.card_path, player.avatar_path]
@@ -90,10 +116,80 @@ export default function PlayerCard({ player }: PlayerCardProps) {
     setIsWinsLoading(false)
   }
 
+  function buildScores(history: HistoryRow[]) {
+    const map = new Map<string, ScoreRow>()
+
+    for (const h of history) {
+      const winnerIds = new Set((h.winners ?? []).map((w) => w.id))
+      for (const w of h.winners ?? []) {
+        const existing = map.get(w.id)
+        if (existing) {
+          existing.wins += 1
+        } else {
+          map.set(w.id, {
+            player_id: w.id,
+            display_name: w.display_name,
+            wins: 1,
+            losses: 0,
+            avatar_path: w.avatar_path ?? null,
+          })
+        }
+      }
+      for (const p of h.participants ?? []) {
+        const existing = map.get(p.id)
+        if (existing) {
+          if (!winnerIds.has(p.id)) existing.losses += 1
+        } else {
+          map.set(p.id, {
+            player_id: p.id,
+            display_name: p.display_name,
+            wins: 0,
+            losses: winnerIds.has(p.id) ? 0 : 1,
+            avatar_path: p.avatar_path ?? null,
+          })
+        }
+      }
+    }
+
+    return Array.from(map.values()).sort(
+      (a, b) => b.wins - a.wins || a.display_name.localeCompare(b.display_name)
+    )
+  }
+
+  async function loadRankings(tournamentIds: string[]) {
+    if (tournamentIds.length === 0) {
+      setRankingsByTournament({})
+      return
+    }
+
+    setIsRankingsLoading(true)
+    const entries = await Promise.all(
+      tournamentIds.map(async (tournamentId) => {
+        const res = await fetch(`/api/history?tournamentId=${encodeURIComponent(tournamentId)}`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) {
+          return [tournamentId, null] as const
+        }
+        const json = await res.json().catch(() => ({}))
+        const scores = buildScores((json.history ?? []) as HistoryRow[])
+        const rankIndex = scores.findIndex((score) => score.player_id === player.id)
+        return [tournamentId, rankIndex === -1 ? null : rankIndex + 1] as const
+      })
+    )
+    setRankingsByTournament(Object.fromEntries(entries))
+    setIsRankingsLoading(false)
+  }
+
   useEffect(() => {
     if (!isModalOpen) return
     loadWins()
   }, [isModalOpen, player.id])
+
+  useEffect(() => {
+    if (!isModalOpen || !wins) return
+    void loadRankings(wins.winsBySeason.map((season) => season.id))
+  }, [isModalOpen, wins, player.id])
 
   const winsByTournament = wins?.winsBySeason ?? []
   const totalWins = wins?.totalWins ?? 0
@@ -110,6 +206,33 @@ export default function PlayerCard({ player }: PlayerCardProps) {
   const formatParticipationRate = (activeGames: number, tournamentGames: number) => {
     if (tournamentGames === 0) return '—'
     return `${((activeGames / tournamentGames) * 100).toFixed(1)}%`
+  }
+
+  const renderRanking = (rank: number | null | undefined) => {
+    if (rank === undefined && isRankingsLoading) {
+      return <span className="player-card-modal__rank-text">…</span>
+    }
+
+    if (!rank) {
+      return <span className="player-card-modal__rank-text">—</span>
+    }
+
+    if (rank <= 3) {
+      const medalClass =
+        rank === 1
+          ? 'scoreboard__medal--gold'
+          : rank === 2
+            ? 'scoreboard__medal--silver'
+            : 'scoreboard__medal--bronze'
+
+      return (
+        <div className={`scoreboard__medal ${medalClass}`} aria-label={`Rank ${rank}`}>
+          <span>{rank}</span>
+        </div>
+      )
+    }
+
+    return <span className="player-card-modal__rank-text">{rank}</span>
   }
 
   return (
@@ -200,6 +323,7 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                     <thead>
                       <tr>
                         <th scope="col">Tournament</th>
+                        <th scope="col">Ranking</th>
                         <th scope="col">Wins</th>
                         <th scope="col">Losses</th>
                         <th scope="col">Win %</th>
@@ -210,16 +334,19 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                     <tbody>
                       {isWinsLoading ? (
                         <tr>
-                          <td colSpan={6}>Loading stats...</td>
+                          <td colSpan={7}>Loading stats...</td>
                         </tr>
                       ) : winsByTournament.length === 0 ? (
                         <tr>
-                          <td colSpan={6}>No stats recorded yet.</td>
+                          <td colSpan={7}>No stats recorded yet.</td>
                         </tr>
                       ) : (
                         winsByTournament.map((season) => (
                           <tr key={season.id}>
                             <td>{season.label}</td>
+                            <td className="player-card-modal__rank">
+                              {renderRanking(rankingsByTournament[season.id])}
+                            </td>
                             <td>{season.wins}</td>
                             <td>{season.losses}</td>
                             <td>{formatWinPercentage(season.wins, season.losses)}</td>
@@ -237,6 +364,9 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                     <tfoot>
                       <tr>
                         <th scope="row">Total</th>
+                        <td className="player-card-modal__rank">
+                          {renderRanking(null)}
+                        </td>
                         <td>{totalWins}</td>
                         <td>{totalLosses}</td>
                         <td>{formatWinPercentage(totalWins, totalLosses)}</td>
