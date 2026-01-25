@@ -595,21 +595,28 @@ export default function Home() {
         }
         
         .markPlayedModal {
-          width: min(720px, 95vw);
-          border-radius: 16px;
-          padding: 16px;
-          background: var(--surface);
-          border: 1px solid var(--border-strong);
-          box-shadow: 0 12px 24px rgba(28, 45, 20, 0.18);
+          position: relative;
+          z-index: 1;
+          background-color: #f8f7f0;
+          color: #2e3f2a;
+          padding: 24px;
+          border-radius: 12px;
+          width: 600px;
+          max-width: 90vw;
+          max-height: 85vh;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          text-align: center;
+          overflow-y: auto;
         }
 
         .markPlayedModalInner {
-          border-radius: 12px;
-          padding: 20px;
-          background: var(--page-background);
-          border: 1px solid var(--divider-soft);
-          color: var(--text-primary);
-          font-family: var(--font-geist-sans);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          text-align: left;
         }
 
         .markPlayedModalTitle {
@@ -1427,7 +1434,7 @@ export default function Home() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(28, 20, 14, 0.65)',
+            background: 'rgba(10, 14, 9, 0.6)',
             display: 'grid',
             placeItems: 'center',
             padding: 16,
