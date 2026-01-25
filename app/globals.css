@@ -251,8 +251,6 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
   /* Shape + Depth */
   border: 3px solid var(--border-strong);
-  box-shadow: 0 10px 0 rgba(110, 127, 74, 0.25);
-
   /* Behavior */
   cursor: pointer;
   user-select: none;
