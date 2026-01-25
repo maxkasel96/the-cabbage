@@ -17,7 +17,7 @@ export default function AdminAppConfigurationsPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
         <PageTitle>App configurations</PageTitle>
         <AdminSubNav />

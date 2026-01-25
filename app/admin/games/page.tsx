@@ -371,7 +371,7 @@ export default function AdminGamesPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
         <PageTitle>Admin: Games & Tags</PageTitle>
         <AdminSubNav />

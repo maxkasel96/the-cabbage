@@ -120,7 +120,7 @@ export default function AdminTournamentsPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
         <PageTitle>Admin: Tournaments</PageTitle>
         <AdminSubNav />

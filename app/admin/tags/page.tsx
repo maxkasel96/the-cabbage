@@ -111,7 +111,7 @@ export default function AdminTagsPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
         <PageTitle>Admin: Tags</PageTitle>
         <AdminSubNav />

@@ -119,7 +119,7 @@ export default function AdminPlayersPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
         <PageTitle>Admin: Players</PageTitle>
         <AdminSubNav />

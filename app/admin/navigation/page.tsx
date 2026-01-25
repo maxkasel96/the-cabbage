@@ -634,7 +634,7 @@ export default function NavigationBuilderPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
         <PageTitle>Admin: Navigation Builder</PageTitle>
         <AdminSubNav />
