@@ -587,7 +587,7 @@ export default function Home() {
           padding: 12px 14px;
           border-radius: 12px;
           border: 1px solid rgba(89, 60, 33, 0.35);
-          background: linear-gradient(180deg, rgba(250, 241, 217, 0.98), rgba(238, 222, 184, 0.95));
+          background: var(--page-background);
           color: #4b331c;
           box-shadow: inset 0 1px 3px rgba(61, 38, 18, 0.2);
           font-family: 'Georgia', 'Times New Roman', serif;
@@ -595,74 +595,132 @@ export default function Home() {
         }
         
         .markPlayedModal {
-          width: min(720px, 95vw);
-          border-radius: 18px;
-          padding: 10px;
-          background: linear-gradient(135deg, #6a4324 0%, #3d2515 50%, #2c1a10 100%);
-          border: 1px solid rgba(43, 26, 16, 0.9);
-          box-shadow: 0 24px 50px rgba(28, 17, 8, 0.45);
           position: relative;
+          z-index: 1;
+          background-color: #f8f7f0;
+          background-image: url('https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/AdobeStock_15658970%201%20(2)%20(1).png');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          color: #2e3f2a;
+          padding: 24px;
+          border-radius: 12px;
+          width: min(720px, 90vw);
+          aspect-ratio: 1 / 1;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 16px;
+          text-align: center;
+          overflow: hidden;
         }
 
         .markPlayedModal::before {
           content: '';
           position: absolute;
-          inset: 8px;
-          border-radius: 14px;
-          border: 1px solid rgba(255, 223, 177, 0.18);
-          box-shadow: inset 0 0 0 1px rgba(255, 236, 203, 0.08);
-          pointer-events: none;
+          inset: 0;
+          border-radius: 12px;
+          z-index: 0;
         }
 
         .markPlayedModalInner {
-          border-radius: 14px;
-          padding: 18px;
-          background: linear-gradient(180deg, #f8f0d6 0%, #ecd9b0 100%);
-          border: 1px solid rgba(109, 80, 47, 0.35);
-          box-shadow: inset 0 1px 4px rgba(93, 63, 30, 0.22);
-          color: #3f2a15;
-          font-family: 'Georgia', 'Times New Roman', serif;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          text-align: left;
           position: relative;
           z-index: 1;
+          width: min(420px, 100%);
+          margin: 0 auto;
+          background: #ffffff;
+          padding: 20px;
+          border-radius: 12px;
+          align-items: stretch;
+          max-height: 100%;
+          overflow-y: auto;
+        }
+
+        .markPlayedModalHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .markPlayedModalBody {
+          display: grid;
+          gap: 8px;
+        }
+
+        .markPlayedModalActions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 640px) {
+          .markPlayedModalInner {
+            width: 100%;
+            padding: 16px;
+          }
+
+          .markPlayedModalHeader {
+            align-items: flex-start;
+          }
+
+          .markPlayedModalActions {
+            justify-content: stretch;
+          }
+
+          .markPlayedModalActions button {
+            flex: 1 1 100%;
+          }
         }
 
         .markPlayedModalTitle {
           font-size: 20px;
           font-weight: 700;
           letter-spacing: 0.2px;
-          color: #3d2514;
+          color: var(--text-primary);
         }
 
         .markPlayedModalSubtitle {
-          opacity: 0.75;
-          color: #5b3b21;
+          opacity: 0.9;
+          color: var(--text-secondary);
         }
 
         .markPlayedModalHint {
           margin-top: 8px;
           font-size: 12px;
-          color: #6c4c2f;
+          color: var(--text-muted);
         }
 
         .markPlayedModalField {
           margin-top: 16px;
           display: grid;
           gap: 6px;
+          min-width: 0;
         }
 
         .markPlayedModalLabel {
           font-size: 14px;
           font-weight: 700;
-          color: #4b331c;
+          color: var(--text-primary);
         }
 
         .markPlayedModalFileInput {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
           padding: 10px;
           border-radius: 10px;
-          border: 1px solid rgba(89, 60, 33, 0.35);
-          background: rgba(252, 243, 220, 0.8);
-          color: #4b331c;
-          font-family: 'Georgia', 'Times New Roman', serif;
+          border: 1px solid var(--border-strong);
+          background: var(--page-background);
+          color: var(--text-primary);
+          font-family: var(--font-geist-sans);
         }
 
         .markPlayedModalFileMeta {
@@ -671,11 +729,11 @@ export default function Home() {
           justify-content: space-between;
           gap: 12px;
           font-size: 13px;
-          color: #5b3b21;
+          color: var(--text-secondary);
           padding: 8px 10px;
           border-radius: 10px;
-          background: rgba(252, 243, 220, 0.75);
-          border: 1px solid rgba(89, 60, 33, 0.25);
+          background: var(--surface);
+          border: 1px solid var(--divider-soft);
         }
 
         .markPlayedModalFileList {
@@ -686,7 +744,7 @@ export default function Home() {
         .markPlayedModalFileRemove {
           border: none;
           background: transparent;
-          color: #7a4d28;
+          color: var(--primary);
           font-weight: 700;
           cursor: pointer;
         }
@@ -695,7 +753,7 @@ export default function Home() {
           align-self: flex-start;
           border: none;
           background: transparent;
-          color: #6b3f1e;
+          color: var(--primary);
           font-weight: 700;
           cursor: pointer;
         }
@@ -704,9 +762,9 @@ export default function Home() {
           padding: 8px 12px;
           cursor: pointer;
           border-radius: 999px;
-          border: 1px solid rgba(89, 60, 33, 0.4);
-          background: rgba(250, 241, 217, 0.8);
-          color: #4b331c;
+          border: 1px solid var(--border-strong);
+          background: var(--surface);
+          color: var(--text-primary);
           font-weight: 600;
         }
 
@@ -715,19 +773,18 @@ export default function Home() {
           cursor: pointer;
           border-radius: 999px;
           border: none;
-          background: linear-gradient(135deg, #6b3f1e, #b07a3f);
-          color: #fff4df;
+          background: var(--primary);
+          color: var(--text-inverse);
           font-weight: 700;
-          box-shadow: 0 10px 18px rgba(70, 40, 18, 0.3);
         }
 
         .markPlayedModalSecondary {
           padding: 10px 14px;
           cursor: pointer;
           border-radius: 999px;
-          border: 1px solid rgba(89, 60, 33, 0.4);
-          background: rgba(252, 243, 220, 0.8);
-          color: #4b331c;
+          border: 1px solid var(--border-strong);
+          background: var(--page-background);
+          color: var(--text-primary);
           font-weight: 700;
         }
 
@@ -1442,7 +1499,7 @@ export default function Home() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(28, 20, 14, 0.65)',
+            background: 'rgba(10, 14, 9, 0.6)',
             display: 'grid',
             placeItems: 'center',
             padding: 16,
@@ -1453,7 +1510,7 @@ export default function Home() {
             className="markPlayedModal"
           >
             <div className="markPlayedModalInner">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+              <div className="markPlayedModalHeader">
                 <div>
                   <div className="markPlayedModalTitle">Add a note</div>
                   <div className="markPlayedModalSubtitle">{game.name}</div>
@@ -1467,7 +1524,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div style={{ marginTop: 12 }}>
+              <div className="markPlayedModalBody">
                 <textarea
                   className="noteTextarea"
                   value={noteDraft}
@@ -1480,7 +1537,10 @@ export default function Home() {
               </div>
 
               <div className="markPlayedModalField">
-                <label className="markPlayedModalLabel" htmlFor="win-image-input">
+                <label
+                  className="markPlayedModalLabel"
+                  onClick={(event) => event.preventDefault()}
+                >
                   Attach a win image (optional)
                 </label>
                 <input
@@ -1523,7 +1583,7 @@ export default function Home() {
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+              <div className="markPlayedModalActions">
                 <button
                   onClick={confirmMarkPlayed}
                   className="markPlayedModalPrimary"
