@@ -125,7 +125,7 @@ h2 {
 }
 
 .page-title {
-  margin: 42px 0 10px;
+  margin: 24px 0 10px;
 }
 
 .admin-layout .page-title {
@@ -134,7 +134,7 @@ h2 {
 
 @media (max-width: 640px) {
   .page-title {
-    margin: 32px 0 10px;
+    margin: 10px 0 10px;
   }
 
   .admin-layout .page-title {
