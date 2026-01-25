@@ -1072,7 +1072,7 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="pageShell px-6 pb-12 pt-6">
+      <div className="pageShell px-4 pb-12 pt-6 sm:px-6">
         <div className="stickyHeader">
           <Nav />
         </div>

@@ -31,7 +31,7 @@ export default async function PlayerCardsPage() {
 
   return (
     <main className="min-h-screen bg-[var(--page-background)] text-[var(--text-primary)]">
-      <div className="pageShell px-6 pb-12 pt-6">
+      <div className="pageShell px-4 pb-12 pt-6 sm:px-6">
         <div className="stickyHeader">
           <Nav />
         </div>
