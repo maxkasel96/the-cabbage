@@ -125,7 +125,21 @@ h2 {
 }
 
 .page-title {
+  margin: 42px 0 10px;
+}
+
+.admin-layout .page-title {
   margin: 18px 0 10px;
+}
+
+@media (max-width: 640px) {
+  .page-title {
+    margin: 32px 0 10px;
+  }
+
+  .admin-layout .page-title {
+    margin: 18px 0 10px;
+  }
 }
 
 code,
