@@ -702,6 +702,7 @@ export default function Home() {
           margin-top: 16px;
           display: grid;
           gap: 6px;
+          min-width: 0;
         }
 
         .markPlayedModalLabel {
@@ -711,6 +712,9 @@ export default function Home() {
         }
 
         .markPlayedModalFileInput {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
           padding: 10px;
           border-radius: 10px;
           border: 1px solid var(--border-strong);
