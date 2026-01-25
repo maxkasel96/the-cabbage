@@ -598,6 +598,10 @@ export default function Home() {
           position: relative;
           z-index: 1;
           background-color: #f8f7f0;
+          background-image: url('https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/AdobeStock_15658970%201%20(2)%20(1).png');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
           color: #2e3f2a;
           padding: 24px;
           border-radius: 12px;
@@ -612,11 +616,22 @@ export default function Home() {
           overflow-y: auto;
         }
 
+        .markPlayedModal::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: rgba(248, 247, 240, 0.9);
+          border-radius: 12px;
+          z-index: 0;
+        }
+
         .markPlayedModalInner {
           display: flex;
           flex-direction: column;
           gap: 16px;
           text-align: left;
+          position: relative;
+          z-index: 1;
         }
 
         .markPlayedModalTitle {
