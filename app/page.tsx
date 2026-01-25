@@ -641,6 +641,11 @@ export default function Home() {
           overflow-y: auto;
         }
 
+        .markPlayedModal .modal-close {
+          top: 12px;
+          right: 12px;
+        }
+
         .markPlayedModalHeader {
           display: flex;
           justify-content: space-between;
