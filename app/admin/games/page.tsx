@@ -371,10 +371,12 @@ export default function AdminGamesPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
-        <PageTitle>Admin: Games & Tags</PageTitle>
-        <AdminSubNav />
+        <div className="admin-layout">
+          <AdminSubNav />
+          <div className="admin-content">
+            <PageTitle>Admin: Games & Tags</PageTitle>
 
       {/* Add new game */}
       <div
@@ -688,8 +690,10 @@ export default function AdminGamesPage() {
           </div>
         </div>
       </div>
-    )}
+            )}
+          </div>
+        </div>
       </div>
-  </main>
-)
+    </main>
+  )
 }
