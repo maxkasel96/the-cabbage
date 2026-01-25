@@ -1349,7 +1349,7 @@ export default function Home() {
                         </div>
 
                         {winnerPlayerIds.size > 0 && (
-                          <button onClick={clearWinners} className="btn btn--secondary">
+                          <button onClick={clearWinners} className="btn--secondary">
                             Clear winners
                           </button>
                         )}
