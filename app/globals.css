@@ -219,6 +219,7 @@ button:disabled {
 .admin-side-nav__title {
   font-weight: 700;
   letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .admin-side-nav__links {
@@ -239,6 +240,7 @@ button:disabled {
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .admin-side-nav__link.is-active {
@@ -264,7 +266,17 @@ button:disabled {
 
 @media (max-width: 640px) {
   .admin-side-nav {
-    display: none;
+    display: block;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .admin-side-nav__links {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .admin-layout {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
