@@ -1468,6 +1468,7 @@ button:disabled {
   font-size: 38px;
   letter-spacing: 0.4px;
   padding: 0;
+  text-transform: uppercase;
 }
 
 .main-nav__brand-image {
@@ -1527,6 +1528,7 @@ button:disabled {
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.2px;
+  text-transform: uppercase;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   background: transparent;
 }
@@ -1771,6 +1773,7 @@ button:disabled {
   text-decoration: none;
   color: #2e3f2a;
   font-weight: 600;
+  text-transform: uppercase;
   min-height: 50px;
   text-align: left;
   width: 100%;
