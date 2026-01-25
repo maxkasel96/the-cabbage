@@ -452,7 +452,7 @@ export default function PostsPage() {
             <div className="posts__attachments">
               <span className="posts__control-label">Post attachments</span>
               <p className="posts__attachments-note">Upload images to include as thumbnails in your post.</p>
-              <button type="button" className="posts__attachments-button" onClick={triggerImagePicker}>
+              <button type="button" className="btn--secondary" onClick={triggerImagePicker}>
                 Add images
               </button>
               {attachedImages.length > 0 && (

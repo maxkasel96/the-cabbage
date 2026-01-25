@@ -153,7 +153,7 @@ textarea {
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__desktop-trigger):not(
     .main-nav__menu-button
-  ),
+  ):not(.btn--secondary),
 .btn {
   /* Type */
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -189,7 +189,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__de
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):hover,
+  ):not(.main-nav__menu-button):not(.btn--secondary):hover,
 .btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
@@ -198,7 +198,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):active,
+  ):not(.main-nav__menu-button):not(.btn--secondary):active,
 .btn:active {
   transform: translateY(6px);
   box-shadow: 0 4px 0 rgba(46, 63, 42, 0.35);
@@ -207,7 +207,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):focus-visible,
+  ):not(.main-nav__menu-button):not(.btn--secondary):focus-visible,
 .btn:focus-visible {
   outline: 4px solid rgba(110, 127, 74, 0.55);
   outline-offset: 3px;
@@ -215,10 +215,10 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):disabled,
+  ):not(.main-nav__menu-button):not(.btn--secondary):disabled,
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button)[aria-disabled="true"],
+  ):not(.main-nav__menu-button):not(.btn--secondary)[aria-disabled="true"],
 .btn:disabled,
 .btn[aria-disabled="true"] {
   cursor: not-allowed;
@@ -229,14 +229,62 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 }
 
 .btn--secondary {
+  /* Type */
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  line-height: 1;
+
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 999px;
+
+  /* Color */
   background: var(--surface-alt);
   color: var(--text-primary);
-  border-color: var(--border-strong);
-  box-shadow: 0 10px 0 rgba(110, 127, 74, 0.25);
+
+  /* Shape + Depth */
+  border: 3px solid var(--border-strong);
+  /* Behavior */
+  cursor: pointer;
+  user-select: none;
+  transform: translateY(0);
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    filter 140ms ease;
 }
 
 .btn--secondary:hover {
   background: var(--surface);
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+}
+
+.btn--secondary:active {
+  transform: translateY(6px);
+  box-shadow: 0 4px 0 rgba(110, 127, 74, 0.25);
+  filter: brightness(0.98);
+}
+
+.btn--secondary:focus-visible {
+  outline: 4px solid rgba(110, 127, 74, 0.55);
+  outline-offset: 3px;
+}
+
+.btn--secondary:disabled,
+.btn--secondary[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.2);
 }
 
 .btn--danger {
@@ -2449,21 +2497,6 @@ button:not(.cabbage-roll-button) svg,
   color: var(--text-secondary);
 }
 
-.posts__attachments-button {
-  align-self: flex-start;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--text-primary);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.posts__attachments-button:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
 .posts__attachments-preview {
   display: flex;
   flex-wrap: wrap;
@@ -2757,23 +2790,6 @@ button:not(.cabbage-roll-button) svg,
   color: inherit;
   border-radius: 8px;
   padding: 4px 8px;
-}
-
-.rules__delete {
-  color: #ff0000;
-  cursor: pointer;
-  background: #f443361f;
-  border: 1px solid #ff110099;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-}
-
-.rules__delete:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .rules__empty {
