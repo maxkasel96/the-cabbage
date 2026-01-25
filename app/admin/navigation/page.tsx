@@ -636,8 +636,10 @@ export default function NavigationBuilderPage() {
         <div className="stickyHeader">
           <Nav />
         </div>
-        <PageTitle>Admin: Navigation Builder</PageTitle>
-        <AdminSubNav />
+        <div className="admin-layout">
+          <AdminSubNav />
+          <div className="admin-content">
+            <PageTitle>Admin: Navigation Builder</PageTitle>
 
         <div
           style={{
@@ -988,6 +990,8 @@ export default function NavigationBuilderPage() {
             </div>
           </div>
         </DndContext>
+          </div>
+        </div>
       </div>
     </main>
   )

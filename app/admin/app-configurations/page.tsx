@@ -19,9 +19,13 @@ export default function AdminAppConfigurationsPage() {
         <div className="stickyHeader">
           <Nav />
         </div>
-        <PageTitle>App configurations</PageTitle>
-        <AdminSubNav />
-        <p>test</p>
+        <div className="admin-layout">
+          <AdminSubNav />
+          <div className="admin-content">
+            <PageTitle>App configurations</PageTitle>
+            <p>test</p>
+          </div>
+        </div>
       </div>
     </main>
   )

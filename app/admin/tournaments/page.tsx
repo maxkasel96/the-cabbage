@@ -122,8 +122,10 @@ export default function AdminTournamentsPage() {
         <div className="stickyHeader">
           <Nav />
         </div>
-        <PageTitle>Admin: Tournaments</PageTitle>
-        <AdminSubNav />
+        <div className="admin-layout">
+          <AdminSubNav />
+          <div className="admin-content">
+            <PageTitle>Admin: Tournaments</PageTitle>
 
         <div style={{ marginBottom: 16, opacity: 0.85 }}>
           {active ? (
@@ -267,6 +269,8 @@ export default function AdminTournamentsPage() {
             </div>
           </>
         )}
+          </div>
+        </div>
       </div>
     </main>
   )

@@ -6,68 +6,49 @@ import { usePathname } from 'next/navigation'
 export default function AdminSubNav() {
   const pathname = usePathname()
 
-  const palette = {
-    background: 'var(--nav-surface)',
-    border: 'var(--border-strong)',
-    linkIdleBackground: 'transparent',
-    linkIdleBorder: 'transparent',
-    linkIdleText: 'var(--text-inverse)',
-    linkActiveBackground: 'var(--primary)',
-    linkActiveBorder: 'var(--primary)',
-    linkActiveText: 'var(--text-inverse)',
-    shadowSoft: '0 8px 18px rgba(30, 43, 24, 0.28)',
-  }
-
-  const linkStyle = (href: string) => {
-    const isActive = pathname === href
-    return {
-      padding: '8px 14px',
-      borderRadius: 999,
-      border: `1px solid ${isActive ? palette.linkActiveBorder : palette.linkIdleBorder}`,
-      textDecoration: 'none',
-      color: isActive ? palette.linkActiveText : palette.linkIdleText,
-      backgroundColor: isActive ? palette.linkActiveBackground : palette.linkIdleBackground,
-      fontWeight: 600 as const,
-      fontSize: 13,
-      letterSpacing: 0.3,
-      boxShadow: isActive ? palette.shadowSoft : 'none',
-    }
-  }
-
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 10,
-        alignItems: 'center',
-        marginTop: 12,
-        padding: '10px 14px',
-        borderRadius: 16,
-        marginBottom: 12,
-        background: palette.background,
-        border: `1px solid ${palette.border}`,
-      }}
-    >
-      <span style={{ fontWeight: 700, letterSpacing: 0.6, color: 'var(--text-inverse)' }}>Admin pages</span>
-      <Link href="/admin/games" style={linkStyle('/admin/games')}>
+    <nav className="admin-side-nav" aria-label="Admin pages">
+      <div className="admin-side-nav__title">Admin pages</div>
+      <div className="admin-side-nav__links">
+        <Link
+          href="/admin/games"
+          className={`admin-side-nav__link${pathname === '/admin/games' ? ' is-active' : ''}`}
+        >
         Games
-      </Link>
-      <Link href="/admin/tags" style={linkStyle('/admin/tags')}>
+        </Link>
+        <Link
+          href="/admin/tags"
+          className={`admin-side-nav__link${pathname === '/admin/tags' ? ' is-active' : ''}`}
+        >
         Tags
-      </Link>
-      <Link href="/admin/players" style={linkStyle('/admin/players')}>
+        </Link>
+        <Link
+          href="/admin/players"
+          className={`admin-side-nav__link${pathname === '/admin/players' ? ' is-active' : ''}`}
+        >
         Players
-      </Link>
-      <Link href="/admin/tournaments" style={linkStyle('/admin/tournaments')}>
+        </Link>
+        <Link
+          href="/admin/tournaments"
+          className={`admin-side-nav__link${pathname === '/admin/tournaments' ? ' is-active' : ''}`}
+        >
         Tournaments
-      </Link>
-      <Link href="/admin/app-configurations" style={linkStyle('/admin/app-configurations')}>
+        </Link>
+        <Link
+          href="/admin/app-configurations"
+          className={`admin-side-nav__link${
+            pathname === '/admin/app-configurations' ? ' is-active' : ''
+          }`}
+        >
         App configurations
-      </Link>
-      <Link href="/admin/navigation" style={linkStyle('/admin/navigation')}>
+        </Link>
+        <Link
+          href="/admin/navigation"
+          className={`admin-side-nav__link${pathname === '/admin/navigation' ? ' is-active' : ''}`}
+        >
         Navigation
-      </Link>
-    </div>
+        </Link>
+      </div>
+    </nav>
   )
 }

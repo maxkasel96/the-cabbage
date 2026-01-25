@@ -121,8 +121,10 @@ export default function AdminPlayersPage() {
         <div className="stickyHeader">
           <Nav />
         </div>
-        <PageTitle>Admin: Players</PageTitle>
-        <AdminSubNav />
+        <div className="admin-layout">
+          <AdminSubNav />
+          <div className="admin-content">
+            <PageTitle>Admin: Players</PageTitle>
 
         <div style={{ marginBottom: 14, opacity: 0.8 }}>
           Active players appear as winner options on the homepage. Inactive players stay in history.
@@ -246,6 +248,8 @@ export default function AdminPlayersPage() {
             ))}
           </div>
         )}
+          </div>
+        </div>
       </div>
     </main>
   )
