@@ -605,9 +605,8 @@ export default function Home() {
           color: #2e3f2a;
           padding: 24px;
           border-radius: 12px;
-          width: 600px;
-          max-width: 90vw;
-          max-height: 85vh;
+          width: min(720px, 90vw);
+          aspect-ratio: 1 / 1;
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
           display: flex;
           flex-direction: column;
@@ -632,6 +631,8 @@ export default function Home() {
           text-align: left;
           position: relative;
           z-index: 1;
+          width: min(420px, 100%);
+          margin: 0 auto;
         }
 
         .markPlayedModalTitle {
