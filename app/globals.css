@@ -189,7 +189,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__de
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):hover,
+  ):not(.main-nav__menu-button):not(.btn--secondary):hover,
 .btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
@@ -198,7 +198,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):active,
+  ):not(.main-nav__menu-button):not(.btn--secondary):active,
 .btn:active {
   transform: translateY(6px);
   box-shadow: 0 4px 0 rgba(46, 63, 42, 0.35);
@@ -207,7 +207,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):focus-visible,
+  ):not(.main-nav__menu-button):not(.btn--secondary):focus-visible,
 .btn:focus-visible {
   outline: 4px solid rgba(110, 127, 74, 0.55);
   outline-offset: 3px;
@@ -215,10 +215,10 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):disabled,
+  ):not(.main-nav__menu-button):not(.btn--secondary):disabled,
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button)[aria-disabled="true"],
+  ):not(.main-nav__menu-button):not(.btn--secondary)[aria-disabled="true"],
 .btn:disabled,
 .btn[aria-disabled="true"] {
   cursor: not-allowed;
