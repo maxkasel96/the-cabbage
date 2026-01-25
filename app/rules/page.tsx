@@ -247,7 +247,7 @@ export default function RulesPage() {
             </label>
             <button
               type="button"
-              className="rules__delete"
+              className="btn--secondary"
               onClick={() => handleDelete(rule.id)}
               disabled={isDeleting}
             >

@@ -2497,21 +2497,6 @@ button:not(.cabbage-roll-button) svg,
   color: var(--text-secondary);
 }
 
-.posts__attachments-button {
-  align-self: flex-start;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--text-primary);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.posts__attachments-button:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
 .posts__attachments-preview {
   display: flex;
   flex-wrap: wrap;
@@ -2805,23 +2790,6 @@ button:not(.cabbage-roll-button) svg,
   color: inherit;
   border-radius: 8px;
   padding: 4px 8px;
-}
-
-.rules__delete {
-  color: #ff0000;
-  cursor: pointer;
-  background: #f443361f;
-  border: 1px solid #ff110099;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-}
-
-.rules__delete:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .rules__empty {
