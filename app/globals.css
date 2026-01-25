@@ -49,7 +49,57 @@ button {
   letter-spacing: 1.4px;
 }
 
-h1,
+h1 {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: clamp(3.25rem, 6vw, 5.25rem);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 1024px) {
+  h1 {
+    font-size: clamp(2.75rem, 7vw, 4.25rem);
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: clamp(2.25rem, 9vw, 3.25rem);
+  }
+}
+
+.h1--center {
+  text-align: center;
+}
+
+.h1--accent {
+  color: var(--primary);
+}
+
+.h1--underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.2em;
+}
+
+.h1--underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.05em;
+  height: 0.28em;
+  background: var(--secondary);
+  border-radius: 6px;
+  transform: skewX(-6deg);
+  z-index: -1;
+}
+
 h2,
 h3,
 h4,
@@ -57,6 +107,10 @@ h5,
 h6 {
   font-weight: 800;
   letter-spacing: 0.6px;
+}
+
+.page-title {
+  margin: 18px 0 10px;
 }
 
 code,
