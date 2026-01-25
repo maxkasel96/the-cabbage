@@ -2011,6 +2011,7 @@ button:not(.cabbage-roll-button) svg,
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding-inline: 12px;
 }
 
 .main-nav__sheet-group {
@@ -2019,13 +2020,17 @@ button:not(.cabbage-roll-button) svg,
   gap: 6px;
 }
 
+.main-nav__sheet-section .main-nav__sheet-links {
+  margin-inline: -12px;
+}
+
 .main-nav__sheet-section-title {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #5a4a2e;
   font-weight: 700;
-  padding: 8px 4px 0;
+  padding: 8px 0 0;
 }
 
 .main-nav__sheet-group-title {
@@ -2034,7 +2039,7 @@ button:not(.cabbage-roll-button) svg,
   letter-spacing: 0.1em;
   color: rgba(90, 74, 46, 0.8);
   font-weight: 700;
-  padding: 10px 6px 0;
+  padding: 10px 0 0;
 }
 
 .main-nav__sheet-close {
