@@ -28,6 +28,13 @@ export async function GET(request: NextRequest) {
           display_name,
           avatar_path
         )
+      ),
+      play_players (
+        players (
+          id,
+          display_name,
+          avatar_path
+        )
       )
     `
     )
@@ -41,6 +48,14 @@ export async function GET(request: NextRequest) {
     const winners =
       (p.game_winners ?? [])
         .map((gw: any) => gw.players)
+        .filter(Boolean)
+        .reduce((acc: any[], pl: any) => {
+          if (!acc.some((x) => x.id === pl.id)) acc.push(pl)
+          return acc
+        }, [])
+    const participants =
+      (p.play_players ?? [])
+        .map((pp: any) => pp.players)
         .filter(Boolean)
         .reduce((acc: any[], pl: any) => {
           if (!acc.some((x) => x.id === pl.id)) acc.push(pl)
@@ -72,6 +87,7 @@ export async function GET(request: NextRequest) {
       played_at: p.played_at,
       notes: p.played_note ?? null,
       winners,
+      participants,
       win_images: uniqueWinImages,
     }
   })

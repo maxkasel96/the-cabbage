@@ -17,6 +17,7 @@ type HistoryRow = {
   name: string
   played_at: string
   winners: Winner[]
+  participants: Winner[]
   notes: string | null
   win_images: string[]
 }
@@ -25,6 +26,7 @@ type ScoreRow = {
   player_id: string
   display_name: string
   wins: number
+  losses: number
   avatar_path?: string | null
 }
 
@@ -103,11 +105,12 @@ export default function HistoryPage() {
     loadHistory(selectedTournamentId)
   }, [selectedTournamentId])
 
-  // Scoreboard: count wins by player across all history rows
+  // Scoreboard: count wins/losses by player across all history rows
   const scores = useMemo<ScoreRow[]>(() => {
     const map = new Map<string, ScoreRow>()
 
     for (const h of history) {
+      const winnerIds = new Set((h.winners ?? []).map((w) => w.id))
       for (const w of h.winners ?? []) {
         const existing = map.get(w.id)
         if (existing) {
@@ -117,7 +120,22 @@ export default function HistoryPage() {
             player_id: w.id,
             display_name: w.display_name,
             wins: 1,
+            losses: 0,
             avatar_path: w.avatar_path ?? null,
+          })
+        }
+      }
+      for (const p of h.participants ?? []) {
+        const existing = map.get(p.id)
+        if (existing) {
+          if (!winnerIds.has(p.id)) existing.losses += 1
+        } else {
+          map.set(p.id, {
+            player_id: p.id,
+            display_name: p.display_name,
+            wins: 0,
+            losses: winnerIds.has(p.id) ? 0 : 1,
+            avatar_path: p.avatar_path ?? null,
           })
         }
       }
