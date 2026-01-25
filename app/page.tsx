@@ -613,7 +613,7 @@ export default function Home() {
           justify-content: center;
           gap: 16px;
           text-align: center;
-          overflow-y: auto;
+          overflow: hidden;
         }
 
         .markPlayedModal::before {
@@ -633,9 +633,51 @@ export default function Home() {
           z-index: 1;
           width: min(420px, 100%);
           margin: 0 auto;
-          background: var(--page-background);
+          background: #ffffff;
           padding: 20px;
           border-radius: 12px;
+          align-items: stretch;
+          max-height: 100%;
+          overflow-y: auto;
+        }
+
+        .markPlayedModalHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .markPlayedModalBody {
+          display: grid;
+          gap: 8px;
+        }
+
+        .markPlayedModalActions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 640px) {
+          .markPlayedModalInner {
+            width: 100%;
+            padding: 16px;
+          }
+
+          .markPlayedModalHeader {
+            align-items: flex-start;
+          }
+
+          .markPlayedModalActions {
+            justify-content: stretch;
+          }
+
+          .markPlayedModalActions button {
+            flex: 1 1 100%;
+          }
         }
 
         .markPlayedModalTitle {
@@ -1464,7 +1506,7 @@ export default function Home() {
             className="markPlayedModal"
           >
             <div className="markPlayedModalInner">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+              <div className="markPlayedModalHeader">
                 <div>
                   <div className="markPlayedModalTitle">Add a note</div>
                   <div className="markPlayedModalSubtitle">{game.name}</div>
@@ -1478,7 +1520,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div style={{ marginTop: 12 }}>
+              <div className="markPlayedModalBody">
                 <textarea
                   className="noteTextarea"
                   value={noteDraft}
@@ -1534,7 +1576,7 @@ export default function Home() {
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+              <div className="markPlayedModalActions">
                 <button
                   onClick={confirmMarkPlayed}
                   className="markPlayedModalPrimary"
