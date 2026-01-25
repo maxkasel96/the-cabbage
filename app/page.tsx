@@ -587,7 +587,7 @@ export default function Home() {
           padding: 12px 14px;
           border-radius: 12px;
           border: 1px solid rgba(89, 60, 33, 0.35);
-          background: linear-gradient(180deg, rgba(250, 241, 217, 0.98), rgba(238, 222, 184, 0.95));
+          background: var(--page-background);
           color: #4b331c;
           box-shadow: inset 0 1px 3px rgba(61, 38, 18, 0.2);
           font-family: 'Georgia', 'Times New Roman', serif;
