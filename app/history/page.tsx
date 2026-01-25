@@ -385,7 +385,7 @@ export default function HistoryPage() {
               color: 'var(--text-secondary)',
             }}
           >
-            <span>Game Log</span>
+            <h2>Game Log</h2>
           </div>
           <div className="table-scroll-hint" style={{ maxWidth: 960, margin: '0 auto' }}>
             <span className="table-scroll-hint__icon">↔</span>
