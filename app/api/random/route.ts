@@ -4,6 +4,17 @@ import { supabaseServer } from '@/lib/supabaseServer'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+async function logGameSuggestion(tournamentId: string, gameId: string) {
+  const { error } = await supabaseServer.from('game_suggestion_events').insert({
+    tournament_id: tournamentId,
+    game_id: gameId,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
 
@@ -87,6 +98,14 @@ export async function GET(request: Request) {
     }
 
     const game = filtered[Math.floor(Math.random() * filtered.length)]
+    try {
+      await logGameSuggestion(tournamentId, game.id)
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Failed to log game suggestion.' },
+        { status: 500 }
+      )
+    }
     return NextResponse.json({ game, tournamentId })
   }
 
@@ -129,5 +148,13 @@ export async function GET(request: Request) {
   }
 
   const game = filtered[Math.floor(Math.random() * filtered.length)]
+  try {
+    await logGameSuggestion(tournamentId, game.id)
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to log game suggestion.' },
+      { status: 500 }
+    )
+  }
   return NextResponse.json({ game, tournamentId })
 }
