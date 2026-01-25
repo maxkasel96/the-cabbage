@@ -868,13 +868,12 @@ button:disabled {
 }
 
 .player-card-modal__rank {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
   min-width: 48px;
 }
 
 .player-card-modal__rank .scoreboard__medal {
+  display: inline-flex;
   width: 26px;
   height: 26px;
   font-size: 0.8rem;
