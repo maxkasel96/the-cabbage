@@ -811,6 +811,11 @@ button:disabled {
   font-size: 0.95rem;
 }
 
+.player-card-modal__table-scroll {
+  max-height: 360px;
+  overflow: auto;
+}
+
 .player-card-modal__table-hint {
   display: none;
   align-items: center;
