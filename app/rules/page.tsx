@@ -209,7 +209,7 @@ export default function RulesPage() {
         <section className="rules__section">
           <header className="rules__header">
             <div>
-              <h2 className="rules__title">Rules for the active tournament</h2>
+              <h2 className="rules__title rules__title--active">Rules for the active tournament</h2>
               <p className="rules__subtitle">
                 {activeTournament
                   ? `${activeTournament.label} (${activeTournament.year_start}–${activeTournament.year_end})`

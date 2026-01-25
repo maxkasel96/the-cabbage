@@ -2212,6 +2212,10 @@ button:disabled {
   margin: 0;
 }
 
+.rules__title--active {
+  color: #1d4ed8;
+}
+
 .rules__subtitle {
   margin: 4px 0 0;
   color: var(--text-secondary);
