@@ -851,6 +851,10 @@ button:disabled {
 .player-card-modal__table thead th {
   text-align: left;
   font-weight: 700;
+  position: sticky;
+  top: 0;
+  background: #f8f7f0;
+  z-index: 1;
 }
 
 .player-card-modal__table td:first-child {
