@@ -374,7 +374,25 @@ export default function HistoryPage() {
         <p>No played games yet.</p>
       ) : (
         <>
-          <div className="table-scroll-hint">
+          <div
+            style={{
+              marginBottom: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              maxWidth: 960,
+              width: '100%',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: 1.6,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <span>Game Log</span>
+          </div>
+          <div className="table-scroll-hint" style={{ maxWidth: 960, margin: '0 auto' }}>
             <span className="table-scroll-hint__icon">↔</span>
             <span>Swipe to scroll the table</span>
           </div>
@@ -385,6 +403,8 @@ export default function HistoryPage() {
               overflowX: 'auto',
               overflowY: 'hidden',
               maxWidth: 960,
+              width: '100%',
+              margin: '0 auto',
               border: '2px solid var(--border-strong)',
               background: 'var(--surface)',
               boxShadow: '0 18px 40px rgba(63, 90, 42, 0.2)',
