@@ -2237,8 +2237,8 @@ button:disabled {
   border: 1px solid color-mix(in srgb, var(--secondary) 70%, #ffffff 30%);
   border-radius: 12px;
   padding: 12px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 65%, #0b0f0a 35%), color-mix(in srgb, var(--secondary) 65%, #0b0f0a 35%));
-  color: #f8fafc;
+  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  color: #0b0f0a;
   line-height: 1.5;
 }
 
@@ -2324,6 +2324,13 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.rules__meta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
 .rules__status-control {
   display: inline-flex;
   align-items: center;
@@ -2336,6 +2343,21 @@ button:disabled {
   color: inherit;
   border-radius: 8px;
   padding: 4px 8px;
+}
+
+.rules__delete {
+  color: #ff0000;
+  cursor: pointer;
+  background: #f443361f;
+  border: 1px solid #ff110099;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 600;
+}
+
+.rules__delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .rules__empty {

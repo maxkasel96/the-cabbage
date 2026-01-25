@@ -46,6 +46,7 @@ export default function RulesPage() {
   const [draftText, setDraftText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deletingRuleIds, setDeletingRuleIds] = useState<string[]>([])
 
   useEffect(() => {
     const loadTournaments = async () => {
@@ -198,6 +199,66 @@ export default function RulesPage() {
     setStatusMessage('Rule submitted in Proposed status.')
   }
 
+  const handleDelete = useCallback(async (ruleId: string) => {
+    const confirmDelete = window.confirm('Delete this rule? This cannot be undone.')
+    if (!confirmDelete) return
+
+    setStatusMessage('')
+    setDeletingRuleIds((prev) => [...prev, ruleId])
+
+    const res = await fetch('/api/rules', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: ruleId }),
+    })
+
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      setStatusMessage(json.error || 'Failed to delete rule')
+      setDeletingRuleIds((prev) => prev.filter((id) => id !== ruleId))
+      return
+    }
+
+    setRules((prev) => prev.filter((rule) => rule.id !== ruleId))
+    setDeletingRuleIds((prev) => prev.filter((id) => id !== ruleId))
+  }, [])
+
+  const renderRuleCard = (rule: RuleEntry, accentClass?: string, timestampLabel?: string) => {
+    const isDeleting = deletingRuleIds.includes(rule.id)
+    return (
+      <article key={rule.id} className={`rules__card${accentClass ? ` ${accentClass}` : ''}`}>
+        <p className="rules__content">{rule.content}</p>
+        <div className="rules__meta">
+          <span>
+            {timestampLabel} {formatDateTime(rule.status === 'Proposed' ? rule.createdAt : rule.updatedAt)}
+          </span>
+          <div className="rules__meta-actions">
+            <label className="rules__status-control">
+              Status
+              <select
+                value={rule.status}
+                onChange={(event) => updateRuleStatus(rule.id, event.target.value as RuleEntry['status'])}
+              >
+                <option value="Proposed">Proposed</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              className="rules__delete"
+              onClick={() => handleDelete(rule.id)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </article>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-[var(--page-background)] text-[var(--text-primary)]">
       <div className="pageShell px-6 pb-12 pt-6">
@@ -243,25 +304,7 @@ export default function RulesPage() {
             <p className="rules__empty">No proposed rules yet.</p>
           ) : (
             <div className="rules__list">
-              {groupedRules.Proposed.map((rule) => (
-                <article key={rule.id} className="rules__card">
-                  <p className="rules__content">{rule.content}</p>
-                  <div className="rules__meta">
-                    <span>Proposed on {formatDateTime(rule.createdAt)}</span>
-                    <label className="rules__status-control">
-                      Status
-                      <select
-                        value={rule.status}
-                        onChange={(event) => updateRuleStatus(rule.id, event.target.value as RuleEntry['status'])}
-                      >
-                        <option value="Proposed">Proposed</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Rejected">Rejected</option>
-                      </select>
-                    </label>
-                  </div>
-                </article>
-              ))}
+              {groupedRules.Proposed.map((rule) => renderRuleCard(rule, undefined, 'Proposed on'))}
             </div>
           )}
         </section>
@@ -272,25 +315,7 @@ export default function RulesPage() {
             <p className="rules__empty">No accepted rules yet.</p>
           ) : (
             <div className="rules__list">
-              {groupedRules.Accepted.map((rule) => (
-                <article key={rule.id} className="rules__card rules__card--accepted">
-                  <p className="rules__content">{rule.content}</p>
-                  <div className="rules__meta">
-                    <span>Accepted on {formatDateTime(rule.updatedAt)}</span>
-                    <label className="rules__status-control">
-                      Status
-                      <select
-                        value={rule.status}
-                        onChange={(event) => updateRuleStatus(rule.id, event.target.value as RuleEntry['status'])}
-                      >
-                        <option value="Proposed">Proposed</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Rejected">Rejected</option>
-                      </select>
-                    </label>
-                  </div>
-                </article>
-              ))}
+              {groupedRules.Accepted.map((rule) => renderRuleCard(rule, 'rules__card--accepted', 'Accepted on'))}
             </div>
           )}
         </section>
@@ -301,25 +326,7 @@ export default function RulesPage() {
             <p className="rules__empty">No rejected rules yet.</p>
           ) : (
             <div className="rules__list">
-              {groupedRules.Rejected.map((rule) => (
-                <article key={rule.id} className="rules__card rules__card--rejected">
-                  <p className="rules__content">{rule.content}</p>
-                  <div className="rules__meta">
-                    <span>Rejected on {formatDateTime(rule.updatedAt)}</span>
-                    <label className="rules__status-control">
-                      Status
-                      <select
-                        value={rule.status}
-                        onChange={(event) => updateRuleStatus(rule.id, event.target.value as RuleEntry['status'])}
-                      >
-                        <option value="Proposed">Proposed</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Rejected">Rejected</option>
-                      </select>
-                    </label>
-                  </div>
-                </article>
-              ))}
+              {groupedRules.Rejected.map((rule) => renderRuleCard(rule, 'rules__card--rejected', 'Rejected on'))}
             </div>
           )}
         </section>
