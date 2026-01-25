@@ -1278,11 +1278,33 @@ button:not(.cabbage-roll-button) svg,
   width: 72px;
   height: 72px;
   border-radius: 999px;
-  border: none;
+  border: 3px solid var(--nav-surface);
   padding: 0;
-  background: transparent;
+  background: rgba(46, 63, 42, 0.12);
   box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transform: translateY(0);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease,
+    filter 140ms ease;
+}
+
+.floating-utility-button:hover {
+  background: rgba(46, 63, 42, 0.18);
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+}
+
+.floating-utility-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 6px 0 rgba(46, 63, 42, 0.35);
+  filter: brightness(0.98);
 }
 
 .floating-utility-button__image {
@@ -1291,6 +1313,7 @@ button:not(.cabbage-roll-button) svg,
   display: block;
   border-radius: inherit;
   object-fit: cover;
+  opacity: 0.82;
 }
 
 .floating-utility-button:focus-visible {
