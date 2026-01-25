@@ -3,6 +3,7 @@
 import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
+import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
 type Tournament = {
   id: string
@@ -149,6 +150,8 @@ export default function PostsPage() {
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+
+  useBodyScrollLock(isLightboxOpen)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
   const imageInputRef = useRef<HTMLInputElement | null>(null)

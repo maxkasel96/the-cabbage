@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
 const FLOATING_IMAGE_URL =
   'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
@@ -79,6 +80,8 @@ export default function FloatingUtilityButton() {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useBodyScrollLock(isModalOpen)
 
   useEffect(() => {
     if (!isModalOpen) return

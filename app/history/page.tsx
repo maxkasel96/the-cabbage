@@ -5,6 +5,7 @@ import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 import PlayerAvatar from '../components/players/PlayerAvatar'
 import { getAvatarPublicUrl } from '@/lib/getAvatarPublicUrl'
+import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
 type Winner = {
   id: string
@@ -44,6 +45,8 @@ export default function HistoryPage() {
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null)
+
+  useBodyScrollLock(Boolean(lightbox))
 
   // Tournament navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([])

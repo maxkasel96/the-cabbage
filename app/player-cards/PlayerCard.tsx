@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { getAvatarPublicUrl } from '@/lib/getAvatarPublicUrl'
+import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
 type Player = {
   id: string
@@ -76,6 +77,8 @@ export default function PlayerCard({ player }: PlayerCardProps) {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useBodyScrollLock(isModalOpen)
 
   function toggleFlip() {
     setIsFlipped((prev) => !prev)

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
 import PageTitle from './components/PageTitle'
+import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
 type Game = {
   id: string
@@ -63,6 +64,8 @@ export default function Home() {
   const [winningTeamId, setWinningTeamId] = useState<number | null>(null)
   const [showExplosion, setShowExplosion] = useState(false)
   const explosionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useBodyScrollLock(noteModalOpen || welcomeModalOpen)
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
