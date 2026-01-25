@@ -266,7 +266,17 @@ button:disabled {
 
 @media (max-width: 640px) {
   .admin-side-nav {
-    display: none;
+    display: block;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .admin-side-nav__links {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .admin-layout {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
