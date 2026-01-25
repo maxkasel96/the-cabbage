@@ -174,7 +174,7 @@ export default function HistoryPage() {
         minHeight: '100vh',
       }}
     >
-      <div className="pageShell">
+      <div className="pageShell px-4 pb-12 pt-6 sm:px-6">
         <div className="stickyHeader">
           <Nav />
         </div>
