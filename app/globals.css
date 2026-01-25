@@ -1499,7 +1499,8 @@ button:disabled {
   top: calc(100% + 12px);
   right: 0;
   transform: translate(0, 10px);
-  width: min(640px, calc(100vw - 48px));
+  width: fit-content;
+  max-width: min(640px, calc(100vw - 48px));
   background: #eef1e5;
   border-radius: 18px;
   border: 1px solid rgba(198, 208, 182, 0.7);
@@ -1527,7 +1528,7 @@ button:disabled {
 
 .mega-menu__content {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
   padding: 22px;
 }
