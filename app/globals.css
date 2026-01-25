@@ -16,6 +16,8 @@
   --text-inverse: #f3f5ec;
   --border-strong: #6e7f4a;
   --divider-soft: #9eaa86;
+  --font-geist-sans: "Arial", "Helvetica", sans-serif;
+  --font-geist-mono: "Arial", "Helvetica", sans-serif;
 }
 
 @theme inline {
@@ -28,7 +30,9 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans);
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
 button,
@@ -37,6 +41,29 @@ select,
 textarea {
   font: inherit;
   color: var(--text-primary);
+}
+
+button {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+code,
+pre {
+  font-family: var(--font-geist-mono);
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
 input,
@@ -131,7 +158,8 @@ button:disabled {
 
 .table-grid--header {
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.6px;
+  font-weight: 800;
 }
 
 .table-scroll-hint {
@@ -189,8 +217,8 @@ button:disabled {
   background: var(--nav-surface);
   color: var(--text-inverse);
   font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 1.6px;
+  font-weight: 900;
+  letter-spacing: 2px;
   text-transform: uppercase;
   border: 1px solid rgba(243, 245, 236, 0.25);
   box-shadow:
@@ -211,9 +239,9 @@ button:disabled {
 
 .scoreboard__season {
   font-size: 12px;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.4px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
   color: var(--text-inverse);
   background: rgba(46, 63, 42, 0.85);
   border: 1px solid rgba(243, 245, 236, 0.2);
@@ -336,7 +364,9 @@ button:disabled {
   border-radius: 999px;
   background: rgba(46, 63, 42, 0.15);
   color: var(--text-secondary);
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
   text-align: center;
   border: 1px solid rgba(46, 63, 42, 0.3);
 }
@@ -364,8 +394,8 @@ button:disabled {
 
 .scoreboard__player {
   min-width: 0;
-  font-weight: 700;
-  letter-spacing: 0.6px;
+  font-weight: 800;
+  letter-spacing: 1px;
   color: var(--text-primary);
   text-transform: uppercase;
 }
@@ -2233,6 +2263,7 @@ button:disabled {
 .rules__title {
   font-size: 1.4rem;
   margin: 0;
+  font-weight: 800;
 }
 
 .rules__subtitle {
@@ -2252,7 +2283,9 @@ button:disabled {
 
 .rules__editor-label {
   margin: 0;
-  font-weight: 600;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
 }
 
 .rules__editor-input {
@@ -2283,7 +2316,7 @@ button:disabled {
   border: none;
   border-radius: 999px;
   padding: 10px 20px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
 }
 
@@ -2294,11 +2327,17 @@ button:disabled {
 
 .rules__status {
   color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 700;
 }
 
 .rules__list-title {
   margin: 0;
   font-size: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
 }
 
 .rules__list {
@@ -2345,6 +2384,9 @@ button:disabled {
   gap: 12px;
   color: var(--text-secondary);
   font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
 
 .rules__meta-actions {
@@ -2358,6 +2400,9 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
 
 .rules__status-control select {
@@ -2375,7 +2420,9 @@ button:disabled {
   border: 1px solid #ff110099;
   border-radius: 999px;
   padding: 6px 14px;
-  font-weight: 600;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
 }
 
 .rules__delete:disabled {
