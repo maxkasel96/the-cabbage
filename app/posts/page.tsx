@@ -150,6 +150,7 @@ export default function PostsPage() {
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
   const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -222,15 +223,21 @@ export default function PostsPage() {
   }, [])
 
   const activePosts = postsByTournament[selectedTournamentId] ?? []
+  const sortedPosts = [...activePosts].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime()
+    const timeB = new Date(b.createdAt).getTime()
+    const diff = timeA - timeB
+    return sortOrder === 'oldest' ? diff : -diff
+  })
   const pageSize = 10
-  const totalPages = Math.max(1, Math.ceil(activePosts.length / pageSize))
+  const totalPages = Math.max(1, Math.ceil(sortedPosts.length / pageSize))
   const safePage = Math.min(Math.max(currentPage, 1), totalPages)
   const pageStartIndex = (safePage - 1) * pageSize
-  const visiblePosts = activePosts.slice(pageStartIndex, pageStartIndex + pageSize)
+  const visiblePosts = sortedPosts.slice(pageStartIndex, pageStartIndex + pageSize)
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [selectedTournamentId])
+  }, [selectedTournamentId, sortOrder])
 
   useEffect(() => {
     if (currentPage !== safePage) {
@@ -395,6 +402,13 @@ export default function PostsPage() {
             <div className="posts__control-note">
               {activePosts.length} {activePosts.length === 1 ? 'post' : 'posts'} saved for this year
             </div>
+            <label className="posts__control">
+              <span className="posts__control-label">Sort by</span>
+              <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as 'newest' | 'oldest')}>
+                <option value="newest">Newest to oldest</option>
+                <option value="oldest">Oldest to newest</option>
+              </select>
+            </label>
           </div>
         )}
 
@@ -470,7 +484,7 @@ export default function PostsPage() {
         </section>
 
         <section className="posts__thread">
-          {activePosts.length === 0 ? (
+          {sortedPosts.length === 0 ? (
             <div className="posts__empty">
               <p>No posts yet for this tournament year.</p>
               <p>Kick things off below as the first commenter.</p>
