@@ -389,12 +389,12 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
     >
       <div className="main-nav__bar">
         <Link href="/" className="main-nav__brand">
+          <span>The Cabbage</span>
           <img
             src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png"
             alt="The Cabbage logo"
             className="main-nav__brand-image"
           />
-          <span>The Cabbage</span>
         </Link>
         <div
           className="main-nav__desktop"
