@@ -175,7 +175,7 @@ export default function HistoryPage() {
         <div className="stickyHeader">
           <Nav />
         </div>
-        <PageTitle>The Annals</PageTitle>
+        <PageTitle>SCOREBOARD</PageTitle>
 
       {/* Tournament navigation */}
       {tournaments.length > 0 && (
@@ -228,12 +228,7 @@ export default function HistoryPage() {
       {/* Scoreboard */}
       <div className="scoreboard">
         <div className="scoreboard__title">
-          <div className="scoreboard__title-badge">
-            <span className="scoreboard__title-icon" aria-hidden="true">
-              🥬
-            </span>
-            <span>Leaderboard</span>
-          </div>
+          <h2>Leaderboard</h2>
           <span className="scoreboard__season">{selectedTournamentLabel}</span>
         </div>
 
@@ -390,7 +385,7 @@ export default function HistoryPage() {
               color: 'var(--text-secondary)',
             }}
           >
-            <span>Game Log</span>
+            <h2>Game Log</h2>
           </div>
           <div className="table-scroll-hint" style={{ maxWidth: 960, margin: '0 auto' }}>
             <span className="table-scroll-hint__icon">↔</span>
