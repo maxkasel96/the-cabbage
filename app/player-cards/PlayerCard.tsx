@@ -19,6 +19,7 @@ type TournamentWin = {
   wins: number
   losses: number
   cabbageDraws: number
+  totalGames: number
 }
 
 type PlayerWinsResponse = {
@@ -98,11 +99,17 @@ export default function PlayerCard({ player }: PlayerCardProps) {
   const totalWins = wins?.totalWins ?? 0
   const totalLosses = winsByTournament.reduce((sum, season) => sum + season.losses, 0)
   const totalCabbageDraws = winsByTournament.reduce((sum, season) => sum + season.cabbageDraws, 0)
+  const totalGames = winsByTournament.reduce((sum, season) => sum + season.totalGames, 0)
 
   const formatWinPercentage = (winsCount: number, lossesCount: number) => {
     const totalGames = winsCount + lossesCount
     if (totalGames === 0) return '—'
     return `${((winsCount / totalGames) * 100).toFixed(1)}%`
+  }
+
+  const formatParticipationRate = (activeGames: number, tournamentGames: number) => {
+    if (tournamentGames === 0) return '—'
+    return `${((activeGames / tournamentGames) * 100).toFixed(1)}%`
   }
 
   return (
@@ -196,17 +203,18 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                         <th scope="col">Wins</th>
                         <th scope="col">Losses</th>
                         <th scope="col">Win %</th>
+                        <th scope="col">Game Participation Rate</th>
                         <th scope="col"># of Cabbage Drawings</th>
                       </tr>
                     </thead>
                     <tbody>
                       {isWinsLoading ? (
                         <tr>
-                          <td colSpan={5}>Loading stats...</td>
+                          <td colSpan={6}>Loading stats...</td>
                         </tr>
                       ) : winsByTournament.length === 0 ? (
                         <tr>
-                          <td colSpan={5}>No stats recorded yet.</td>
+                          <td colSpan={6}>No stats recorded yet.</td>
                         </tr>
                       ) : (
                         winsByTournament.map((season) => (
@@ -215,6 +223,12 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                             <td>{season.wins}</td>
                             <td>{season.losses}</td>
                             <td>{formatWinPercentage(season.wins, season.losses)}</td>
+                            <td>
+                              {formatParticipationRate(
+                                season.wins + season.losses,
+                                season.totalGames
+                              )}
+                            </td>
                             <td>{season.cabbageDraws}</td>
                           </tr>
                         ))
@@ -226,6 +240,9 @@ export default function PlayerCard({ player }: PlayerCardProps) {
                         <td>{totalWins}</td>
                         <td>{totalLosses}</td>
                         <td>{formatWinPercentage(totalWins, totalLosses)}</td>
+                        <td>
+                          {formatParticipationRate(totalWins + totalLosses, totalGames)}
+                        </td>
                         <td>{totalCabbageDraws}</td>
                       </tr>
                     </tfoot>

@@ -11,6 +11,7 @@ type SeasonSummary = {
   wins: number
   losses: number
   cabbageDraws: number
+  totalGames: number
   yearStart?: number | null
   yearEnd?: number | null
 }
@@ -29,6 +30,7 @@ export async function GET(_: NextRequest, { params }: Params) {
     { data: wins, error: winsError },
     { data: losses, error: lossesError },
     { data: selectionEvents, error: selectionEventsError },
+    { data: tournamentGames, error: tournamentGamesError },
   ] = await Promise.all([
     supabaseServer
       .from('tournaments')
@@ -84,6 +86,7 @@ export async function GET(_: NextRequest, { params }: Params) {
         `
       )
       .eq('player_id', playerId),
+    supabaseServer.from('plays').select('tournament_id').not('played_at', 'is', null),
   ])
 
   if (tournamentsError) {
@@ -98,6 +101,16 @@ export async function GET(_: NextRequest, { params }: Params) {
     return NextResponse.json({ error: selectionEventsError.message }, { status: 500 })
   }
 
+  if (tournamentGamesError) {
+    return NextResponse.json({ error: tournamentGamesError.message }, { status: 500 })
+  }
+
+  const totalGamesByTournament = new Map<string, number>()
+  ;(tournamentGames ?? []).forEach((game: any) => {
+    const tournamentId = game?.tournament_id ?? 'unknown'
+    totalGamesByTournament.set(tournamentId, (totalGamesByTournament.get(tournamentId) ?? 0) + 1)
+  })
+
   const totalsBySeason = new Map<string, SeasonSummary>()
 
   ;(tournaments ?? []).forEach((season) => {
@@ -111,6 +124,7 @@ export async function GET(_: NextRequest, { params }: Params) {
       wins: 0,
       losses: 0,
       cabbageDraws: 0,
+      totalGames: totalGamesByTournament.get(season.id) ?? 0,
       yearStart,
       yearEnd,
     })
@@ -133,6 +147,7 @@ export async function GET(_: NextRequest, { params }: Params) {
         wins: 1,
         losses: 0,
         cabbageDraws: 0,
+        totalGames: totalGamesByTournament.get(seasonId) ?? 0,
         yearStart,
         yearEnd,
       })
@@ -156,6 +171,7 @@ export async function GET(_: NextRequest, { params }: Params) {
         wins: 0,
         losses: entry.losses ?? 0,
         cabbageDraws: 0,
+        totalGames: totalGamesByTournament.get(seasonId) ?? 0,
         yearStart,
         yearEnd,
       })
@@ -179,6 +195,7 @@ export async function GET(_: NextRequest, { params }: Params) {
         wins: 0,
         losses: 0,
         cabbageDraws: 1,
+        totalGames: totalGamesByTournament.get(seasonId) ?? 0,
         yearStart,
         yearEnd,
       })
