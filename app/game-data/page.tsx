@@ -189,9 +189,6 @@ export default function GameDataPage() {
                   </option>
                 ))}
               </select>
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                Viewing: {selectedTournamentLabel}
-              </span>
             </div>
           ) : null}
 
