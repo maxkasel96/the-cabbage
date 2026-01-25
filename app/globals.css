@@ -1228,8 +1228,8 @@ button:not(.cabbage-roll-button) svg,
 
 .modal-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.5rem;
+  right: 0.5rem;
   width: 44px;
   height: 44px;
   display: inline-flex;
@@ -1239,13 +1239,12 @@ button:not(.cabbage-roll-button) svg,
   font-size: 1.6rem;
   line-height: 1;
   text-transform: uppercase;
-  background: var(--surface-alt);
+  background: color-mix(in srgb, var(--surface-alt) 85%, transparent);
   color: var(--text-primary);
   border: 3px solid var(--border-strong);
   border-radius: 999px;
-  box-shadow: 0 6px 0 rgba(110, 127, 74, 0.35);
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  transition: transform 140ms ease, background 140ms ease;
 }
 
 .modal-close:hover {
@@ -1255,7 +1254,6 @@ button:not(.cabbage-roll-button) svg,
 
 .modal-close:active {
   transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(110, 127, 74, 0.35);
 }
 
 .modal-close:focus-visible {
@@ -1264,10 +1262,9 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .modal-close--rude {
-  background: var(--nav-surface);
+  background: color-mix(in srgb, var(--nav-surface) 85%, transparent);
   color: var(--text-inverse);
   border-color: var(--primary);
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
 }
 
 .modal-close--label::after {
