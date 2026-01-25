@@ -1040,21 +1040,6 @@ export default function Home() {
           color: #1c2518;
         }
 
-        .clearWinnersButton {
-          margin-top: 6px;
-          font-size: 12px;
-          background: none;
-          border: none;
-          text-decoration: underline;
-          cursor: pointer;
-          padding: 0;
-          color: #4a5a3c;
-        }
-
-        .clearWinnersButton:hover {
-          color: #2e3f2a;
-        }
-
         .sectionCard {
           display: grid;
           gap: 16px;
@@ -1364,7 +1349,7 @@ export default function Home() {
                         </div>
 
                         {winnerPlayerIds.size > 0 && (
-                          <button onClick={clearWinners} className="clearWinnersButton">
+                          <button onClick={clearWinners} className="btn btn--secondary">
                             Clear winners
                           </button>
                         )}
