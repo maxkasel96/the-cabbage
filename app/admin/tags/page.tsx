@@ -111,10 +111,12 @@ export default function AdminTagsPage() {
     >
       <div className="pageShell">
         <div className="stickyHeader">
-          <Nav showAdminMenu={false} />
+          <Nav />
         </div>
-        <PageTitle>Admin: Tags</PageTitle>
-        <AdminSubNav />
+        <div className="admin-layout">
+          <AdminSubNav />
+          <div className="admin-content">
+            <PageTitle>Admin: Tags</PageTitle>
 
       {/* Create tag */}
       <div
@@ -245,6 +247,8 @@ export default function AdminTagsPage() {
           </div>
         </>
       )}
+          </div>
+        </div>
       </div>
     </main>
   )
