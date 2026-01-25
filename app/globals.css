@@ -2237,8 +2237,8 @@ button:disabled {
   border: 1px solid color-mix(in srgb, var(--secondary) 70%, #ffffff 30%);
   border-radius: 12px;
   padding: 12px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 65%, #0b0f0a 35%), color-mix(in srgb, var(--secondary) 65%, #0b0f0a 35%));
-  color: #f8fafc;
+  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  color: #0b0f0a;
   line-height: 1.5;
 }
 
