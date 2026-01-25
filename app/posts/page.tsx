@@ -1,6 +1,6 @@
 'use client'
 
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
 
@@ -228,17 +228,6 @@ export default function PostsPage() {
   const pageStartIndex = (safePage - 1) * pageSize
   const visiblePosts = activePosts.slice(pageStartIndex, pageStartIndex + pageSize)
 
-  const selectedTournamentLabel = useMemo(() => {
-    if (!tournaments.length) return 'Active tournament'
-
-    return (
-      tournaments.find((t) => t.id === selectedTournamentId)?.label ||
-      tournaments.find((t) => t.is_active)?.label ||
-      tournaments[0]?.label ||
-      'Active tournament'
-    )
-  }, [selectedTournamentId, tournaments])
-
   useEffect(() => {
     setCurrentPage(1)
   }, [selectedTournamentId])
@@ -408,19 +397,6 @@ export default function PostsPage() {
             </div>
           </div>
         )}
-
-        <section className="posts__header">
-          <div>
-            <h2 className="posts__headline">Cabbage Conversation Thread</h2>
-            <p className="posts__subhead">
-              Keep the chatter organized by tournament year. New posts default to the active season.
-            </p>
-          </div>
-          <div className="posts__header-status">
-            <span className="posts__header-label">Viewing posts from</span>
-            <strong>{selectedTournamentLabel}</strong>
-          </div>
-        </section>
 
         {status && <div className="posts__status">{status}</div>}
 
