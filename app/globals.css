@@ -19,6 +19,8 @@
   --font-geist-sans: "Arial", "Helvetica", sans-serif;
   --font-geist-mono: "Arial", "Helvetica", sans-serif;
   --font-bebas-neue: "Bebas Neue", "Arial", "Helvetica", sans-serif;
+  --desktop-cursor: url("https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Mask%20group.svg")
+    16 16;
 }
 
 @theme inline {
@@ -34,6 +36,16 @@ body {
   font-family: var(--font-geist-sans);
   font-weight: 500;
   letter-spacing: 0.2px;
+}
+
+@media (min-width: 1024px) {
+  html,
+  body,
+  *,
+  *::before,
+  *::after {
+    cursor: var(--desktop-cursor), auto !important;
+  }
 }
 
 button,
