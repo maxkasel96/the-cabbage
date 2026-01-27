@@ -1,3 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
-  <image href="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Mask%20group.svg" width="32" height="32" />
+  <desc>Replace this placeholder with the actual Supabase SVG contents for the custom cursor.</desc>
+  <path d="M6 4l18 10-9 2-2 9-7-21z" fill="#3f5a32" stroke="#1c2518" stroke-width="1.5" />
 </svg>
