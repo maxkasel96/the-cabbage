@@ -39,6 +39,7 @@ export default function AdminGamesPage() {
   const [playerDrafts, setPlayerDrafts] = useState<Record<string, { min: string; max: string }>>({})
   const [playersSavingId, setPlayersSavingId] = useState<string | null>(null)
   const [playerSaveMessages, setPlayerSaveMessages] = useState<Record<string, string>>({})
+  const [activeSavingId, setActiveSavingId] = useState<string | null>(null)
 
   // Add new game state
   const [newGameName, setNewGameName] = useState('')
@@ -170,6 +171,34 @@ export default function AdminGamesPage() {
     )
     setPlayerSaveMessages((prev) => ({ ...prev, [game.id]: `Saved player counts for ${game.name}.` }))
     setPlayersSavingId(null)
+  }
+
+  async function updateGameActive(game: Game, nextActive: boolean) {
+    if (!game?.id) return
+    if (activeSavingId) return
+
+    setActiveSavingId(game.id)
+    setStatus('')
+
+    const res = await fetch(`/api/admin/games/${game.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: nextActive }),
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      setStatus(json.error || 'Failed to update active status')
+      setActiveSavingId(null)
+      return
+    }
+
+    setGames((prev) =>
+      prev.map((g) =>
+        g.id === game.id ? { ...g, is_active: json.game?.is_active ?? nextActive } : g
+      )
+    )
+    setActiveSavingId(null)
   }
 
   function closeEditor() {
@@ -543,7 +572,16 @@ export default function AdminGamesPage() {
               </div>
 
               {/* Right: actions */}
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
+                  <input
+                    type="checkbox"
+                    checked={g.is_active}
+                    onChange={(e) => updateGameActive(g, e.target.checked)}
+                    disabled={activeSavingId === g.id}
+                  />
+                  {activeSavingId === g.id ? 'Saving…' : 'Active'}
+                </label>
                 <button onClick={() => openEditor(g)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
                   Edit tags
                 </button>

@@ -14,15 +14,30 @@ export async function PUT(
   const body = await req.json().catch(() => null)
   const minPlayers = body?.min_players
   const maxPlayers = body?.max_players
+  const isActive = body?.is_active
+  const hasMinPlayers = Object.prototype.hasOwnProperty.call(body ?? {}, 'min_players')
+  const hasMaxPlayers = Object.prototype.hasOwnProperty.call(body ?? {}, 'max_players')
+  const hasIsActive = Object.prototype.hasOwnProperty.call(body ?? {}, 'is_active')
 
-  const update = {
-    min_players: typeof minPlayers === 'number' ? minPlayers : null,
-    max_players: typeof maxPlayers === 'number' ? maxPlayers : null,
+  const update: Record<string, number | boolean | null> = {}
+
+  if (hasMinPlayers) {
+    update.min_players = typeof minPlayers === 'number' ? minPlayers : null
+  }
+  if (hasMaxPlayers) {
+    update.max_players = typeof maxPlayers === 'number' ? maxPlayers : null
+  }
+  if (hasIsActive && typeof isActive === 'boolean') {
+    update.is_active = isActive
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'No fields provided for update' }, { status: 400 })
   }
 
   if (
-    update.min_players !== null &&
-    update.max_players !== null &&
+    typeof update.min_players === 'number' &&
+    typeof update.max_players === 'number' &&
     update.min_players > update.max_players
   ) {
     return NextResponse.json({ error: 'min_players must be <= max_players' }, { status: 400 })
@@ -32,7 +47,7 @@ export async function PUT(
     .from('games')
     .update(update)
     .eq('id', id)
-    .select('id, min_players, max_players')
+    .select('id, min_players, max_players, is_active')
     .single()
 
   if (result.error) {
@@ -66,4 +81,3 @@ export async function DELETE(
 
   return NextResponse.json({ ok: true })
 }
-
