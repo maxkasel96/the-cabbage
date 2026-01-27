@@ -36,6 +36,12 @@ body {
   letter-spacing: 0.2px;
 }
 
+@media (min-width: 1024px) {
+  body {
+    cursor: url("/custom-cursor.svg") 4 4, auto;
+  }
+}
+
 button,
 input,
 select,
