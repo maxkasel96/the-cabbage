@@ -19,6 +19,12 @@
   --font-geist-sans: "Arial", "Helvetica", sans-serif;
   --font-geist-mono: "Arial", "Helvetica", sans-serif;
   --font-bebas-neue: "Bebas Neue", "Arial", "Helvetica", sans-serif;
+  --cursor-default: url("https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Mask%20group.svg")
+      0 0,
+    auto;
+  --cursor-pointer: url("https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Mask%20group.svg")
+      0 0,
+    pointer;
 }
 
 @theme inline {
@@ -34,9 +40,24 @@ body {
   font-family: var(--font-geist-sans);
   font-weight: 500;
   letter-spacing: 0.2px;
-  cursor: url("https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Mask%20group.svg")
-      0 0,
-    auto;
+  cursor: var(--cursor-default);
+}
+
+* {
+  cursor: var(--cursor-default) !important;
+}
+
+a,
+button,
+summary,
+label,
+select,
+option,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"] {
+  cursor: var(--cursor-pointer) !important;
 }
 
 button,
