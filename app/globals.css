@@ -19,6 +19,8 @@
   --font-geist-sans: "Arial", "Helvetica", sans-serif;
   --font-geist-mono: "Arial", "Helvetica", sans-serif;
   --font-bebas-neue: "Bebas Neue", "Arial", "Helvetica", sans-serif;
+  --cursor-hotspot-x: 16;
+  --cursor-hotspot-y: 16;
 }
 
 @theme inline {
@@ -34,6 +36,26 @@ body {
   font-family: var(--font-geist-sans);
   font-weight: 500;
   letter-spacing: 0.2px;
+}
+
+@media (min-width: 1024px) {
+  html,
+  body {
+    cursor:
+      url("/cursor.svg") var(--cursor-hotspot-x) var(--cursor-hotspot-y),
+      auto;
+  }
+
+  a,
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  label {
+    cursor:
+      url("/cursor.svg") var(--cursor-hotspot-x) var(--cursor-hotspot-y),
+      pointer !important;
+  }
 }
 
 button,
