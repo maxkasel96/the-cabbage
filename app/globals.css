@@ -34,6 +34,9 @@ body {
   font-family: var(--font-geist-sans);
   font-weight: 500;
   letter-spacing: 0.2px;
+  cursor: url("https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Mask%20group.svg")
+      0 0,
+    auto;
 }
 
 button,
