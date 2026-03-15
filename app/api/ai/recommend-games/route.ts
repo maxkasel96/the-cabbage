@@ -195,6 +195,18 @@ export async function POST(request: Request) {
     const aiJson = parseAiJson(outputText)
     const aiResult = aiResponseSchema.parse(aiJson)
 
+    if (aiResult.recommendations.length > 0) {
+      const impressionRows = aiResult.recommendations.map((recommendation) => ({
+        tournament_id: tournamentId,
+        game_id: recommendation.gameId,
+      }))
+
+      const { error: insertError } = await supabaseAdmin.from("game_suggestion_events").insert(impressionRows)
+      if (insertError) {
+        console.error("Failed to log game suggestion events", insertError)
+      }
+    }
+
     return NextResponse.json({
       ...aiResult,
       meta: {
