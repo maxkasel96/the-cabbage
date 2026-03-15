@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
 import PageTitle from './components/PageTitle'
@@ -26,6 +26,7 @@ type Tag = {
   slug: string
   label: string
   sort_order: number
+  category: string | null
 }
 
 type Team = {
@@ -33,68 +34,12 @@ type Team = {
   players: Player[]
 }
 
-type Tournament = {
-  id: string
-  is_active: boolean | null
-}
 
-type ApiState = {
-  loading: boolean
-  error: string | null
-  result: unknown | null
-}
-
-type Recommendation = {
-  gameId: string
-  name: string
-  fitScore: number
-  reason: string
-  warning: string
-}
-
-const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
-const DEFAULT_RECOMMENDATION_TONE =
-  'irreverent, offensive, funny, and politically incorrect'
-
-function stripSupportingTags(text: string): string {
-  return text
-    .replace(/\bSupporting tags?\s*:[^\n]*/gi, '')
-    .replace(/\bMatched tags?\s*:[^\n]*/gi, '')
-    .replace(/\n{2,}/g, '\n')
-    .trim()
-}
-
-function getRecommendations(result: unknown): Recommendation[] {
-  if (!result || typeof result !== 'object') return []
-
-  const source = result as { recommendations?: unknown }
-  if (!Array.isArray(source.recommendations)) return []
-
-  return source.recommendations
-    .map((item) => {
-      if (!item || typeof item !== 'object') return null
-
-      const candidate = item as {
-        gameId?: unknown
-        name?: unknown
-        fitScore?: unknown
-        reason?: unknown
-        warning?: unknown
-      }
-
-      if (typeof candidate.gameId !== 'string' || typeof candidate.name !== 'string') {
-        return null
-      }
-
-      return {
-        gameId: candidate.gameId,
-        name: candidate.name,
-        fitScore: typeof candidate.fitScore === 'number' ? candidate.fitScore : 0,
-        reason: typeof candidate.reason === 'string' ? stripSupportingTags(candidate.reason) : '',
-        warning: typeof candidate.warning === 'string' ? stripSupportingTags(candidate.warning) : '',
-      }
-    })
-    .filter((item): item is Recommendation => Boolean(item))
+function formatCategoryLabel(category: string) {
+  return category
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 export default function Home() {
@@ -124,6 +69,7 @@ export default function Home() {
 
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
+  const [openTagCategories, setOpenTagCategories] = useState<Record<string, boolean>>({})
 
   const [playerCount, setPlayerCount] = useState('')
 
@@ -624,6 +570,52 @@ export default function Home() {
           .map((t) => t.label)
           .join(', ')
 
+
+  const groupedTags = useMemo(() => {
+    const grouped = new Map<string, Tag[]>()
+
+    for (const tag of tags) {
+      const categoryKey = tag.category ?? 'uncategorized'
+      if (!grouped.has(categoryKey)) {
+        grouped.set(categoryKey, [])
+      }
+      grouped.get(categoryKey)?.push(tag)
+    }
+
+    return Array.from(grouped.entries())
+      .map(([category, categoryTags]) => ({
+        category,
+        label: formatCategoryLabel(category),
+        tags: categoryTags,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [tags])
+
+
+  useEffect(() => {
+    setOpenTagCategories((prev) => {
+      const next: Record<string, boolean> = { ...prev }
+      let changed = false
+      const currentCategories = new Set(groupedTags.map((group) => group.category))
+
+      for (const category of Object.keys(next)) {
+        if (!currentCategories.has(category)) {
+          delete next[category]
+          changed = true
+        }
+      }
+
+      for (const group of groupedTags) {
+        if (next[group.category] === undefined) {
+          next[group.category] = group.tags.some((tag) => selectedTagSlugs.has(tag.slug))
+          changed = true
+        }
+      }
+
+      return changed ? next : prev
+    })
+  }, [groupedTags, selectedTagSlugs])
+
   const selectedWinnersLabel =
     winnerPlayerIds.size === 0
       ? 'None'
@@ -966,32 +958,98 @@ export default function Home() {
           color: var(--text-primary);
         }
 
-        .chip {
-          padding: 7px 14px;
+        .tagCategoryGrid {
+          margin-top: 12px;
+          display: grid;
+          gap: 12px;
+        }
+
+        .tagCategoryCard {
+          border: 1px solid var(--divider-soft);
+          background: var(--surface-alt);
+          border-radius: 12px;
+          padding: 8px 10px;
+        }
+
+        .tagCategorySummary {
+          list-style: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+
+        .tagCategorySummary::-webkit-details-marker {
+          display: none;
+        }
+
+        .tagCategoryTitle {
+          margin: 0;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          color: var(--text-secondary);
+        }
+
+        .tagCategorySummaryMeta {
+          font-size: 10px;
+          color: var(--text-muted);
+          border: 1px solid var(--divider-soft);
+          border-radius: 999px;
+          padding: 2px 8px;
+          background: var(--page-background);
+        }
+
+        .tagChipWrap {
+          margin-top: 6px;
+          display: flex;
+          gap: 3px;
+          flex-wrap: wrap;
+        }
+
+        .tagCategoryCard:not([open]) .tagChipWrap {
+          display: none;
+        }
+
+        .filtersCard button.chip {
+          font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+          text-transform: none;
+          padding: 2px 8px;
+          min-height: 28px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.2px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0;
+          line-height: 1;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          background: var(--page-background);
-          color: var(--text-primary);
+          justify-content: center;
+          gap: 4px;
+          background: #dbe5cb;
+          color: #2e3f2a;
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
-        .chip:hover {
+        .filtersCard button.chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 4px 10px rgba(63, 90, 42, 0.22);
+          background: #cddbb7;
+          border-color: var(--primary);
         }
 
-        .chipActive {
-          background: var(--secondary);
+        .filtersCard button.chip.chipActive {
+          background: var(--primary);
           color: var(--text-inverse);
           border-color: var(--primary);
-          box-shadow: 0 8px 16px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.28);
+        }
+
+        .chipIcon {
+          font-size: 10px;
+          line-height: 1;
         }
 
         .filtersSummary {
@@ -1304,20 +1362,44 @@ export default function Home() {
               </div>
             </div>
 
-            {tags.length > 0 && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-                {tags.map((t) => {
-                  const active = selectedTagSlugs.has(t.slug)
+            {groupedTags.length > 0 && (
+              <div className="tagCategoryGrid">
+                {groupedTags.map((group) => {
+                  const activeCount = group.tags.filter((tag) => selectedTagSlugs.has(tag.slug)).length
                   return (
-                    <button
-                      key={t.id}
-                      onClick={() => toggleTag(t.slug)}
-                      className={`chip ${active ? 'chipActive' : ''}`}
-                      title={t.slug}
+                    <details
+                      key={group.category}
+                      className="tagCategoryCard"
+                      open={Boolean(openTagCategories[group.category])}
+                      onToggle={(event) => {
+                        const isOpen = event.currentTarget.open
+                        setOpenTagCategories((prev) => ({ ...prev, [group.category]: isOpen }))
+                      }}
                     >
-                      <span>{active ? '✨' : '•'}</span>
-                      {t.label}
-                    </button>
+                      <summary className="tagCategorySummary">
+                        <span className="tagCategoryTitle">{group.label}</span>
+                        <span className="tagCategorySummaryMeta">
+                          {activeCount > 0 ? `${activeCount} selected` : `${group.tags.length} filters`}
+                        </span>
+                      </summary>
+                      <div className="tagChipWrap">
+                        {group.tags.map((t) => {
+                          const active = selectedTagSlugs.has(t.slug)
+                          return (
+                            <button
+                              key={t.id}
+                              onClick={() => toggleTag(t.slug)}
+                              className={`filter-chip-button chip ${active ? 'chipActive' : ''}`}
+                              title={t.slug}
+                              aria-pressed={active}
+                            >
+                              <span className="chipIcon">{active ? '✅' : '○'}</span>
+                              {t.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </details>
                   )
                 })}
               </div>

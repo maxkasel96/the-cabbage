@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 export async function GET() {
   const { data, error } = await supabaseServer
     .from('tags')
-    .select('id, slug, label, sort_order')
+    .select('id, slug, label, sort_order, category')
     .order('sort_order', { ascending: true })
     .order('label', { ascending: true })
 
