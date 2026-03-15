@@ -1,12 +1,11 @@
+import { getAccessTokenFromRequest } from '@/lib/auth/token'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function requireAdmin(req: Request) {
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const token = getAccessTokenFromRequest(req)
 
   if (!token) {
-    // TODO: Wire in real auth once admin sessions are enforced across the app.
-    return { ok: true }
+    return { ok: false, status: 401, message: 'Authentication required.' }
   }
 
   const { data, error } = await supabaseServer.auth.getUser(token)
@@ -21,5 +20,5 @@ export async function requireAdmin(req: Request) {
     return { ok: false, status: 403, message: 'Admin access required.' }
   }
 
-  return { ok: true }
+  return { ok: true, user: data.user }
 }
