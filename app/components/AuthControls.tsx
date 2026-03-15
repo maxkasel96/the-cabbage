@@ -1,0 +1,70 @@
+'use client'
+
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
+
+type AuthState = {
+  isAuthenticated: boolean
+  role: string | null
+}
+
+export default function AuthControls() {
+  const [auth, setAuth] = useState<AuthState>({ isAuthenticated: false, role: null })
+
+  useEffect(() => {
+    const supabase = supabaseBrowser()
+
+    supabase.auth.getUser().then(({ data }) => {
+      const user = data.user
+      if (!user) return
+      setAuth({
+        isAuthenticated: true,
+        role: user.app_metadata?.role ?? user.user_metadata?.role ?? null,
+      })
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setAuth({ isAuthenticated: false, role: null })
+        return
+      }
+
+      setAuth({
+        isAuthenticated: true,
+        role: session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null,
+      })
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  if (!auth.isAuthenticated) {
+    return (
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 60 }}>
+        <Link href="/auth/login">Sign in</Link>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 12,
+        right: 12,
+        zIndex: 60,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+      }}
+    >
+      {auth.role === 'admin' ? <Link href="/admin/games">Admin</Link> : null}
+      <Link href="/auth/logout">Sign out</Link>
+    </div>
+  )
+}
