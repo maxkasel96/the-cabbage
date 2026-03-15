@@ -60,6 +60,7 @@ export default function Home() {
 
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
+  const [openTagCategories, setOpenTagCategories] = useState<Record<string, boolean>>({})
 
   const [playerCount, setPlayerCount] = useState('')
 
@@ -493,6 +494,31 @@ export default function Home() {
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
   }, [tags])
+
+
+  useEffect(() => {
+    setOpenTagCategories((prev) => {
+      const next: Record<string, boolean> = { ...prev }
+      let changed = false
+      const currentCategories = new Set(groupedTags.map((group) => group.category))
+
+      for (const category of Object.keys(next)) {
+        if (!currentCategories.has(category)) {
+          delete next[category]
+          changed = true
+        }
+      }
+
+      for (const group of groupedTags) {
+        if (next[group.category] === undefined) {
+          next[group.category] = group.tags.some((tag) => selectedTagSlugs.has(tag.slug))
+          changed = true
+        }
+      }
+
+      return changed ? next : prev
+    })
+  }, [groupedTags, selectedTagSlugs])
 
   const selectedWinnersLabel =
     winnerPlayerIds.size === 0
@@ -1248,7 +1274,11 @@ export default function Home() {
                     <details
                       key={group.category}
                       className="tagCategoryCard"
-                      {...(activeCount > 0 ? { open: true } : {})}
+                      open={Boolean(openTagCategories[group.category])}
+                      onToggle={(event) => {
+                        const isOpen = event.currentTarget.open
+                        setOpenTagCategories((prev) => ({ ...prev, [group.category]: isOpen }))
+                      }}
                     >
                       <summary className="tagCategorySummary">
                         <span className="tagCategoryTitle">{group.label}</span>
