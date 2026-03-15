@@ -91,24 +91,82 @@ function firstNumber(...values: unknown[]) {
     if (typeof value === "number" && Number.isFinite(value)) {
       return value
     }
+
     if (typeof value === "string" && value.trim().length > 0) {
-      const parsed = Number(value)
+      const cleaned = value.trim()
+      const parsed = Number(cleaned)
       if (Number.isFinite(parsed)) {
         return parsed
       }
+
+      const numericToken = cleaned.match(/-?\d+(?:\.\d+)?/)
+      if (!numericToken) {
+        continue
+      }
+
+      const parsedToken = Number(numericToken[0])
+      if (!Number.isFinite(parsedToken)) {
+        continue
+      }
+
+      if (cleaned.includes("%") && parsedToken > 1) {
+        return parsedToken / 100
+      }
+      if (cleaned.includes("/100") && parsedToken > 1 && parsedToken <= 100) {
+        return parsedToken / 100
+      }
+      if (cleaned.includes("/10") && parsedToken > 1 && parsedToken <= 10) {
+        return parsedToken / 10
+      }
+
+      return parsedToken
     }
   }
+
   return undefined
+}
+
+function normalizeFitScore(raw: Record<string, unknown>, fallbackScore: number) {
+  const parsed = firstNumber(raw.fitScore, raw.fit_score, raw.score)
+  if (typeof parsed === "number" && Number.isFinite(parsed)) {
+    return parsed
+  }
+
+  return fallbackScore
 }
 
 function normalizePick(raw: unknown) {
   if (!raw || typeof raw !== "object") return null
   const source = raw as Record<string, unknown>
 
+  const gameId = firstString(source.gameId, source.game_id, source.id)
+  const name = firstString(source.name, source.gameName, source.game_name)
+  if (!gameId || !name) {
+    return null
+  }
+
   return {
-    gameId: firstString(source.gameId, source.game_id, source.id),
-    name: firstString(source.name, source.gameName, source.game_name),
+    gameId,
+    name,
     reason: firstString(source.reason, source.why, source.explanation) ?? "",
+  }
+}
+
+function normalizeRecommendation(rec: Record<string, unknown>, index: number, total: number) {
+  const gameId = firstString(rec.gameId, rec.game_id, rec.id)
+  const name = firstString(rec.name, rec.gameName, rec.game_name)
+  if (!gameId || !name) {
+    return null
+  }
+
+  const fallbackScore = Math.max(0.01, Number((1 - index / Math.max(total, 1)).toFixed(3)))
+
+  return {
+    gameId,
+    name,
+    fitScore: normalizeFitScore(rec, fallbackScore),
+    reason: firstString(rec.reason, rec.why, rec.explanation) ?? "",
+    warning: firstString(rec.warning, rec.note, rec.caveat) ?? "",
   }
 }
 
@@ -123,17 +181,10 @@ function normalizeAiPayload(raw: unknown) {
       : []
 
   const recommendations = rawRecommendations
-    .map((item) => {
+    .map((item, index) => {
       if (!item || typeof item !== "object") return null
       const rec = item as Record<string, unknown>
-
-      return {
-        gameId: firstString(rec.gameId, rec.game_id, rec.id),
-        name: firstString(rec.name, rec.gameName, rec.game_name),
-        fitScore: firstNumber(rec.fitScore, rec.fit_score, rec.score),
-        reason: firstString(rec.reason, rec.why, rec.explanation) ?? "",
-        warning: firstString(rec.warning, rec.note, rec.caveat) ?? "",
-      }
+      return normalizeRecommendation(rec, index, rawRecommendations.length)
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
 
