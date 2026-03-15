@@ -1790,6 +1790,74 @@ button:not(.cabbage-roll-button) svg,
   border-color: rgba(231, 234, 219, 0.65);
 }
 
+.main-nav__mobile-auth {
+  display: none;
+  position: relative;
+}
+
+.main-nav__mobile-auth-button {
+  border-radius: 12px;
+  border: 1px solid rgba(231, 234, 219, 0.4);
+  background: rgba(231, 234, 219, 0.15);
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-inverse);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.main-nav__mobile-auth-button:hover {
+  background: rgba(231, 234, 219, 0.3);
+  border-color: rgba(231, 234, 219, 0.65);
+}
+
+.main-nav__mobile-auth-button svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.main-nav__mobile-auth-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 120px;
+  border-radius: 10px;
+  background: #e7eadb;
+  border: 1px solid rgba(198, 208, 182, 0.85);
+  box-shadow: 0 10px 24px rgba(30, 43, 24, 0.3);
+  padding: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 61;
+}
+
+.main-nav__mobile-auth-menu.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.main-nav__mobile-auth-link {
+  display: block;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2e3f2a;
+}
+
+.main-nav__mobile-auth-link:hover {
+  background: rgba(110, 127, 74, 0.16);
+}
+
 .main-nav__desktop {
   display: none;
   align-items: center;
@@ -2153,13 +2221,16 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .main-nav__brand-image {
-    width: 38px;
-    height: 38px;
+    display: none;
   }
 
   .main-nav__menu-button {
     display: inline-flex;
     border-radius: 0;
+  }
+
+  .main-nav__mobile-auth {
+    display: inline-flex;
   }
 
   .pageShell {
@@ -2176,11 +2247,7 @@ button:not(.cabbage-roll-button) svg,
     flex: 1 1 auto;
     min-width: 0;
     font-size: 24px;
-  }
-
-  .main-nav__brand-image {
-    width: 32px;
-    height: 32px;
+    justify-content: center;
   }
 
   .main-nav__brand span {
@@ -2224,6 +2291,10 @@ button:not(.cabbage-roll-button) svg,
 
   .main-nav__desktop {
     display: flex;
+  }
+
+  .main-nav__mobile-auth {
+    display: none;
   }
 
   .main-nav__scrim,
