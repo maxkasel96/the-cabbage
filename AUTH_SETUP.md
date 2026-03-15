@@ -104,3 +104,102 @@ Environment gating:
 - Preview: `NEXT_PUBLIC_VERCEL_ENV=preview` enables password sign-in.
 - Production: password sign-in is hidden; Google OAuth remains available.
 
+
+## 9) Preview troubleshooting (RLS / DB-environment mismatch)
+
+If preview sign-in works but pages like `/history` or `/player-cards` show no data, verify these in
+**the same Supabase project your preview points to**.
+
+### A) Verify seed data exists in that project
+
+```sql
+select count(*) as tournaments_count from public.tournaments;
+select count(*) as players_count from public.players;
+select count(*) as plays_count from public.plays;
+select count(*) as game_winners_count from public.game_winners;
+```
+
+`/history` specifically requires an active tournament and played rows:
+
+```sql
+select id, label, is_active from public.tournaments where is_active = true;
+
+select tournament_id, count(*) as played_rows
+from public.plays
+where played_at is not null
+group by tournament_id
+order by played_rows desc;
+```
+
+### B) Check whether RLS is enabled on key tables
+
+```sql
+select schemaname, tablename, rowsecurity
+from pg_tables
+where schemaname = 'public'
+  and tablename in (
+    'tournaments',
+    'players',
+    'plays',
+    'play_players',
+    'game_winners',
+    'games'
+  )
+order by tablename;
+```
+
+### C) Check whether SELECT policies exist
+
+```sql
+select schemaname, tablename, policyname, roles, cmd, qual
+from pg_policies
+where schemaname = 'public'
+  and tablename in (
+    'tournaments',
+    'players',
+    'plays',
+    'play_players',
+    'game_winners',
+    'games'
+  )
+  and cmd = 'SELECT'
+order by tablename, policyname;
+```
+
+If RLS is enabled and no matching select policies exist, data reads will return empty/forbidden in
+preview.
+
+### D) Minimal read policies (authenticated users)
+
+If your intent is that signed-in users can read these datasets, add read policies like:
+
+```sql
+create policy "authenticated can read tournaments" on public.tournaments
+for select to authenticated using (true);
+
+create policy "authenticated can read players" on public.players
+for select to authenticated using (true);
+
+create policy "authenticated can read plays" on public.plays
+for select to authenticated using (true);
+
+create policy "authenticated can read play_players" on public.play_players
+for select to authenticated using (true);
+
+create policy "authenticated can read game_winners" on public.game_winners
+for select to authenticated using (true);
+
+create policy "authenticated can read games" on public.games
+for select to authenticated using (true);
+```
+
+If the pages should be public without sign-in, use `to anon, authenticated` instead.
+
+### E) Verify preview points at the intended Supabase project
+
+Double-check Vercel preview env vars:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+A common issue is preview envs pointing to a different (empty) Supabase project than local.
