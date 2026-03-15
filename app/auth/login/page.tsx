@@ -22,7 +22,7 @@ function LoginContent() {
       return candidate
     }
 
-    return '/admin/games'
+    return '/'
   }, [searchParams])
 
   const signInWithGoogle = async () => {
@@ -83,8 +83,7 @@ function LoginContent() {
       return
     }
 
-    const userRole = data.user.app_metadata?.role ?? data.user.user_metadata?.role
-    router.replace(userRole === 'admin' ? nextPath : '/auth/unauthorized')
+    router.replace(nextPath)
   }
 
   return (

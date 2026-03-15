@@ -11,7 +11,7 @@ function AuthCallbackContent() {
 
   const nextPath = useMemo(() => {
     const candidate = searchParams.get('next')
-    return candidate?.startsWith('/') ? candidate : '/admin/games'
+    return candidate?.startsWith('/') ? candidate : '/'
   }, [searchParams])
 
   useEffect(() => {
@@ -23,7 +23,6 @@ function AuthCallbackContent() {
       let accessToken: string | null = null
       let expiresIn: number | undefined
       let expiresAt: number | undefined
-      let userRole: string | undefined
 
       if (code) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
@@ -36,7 +35,6 @@ function AuthCallbackContent() {
         accessToken = data.session.access_token
         expiresIn = data.session.expires_in
         expiresAt = data.session.expires_at
-        userRole = data.user.app_metadata?.role ?? data.user.user_metadata?.role
       } else {
         const [{ data: sessionData }, { data: userData }] = await Promise.all([
           supabase.auth.getSession(),
@@ -51,7 +49,6 @@ function AuthCallbackContent() {
         accessToken = sessionData.session.access_token
         expiresIn = sessionData.session.expires_in
         expiresAt = sessionData.session.expires_at
-        userRole = userData.user.app_metadata?.role ?? userData.user.user_metadata?.role
       }
 
       const sessionRes = await fetch('/api/auth/session', {
@@ -69,7 +66,7 @@ function AuthCallbackContent() {
         return
       }
 
-      router.replace(userRole === 'admin' ? nextPath : '/auth/unauthorized')
+      router.replace(nextPath)
     }
 
     void completeAuth()

@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAccessTokenFromRequest } from '@/lib/auth/token'
-import { supabaseServerForToken } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
 import { getActiveTournamentId } from '@/lib/getActiveTournamentId'
 
 export async function GET(request: NextRequest) {
-  const token = getAccessTokenFromRequest(request)
-  const supabaseServer = supabaseServerForToken(token)
   const { searchParams } = new URL(request.url)
   const requestedTournamentId = searchParams.get('tournamentId')?.trim()
-  const tournamentId = requestedTournamentId || (await getActiveTournamentId(token))
+  const tournamentId = requestedTournamentId || (await getActiveTournamentId())
+
   if (!tournamentId) {
     return NextResponse.json({ error: 'No active tournament set.' }, { status: 400 })
   }
@@ -84,7 +82,7 @@ export async function GET(request: NextRequest) {
     const uniqueWinImages = Array.from(new Set(winImages))
 
     return {
-      id: p.id, // play id
+      id: p.id,
       game_id: p.games?.id ?? null,
       name: p.games?.name ?? '(unknown game)',
       played_at: p.played_at,

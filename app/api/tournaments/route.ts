@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server'
-import { getAccessTokenFromRequest } from '@/lib/auth/token'
-import { supabaseServerForToken } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
 
-export async function GET(req: Request) {
-  const token = getAccessTokenFromRequest(req)
-  const supabaseServer = supabaseServerForToken(token)
+export async function GET() {
   const { data, error } = await supabaseServer
     .from('tournaments')
     .select('id, label, year_start, year_end, is_active, created_at')

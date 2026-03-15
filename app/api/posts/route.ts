@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
+import { requireMember } from '@/lib/auth/requireMember'
+import { supabaseServer, supabaseServerForToken } from '@/lib/supabaseServer'
 
 type PostPayload = {
   tournament_id?: string
@@ -11,7 +12,6 @@ type PostPayload = {
 
 const isSafeImageSource = (value: string) =>
   /^https?:\/\//i.test(value) || /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(value)
-
 
 export async function GET() {
   const { data, error } = await supabaseServer
@@ -25,6 +25,13 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireMember(req)
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status })
+  }
+
+  const supabase = supabaseServerForToken(auth.token)
   const body = (await req.json().catch(() => null)) as PostPayload | null
 
   const tournament_id = body?.tournament_id?.trim() ?? ''
@@ -45,7 +52,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'One or more images were rejected.' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await supabase
     .from('posts')
     .insert([{ tournament_id, author_id, author_name, message, images }])
     .select('id, created_at, tournament_id, author_id, author_name, message, images')
