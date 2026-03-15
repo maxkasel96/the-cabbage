@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireMember } from '@/lib/auth/requireMember'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 type RulePayload = {
@@ -22,6 +23,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireMember(req)
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status })
+  }
+
   const body = (await req.json().catch(() => null)) as RulePayload | null
 
   const tournament_id = body?.tournament_id?.trim() ?? ''
@@ -43,6 +50,12 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const auth = await requireMember(req)
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status })
+  }
+
   const body = (await req.json().catch(() => null)) as RulePayload | null
   const id = body?.id?.trim() ?? ''
   const status = body?.status ?? 'Proposed'
@@ -64,6 +77,12 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const auth = await requireMember(req)
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status })
+  }
+
   const body = (await req.json().catch(() => null)) as RulePayload | null
   const id = body?.id?.trim() ?? ''
 
