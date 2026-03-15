@@ -871,18 +871,18 @@ export default function Home() {
         }
 
         .tagCategorySummaryMeta {
-          font-size: 9px;
+          font-size: 10px;
           color: var(--text-muted);
           border: 1px solid var(--divider-soft);
           border-radius: 999px;
-          padding: 1px 6px;
+          padding: 2px 8px;
           background: var(--page-background);
         }
 
         .tagChipWrap {
           margin-top: 6px;
           display: flex;
-          gap: 2px;
+          gap: 3px;
           flex-wrap: wrap;
         }
 
@@ -893,38 +893,40 @@ export default function Home() {
         .filtersCard button.chip {
           font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
           text-transform: none;
-          padding: 1px 6px;
-          min-height: 22px;
+          padding: 2px 8px;
+          min-height: 28px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 9px;
+          font-size: 11px;
           font-weight: 700;
           letter-spacing: 0;
           line-height: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 3px;
-          background: var(--page-background);
-          color: var(--text-primary);
+          gap: 4px;
+          background: #dbe5cb;
+          color: #2e3f2a;
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
         .filtersCard button.chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 2px 6px rgba(63, 90, 42, 0.14);
+          box-shadow: 0 4px 10px rgba(63, 90, 42, 0.22);
+          background: #cddbb7;
+          border-color: var(--primary);
         }
 
         .filtersCard button.chip.chipActive {
-          background: var(--secondary);
+          background: var(--primary);
           color: var(--text-inverse);
           border-color: var(--primary);
-          box-shadow: 0 3px 8px rgba(63, 90, 42, 0.16);
+          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.28);
         }
 
         .chipIcon {
-          font-size: 8px;
+          font-size: 10px;
           line-height: 1;
         }
 
