@@ -8,8 +8,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin"
 
 const requestSchema = z.object({
   tournamentId: z.string().uuid(),
-  desiredVibe: z.string().min(1),
-  maxDuration: z.number().int().positive().optional(),
+  userPrompt: z.string().min(1),
 })
 
 const aiResponseSchema = z.object({
@@ -60,7 +59,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { tournamentId, desiredVibe, maxDuration } = parsedInput.data
+    const { tournamentId, userPrompt } = parsedInput.data
 
     const playersResult = await supabaseAdmin
       .from("tournament_players")
@@ -95,10 +94,6 @@ export async function POST(request: Request) {
       .eq("is_active", true)
       .lte("min_players", playerCount)
       .gte("max_players", playerCount)
-
-    if (typeof maxDuration === "number") {
-      gamesQuery = gamesQuery.lte("playtime_minutes", maxDuration)
-    }
 
     const gamesResult = await gamesQuery
 
@@ -159,10 +154,13 @@ export async function POST(request: Request) {
       name: game.name,
       minPlayers: game.min_players,
       maxPlayers: game.max_players,
-      playtimeMinutes: game.playtime_minutes,
       notes: game.notes,
       tags: gameIdToTags.get(game.id) ?? [],
     }))
+
+    const allKnownTags = Array.from(
+      new Set(candidateGames.flatMap((game) => game.tags.map((tag) => tag.trim()).filter(Boolean))),
+    )
 
     const response = await openai.responses.create({
       model: "gpt-5-mini",
@@ -177,13 +175,16 @@ export async function POST(request: Request) {
           content: JSON.stringify({
             rules: [
               "Only recommend games from candidateGames.",
-              "Prioritize player-count fit, duration fit, and vibe fit.",
+              "Prioritize player-count fit and semantic tag fit from the userPrompt.",
+              "Infer intent from natural language and map it to the closest tags from allKnownTags.",
+              "Prefer games that match more of the inferred tags.",
+              "Explicitly mention the supporting tags in each reason.",
               "Avoid recently played games when possible.",
               "Return JSON only.",
             ],
-            desiredVibe,
+            userPrompt,
             playerCount,
-            maxDuration: maxDuration ?? null,
+            allKnownTags,
             recentGameIds,
             candidateGames,
           }),

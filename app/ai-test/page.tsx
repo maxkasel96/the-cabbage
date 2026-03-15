@@ -23,8 +23,7 @@ type TroubleshootingPack = {
   chatPrompt: string
 }
 
-const DEFAULT_VIBE = "chaotic and funny"
-const DEFAULT_DURATION = 45
+const DEFAULT_PROMPT = "chaotic and funny"
 
 function buildPingTroubleshooting(state: ApiState): TroubleshootingPack {
   const errorText = state.error?.toLowerCase() ?? ""
@@ -89,9 +88,9 @@ function buildRecommendTroubleshooting(state: ApiState): TroubleshootingPack {
   const hasServerFailure = errorText.includes("server failure")
 
   const checklist = [
-    "Verify request payload shape sent from `app/ai-test/page.tsx` to `/api/ai/recommend-games` (`tournamentId`, `desiredVibe`, optional numeric `maxDuration`).",
+    "Verify request payload shape sent from `app/ai-test/page.tsx` to `/api/ai/recommend-games` (`tournamentId`, `userPrompt`).",
     "Confirm Supabase reads succeed for tournament players, recent plays, games, and tags in `app/api/ai/recommend-games/route.ts`.",
-    "Capture API response JSON and status code from `/api/ai/recommend-games` to distinguish validation, data, and AI parsing failures.",
+    "Capture API response JSON and status code from `/api/ai/recommend-games` to distinguish validation, data eligibility, and AI parsing failures.",
     "If AI output parsing fails, inspect JSON extraction constraints in `parseAiJson` and schema validation in `aiResponseSchema`.",
   ]
 
@@ -101,9 +100,7 @@ function buildRecommendTroubleshooting(state: ApiState): TroubleshootingPack {
   if (hasValidation) {
     title = "Input validation troubleshooting"
     why = "The request body failed route validation before hitting core recommendation logic."
-    checklist.unshift(
-      "Ensure `selectedTournamentId` is a UUID and `maxDuration` parses to a positive integer when provided.",
-    )
+    checklist.unshift("Ensure `selectedTournamentId` is a UUID and `userPrompt` is a non-empty string.")
   }
 
   if (hasServerFailure) {
@@ -162,8 +159,7 @@ function TroubleshootingPanel({ pack }: { pack: TroubleshootingPack }) {
 export default function AiTestPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [selectedTournamentId, setSelectedTournamentId] = useState("")
-  const [desiredVibe, setDesiredVibe] = useState(DEFAULT_VIBE)
-  const [maxDuration, setMaxDuration] = useState(String(DEFAULT_DURATION))
+  const [userPrompt, setUserPrompt] = useState(DEFAULT_PROMPT)
 
   const [pingState, setPingState] = useState<ApiState>({
     loading: false,
@@ -245,13 +241,9 @@ export default function AiTestPage() {
       return
     }
 
-    const parsedMaxDuration = Number(maxDuration)
-    const hasDuration = Number.isFinite(parsedMaxDuration) && parsedMaxDuration > 0
-
     const requestBody = {
       tournamentId: selectedTournamentId,
-      desiredVibe,
-      ...(hasDuration ? { maxDuration: parsedMaxDuration } : {}),
+      userPrompt,
     }
 
     setRecommendState({ loading: true, error: null, result: null })
@@ -304,8 +296,8 @@ export default function AiTestPage() {
       <section style={{ marginTop: 24, padding: 16, border: "1px solid #ddd", borderRadius: 8 }}>
         <h2 style={{ marginTop: 0 }}>2) Recommendation workflow check</h2>
         <p>
-          Calls <code>/api/ai/recommend-games</code> using real tournaments and returns model-picked games plus
-          metadata.
+          Calls <code>/api/ai/recommend-games</code> using real tournaments and maps your natural-language prompt to
+          relevant game tags (for example: "large group" + "early in the day").
         </p>
 
         <label style={{ display: "block", marginBottom: 8 }}>
@@ -327,21 +319,11 @@ export default function AiTestPage() {
         </label>
 
         <label style={{ display: "block", marginBottom: 8 }}>
-          Desired vibe
+          Recommendation prompt
           <input
-            value={desiredVibe}
-            onChange={(event) => setDesiredVibe(event.target.value)}
-            placeholder="cozy strategy"
-            style={{ display: "block", width: "100%", marginTop: 4, padding: 8 }}
-          />
-        </label>
-
-        <label style={{ display: "block", marginBottom: 8 }}>
-          Max duration in minutes (optional)
-          <input
-            value={maxDuration}
-            onChange={(event) => setMaxDuration(event.target.value)}
-            placeholder="45"
+            value={userPrompt}
+            onChange={(event) => setUserPrompt(event.target.value)}
+            placeholder="large group game before 7pm with chaotic energy"
             style={{ display: "block", width: "100%", marginTop: 4, padding: 8 }}
           />
         </label>
