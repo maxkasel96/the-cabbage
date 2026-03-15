@@ -5,6 +5,7 @@ import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
 import PageTitle from './components/PageTitle'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 type Game = {
   id: string
@@ -38,6 +39,7 @@ export default function Home() {
   const [tags, setTags] = useState<Tag[]>([])
 
   const [status, setStatus] = useState<string>('')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   // note modal state
   const [noteModalOpen, setNoteModalOpen] = useState(false)
@@ -83,6 +85,24 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
+  }, [])
+
+  useEffect(() => {
+    const supabase = supabaseBrowser()
+
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthenticated(Boolean(data.user))
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(Boolean(session?.user))
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
@@ -177,46 +197,50 @@ export default function Home() {
   }, [game, isRolling])
 
   async function rollRandom() {
-  if (isRolling) return
+    if (isRolling) return
+    if (!isAuthenticated) {
+      setStatus('Sign in is required to harness the power of the cabbage.')
+      return
+    }
 
-  setStatus('')
-  setWinnerPlayerIds(new Set())
-  setGameStarted(false)
-  setTeamMode('')
-  setTeamCount('')
-  setTeams([])
-  setTeamStatus('')
-  setShowWinners(false)
-  setWinningTeamId(null)
-  setIsRolling(true)
+    setStatus('')
+    setWinnerPlayerIds(new Set())
+    setGameStarted(false)
+    setTeamMode('')
+    setTeamCount('')
+    setTeams([])
+    setTeamStatus('')
+    setShowWinners(false)
+    setWinningTeamId(null)
+    setIsRolling(true)
 
-  // Let the “rolling” animation be visible before the fetch resolves
-  await new Promise((r) => setTimeout(r, 350))
+    // Let the “rolling” animation be visible before the fetch resolves
+    await new Promise((r) => setTimeout(r, 350))
 
-  const params = new URLSearchParams()
-  if (selectedTagSlugs.size > 0) {
-    params.set('tags', Array.from(selectedTagSlugs).join(','))
-  }
-  const trimmedPlayerCount = playerCount.trim()
-  if (trimmedPlayerCount) {
-    params.set('maxPlayers', trimmedPlayerCount)
-  }
+    const params = new URLSearchParams()
+    if (selectedTagSlugs.size > 0) {
+      params.set('tags', Array.from(selectedTagSlugs).join(','))
+    }
+    const trimmedPlayerCount = playerCount.trim()
+    if (trimmedPlayerCount) {
+      params.set('maxPlayers', trimmedPlayerCount)
+    }
 
-  const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
-  const res = await fetch(url)
-  const json = await res.json()
+    const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
+    const res = await fetch(url)
+    const json = await res.json()
 
-  if (!res.ok) {
-    setGame(null)
-    setStatus(json.message || json.error || 'Failed to fetch a game')
+    if (!res.ok) {
+      setGame(null)
+      setStatus(json.message || json.error || 'Failed to fetch a game')
+      setIsRolling(false)
+      return
+    }
+
+    setGame(json.game)
+    setRollKey((k) => k + 1) // retrigger pop animation
     setIsRolling(false)
-    return
   }
-
-  setGame(json.game)
-  setRollKey((k) => k + 1) // retrigger pop animation
-  setIsRolling(false)
-}
 
   function startGame() {
     if (!game) return

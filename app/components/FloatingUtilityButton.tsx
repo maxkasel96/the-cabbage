@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 const FLOATING_IMAGE_URL =
   'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
@@ -60,6 +61,7 @@ export default function FloatingUtilityButton() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
   const [selectionStatus, setSelectionStatus] = useState('')
   const [isSelecting, setIsSelecting] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [modalTagline, setModalTagline] = useState('')
   const [resultTagline, setResultTagline] = useState('')
   const [outcomeTagline, setOutcomeTagline] = useState('')
@@ -101,6 +103,25 @@ export default function FloatingUtilityButton() {
     }
   }, [isModalOpen])
 
+
+  useEffect(() => {
+    const supabase = supabaseBrowser()
+
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthenticated(Boolean(data.user))
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(Boolean(session?.user))
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
   useEffect(() => {
     return () => {
       if (selectionTimerRef.current) {
@@ -112,6 +133,13 @@ export default function FloatingUtilityButton() {
   function openModal() {
     const nextTagline = modalTaglines[Math.floor(Math.random() * modalTaglines.length)]
     setModalTagline(nextTagline)
+    setSelectedPlayer(null)
+    setIsSelecting(false)
+    setResultTagline('')
+    setOutcomeTagline('')
+    setSelectionStatus(
+      isAuthenticated ? '' : 'Sign in is required to harness the power of the cabbage.'
+    )
     setIsModalOpen(true)
   }
 
@@ -131,6 +159,12 @@ export default function FloatingUtilityButton() {
 
   function handleShuffle() {
     if (isSelecting) return
+
+    if (!isAuthenticated) {
+      setSelectedPlayer(null)
+      setSelectionStatus('Sign in is required to harness the power of the cabbage.')
+      return
+    }
 
     if (players.length === 0) {
       setSelectedPlayer(null)
