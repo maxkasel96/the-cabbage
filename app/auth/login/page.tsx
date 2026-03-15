@@ -1,10 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('')
 
@@ -35,37 +35,45 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
-      <div
+    <div
+      style={{
+        width: '100%',
+        maxWidth: 420,
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 12,
+        padding: 24,
+        background: 'var(--surface)',
+      }}
+    >
+      <h1 style={{ margin: 0, marginBottom: 8 }}>Sign in</h1>
+      <p style={{ marginTop: 0, marginBottom: 20, color: 'var(--text-secondary)' }}>
+        Use Google to authenticate with Supabase OAuth.
+      </p>
+      <button
+        type="button"
+        onClick={signInWithGoogle}
         style={{
           width: '100%',
-          maxWidth: 420,
+          borderRadius: 10,
           border: '1px solid var(--border-subtle)',
-          borderRadius: 12,
-          padding: 24,
-          background: 'var(--surface)',
+          padding: '10px 14px',
+          fontWeight: 600,
+          cursor: 'pointer',
         }}
       >
-        <h1 style={{ margin: 0, marginBottom: 8 }}>Sign in</h1>
-        <p style={{ marginTop: 0, marginBottom: 20, color: 'var(--text-secondary)' }}>
-          Use Google to authenticate with Supabase OAuth.
-        </p>
-        <button
-          type="button"
-          onClick={signInWithGoogle}
-          style={{
-            width: '100%',
-            borderRadius: 10,
-            border: '1px solid var(--border-subtle)',
-            padding: '10px 14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Continue with Google
-        </button>
-        {status ? <p style={{ marginBottom: 0 }}>{status}</p> : null}
-      </div>
+        Continue with Google
+      </button>
+      {status ? <p style={{ marginBottom: 0 }}>{status}</p> : null}
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
+      <Suspense fallback={<p>Preparing sign-in...</p>}>
+        <LoginContent />
+      </Suspense>
     </main>
   )
 }
