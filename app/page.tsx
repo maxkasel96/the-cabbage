@@ -882,7 +882,7 @@ export default function Home() {
         .tagChipWrap {
           margin-top: 10px;
           display: flex;
-          gap: 8px;
+          gap: 6px;
           flex-wrap: wrap;
         }
 
@@ -891,16 +891,16 @@ export default function Home() {
         }
 
         .chip {
-          padding: 7px 14px;
+          padding: 5px 10px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.15px;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
           background: var(--page-background);
           color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
@@ -908,14 +908,19 @@ export default function Home() {
 
         .chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 4px 10px rgba(63, 90, 42, 0.18);
         }
 
         .chipActive {
           background: var(--secondary);
           color: var(--text-inverse);
           border-color: var(--primary);
-          box-shadow: 0 8px 16px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.2);
+        }
+
+        .chipIcon {
+          font-size: 11px;
+          line-height: 1;
         }
 
         .filtersSummary {
@@ -1255,7 +1260,7 @@ export default function Home() {
                               title={t.slug}
                               aria-pressed={active}
                             >
-                              <span>{active ? '✅' : '○'}</span>
+                              <span className="chipIcon">{active ? '✅' : '○'}</span>
                               {t.label}
                             </button>
                           )
