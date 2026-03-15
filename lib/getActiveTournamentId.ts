@@ -1,7 +1,9 @@
-import { supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServer, supabaseServerForToken } from '@/lib/supabaseServer'
 
-export async function getActiveTournamentId() {
-  const { data, error } = await supabaseServer
+export async function getActiveTournamentId(token?: string | null) {
+  const client = typeof token === 'string' ? supabaseServerForToken(token) : supabaseServer
+
+  const { data, error } = await client
     .from('tournaments')
     .select('id')
     .eq('is_active', true)

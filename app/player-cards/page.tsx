@@ -1,6 +1,8 @@
+import { cookies } from 'next/headers'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
-import { supabaseServer } from '@/lib/supabaseServer'
+import { authCookieName } from '@/lib/auth/token'
+import { supabaseServerForToken } from '@/lib/supabaseServer'
 import PlayerCard from './PlayerCard'
 
 type Player = {
@@ -14,6 +16,10 @@ type Player = {
 export const dynamic = 'force-dynamic'
 
 async function loadPlayers(): Promise<{ players: Player[]; status?: string }> {
+  const cookieStore = await cookies()
+  const token = cookieStore.get(authCookieName)?.value ?? null
+  const supabaseServer = supabaseServerForToken(token)
+
   const { data, error } = await supabaseServer
     .from('players')
     .select('id, display_name, player_bio, card_path, avatar_path')
