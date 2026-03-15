@@ -117,8 +117,10 @@ const MegaMenuItemCard = ({ item, onNavigate }: MegaMenuItemProps) => (
 export default function NavClient({ showAdminMenu = true }: NavProps) {
   const pathname = usePathname()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
-  const authButtonRef = useRef<HTMLButtonElement>(null)
-  const authMenuRef = useRef<HTMLDivElement>(null)
+  const mobileAuthButtonRef = useRef<HTMLButtonElement>(null)
+  const mobileAuthMenuRef = useRef<HTMLDivElement>(null)
+  const desktopAuthButtonRef = useRef<HTMLButtonElement>(null)
+  const desktopAuthMenuRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
   const desktopNavRef = useRef<HTMLDivElement>(null)
   const scrollStateRef = useRef({
@@ -127,7 +129,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
   })
   const wasMenuOpenRef = useRef(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isMobileAuthMenuOpen, setIsMobileAuthMenuOpen] = useState(false)
+  const [isAuthMenuOpen, setIsAuthMenuOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const navConfig = defaultNavConfig
@@ -261,7 +263,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
 
   useEffect(() => {
     setIsMobileMenuOpen(false)
-    setIsMobileAuthMenuOpen(false)
+    setIsAuthMenuOpen(false)
     setIsNavHidden(false)
   }, [pathname])
 
@@ -270,7 +272,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
   }
 
   const handleMobileAuthClose = () => {
-    setIsMobileAuthMenuOpen(false)
+    setIsAuthMenuOpen(false)
   }
 
   useEffect(() => {
@@ -318,25 +320,27 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
   }, [])
 
   useEffect(() => {
-    if (!isMobileAuthMenuOpen) {
+    if (!isAuthMenuOpen) {
       return
     }
 
     const handleDocumentClick = (event: MouseEvent) => {
       const target = event.target as Node | null
       if (
-        authMenuRef.current?.contains(target ?? null)
-        || authButtonRef.current?.contains(target ?? null)
+        mobileAuthMenuRef.current?.contains(target ?? null)
+        || mobileAuthButtonRef.current?.contains(target ?? null)
+        || desktopAuthMenuRef.current?.contains(target ?? null)
+        || desktopAuthButtonRef.current?.contains(target ?? null)
       ) {
         return
       }
-      setIsMobileAuthMenuOpen(false)
+      setIsAuthMenuOpen(false)
     }
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsMobileAuthMenuOpen(false)
-        authButtonRef.current?.focus()
+        setIsAuthMenuOpen(false)
+        mobileAuthButtonRef.current?.focus()
       }
     }
 
@@ -347,7 +351,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       document.removeEventListener('mousedown', handleDocumentClick)
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [isMobileAuthMenuOpen])
+  }, [isAuthMenuOpen])
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -494,14 +498,6 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     return [{ href: '/auth/logout', label: 'Sign out' }]
   }, [auth.isAuthenticated, auth.isAuthorized])
 
-  const desktopUtilityLinks = useMemo(() => {
-    const adminLink = auth.isAuthenticated && auth.role === 'admin'
-      ? [{ href: '/admin/games', label: 'Admin' }]
-      : []
-
-    return [...adminLink, ...utilityLinks]
-  }, [auth.isAuthenticated, auth.role, utilityLinks])
-
   return (
     <nav
       className={`main-nav ${isNavHidden && !isMobileMenuOpen ? 'is-hidden' : ''}`}
@@ -515,7 +511,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
           aria-expanded={isMobileMenuOpen}
           ref={menuButtonRef}
           onClick={() => {
-            setIsMobileAuthMenuOpen(false)
+            setIsAuthMenuOpen(false)
             setIsMobileMenuOpen((prev) => !prev)
           }}
         >
@@ -535,11 +531,11 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
             className="main-nav__mobile-auth-button"
             aria-haspopup="menu"
             aria-label={auth.isAuthenticated ? 'Open sign out menu' : 'Open sign in menu'}
-            aria-expanded={isMobileAuthMenuOpen}
-            ref={authButtonRef}
+            aria-expanded={isAuthMenuOpen}
+            ref={mobileAuthButtonRef}
             onClick={() => {
               setIsMobileMenuOpen(false)
-              setIsMobileAuthMenuOpen((prev) => !prev)
+              setIsAuthMenuOpen((prev) => !prev)
             }}
           >
             <img
@@ -550,9 +546,9 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
             />
           </button>
           <div
-            className={`main-nav__mobile-auth-menu${isMobileAuthMenuOpen ? ' is-open' : ''}`}
+            className={`main-nav__mobile-auth-menu${isAuthMenuOpen ? ' is-open' : ''}`}
             role="menu"
-            ref={authMenuRef}
+            ref={mobileAuthMenuRef}
           >
             {utilityLinks.map((link) => (
               <Link
@@ -636,19 +632,45 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
                 </div>
               )
             })}
-            {desktopUtilityLinks.map((link, index) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="main-nav__desktop-link main-nav__desktop-link--utility"
-                data-utility-first={index === 0}
-                role="menuitem"
+            <div className="main-nav__desktop-auth">
+              <button
+                type="button"
+                className="main-nav__mobile-auth-button"
+                aria-haspopup="menu"
+                aria-label={auth.isAuthenticated ? 'Open sign out menu' : 'Open sign in menu'}
+                aria-expanded={isAuthMenuOpen}
+                ref={desktopAuthButtonRef}
                 onMouseEnter={() => setActiveMenu(null)}
-                onClick={handleUtilityLinkClick()}
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  setIsAuthMenuOpen((prev) => !prev)
+                }}
               >
-                {link.label}
-              </Link>
-            ))}
+                <img
+                  src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Generic%20avatar.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="main-nav__mobile-auth-icon"
+                />
+              </button>
+              <div
+                className={`main-nav__mobile-auth-menu${isAuthMenuOpen ? ' is-open' : ''}`}
+                role="menu"
+                ref={desktopAuthMenuRef}
+              >
+                {utilityLinks.map((link) => (
+                  <Link
+                    key={`desktop-${link.href}`}
+                    href={link.href}
+                    className="main-nav__mobile-auth-link"
+                    role="menuitem"
+                    onClick={handleUtilityLinkClick(handleMobileAuthClose)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
