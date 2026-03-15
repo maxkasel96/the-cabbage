@@ -531,8 +531,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
             }}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <circle cx="12" cy="8" r="3.75" />
-              <path d="M4.75 19.25c0-3.53 3.25-6.25 7.25-6.25s7.25 2.72 7.25 6.25" />
+              <path d="M12 2.75a4.75 4.75 0 1 1 0 9.5 4.75 4.75 0 0 1 0-9.5Zm0 11.75c5 0 8.75 2.85 8.75 6.5 0 .69-.56 1.25-1.25 1.25H4.5c-.69 0-1.25-.56-1.25-1.25 0-3.65 3.75-6.5 8.75-6.5Z" />
             </svg>
           </button>
           <div

@@ -1824,11 +1824,7 @@ button:not(.cabbage-roll-button) svg,
 .main-nav__mobile-auth-button svg {
   width: 20px;
   height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill: currentColor;
 }
 
 .main-nav__mobile-auth-menu {
