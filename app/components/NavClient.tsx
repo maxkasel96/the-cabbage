@@ -12,6 +12,7 @@ import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import type { NavConfig } from '@/lib/navigation/schema'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
 type NavProps = {
   showAdminMenu?: boolean
@@ -446,7 +447,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       href={href}
       className="main-nav__sheet-link"
       data-active={pathname === href}
-      onClick={handleMobileClose}
+      onClick={handleUtilityLinkClick(handleMobileClose)}
     >
       <span className="main-nav__sheet-label">{label}</span>
     </Link>
@@ -473,6 +474,20 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   const handleDesktopNavigate = () => {
     setActiveMenu(null)
   }
+
+  const handleUtilityLinkClick =
+    (onDone?: () => void) =>
+    async (event: ReactMouseEvent<HTMLAnchorElement>) => {
+      const link = event.currentTarget.getAttribute('href')
+      if (link !== '/auth/logout') {
+        onDone?.()
+        return
+      }
+
+      event.preventDefault()
+      onDone?.()
+      await signOutAndRedirect()
+    }
 
   const utilityLinks = useMemo(() => {
     if (!auth.isAuthenticated || !auth.isAuthorized) {
@@ -548,7 +563,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 href={link.href}
                 className="main-nav__mobile-auth-link"
                 role="menuitem"
-                onClick={handleMobileAuthClose}
+                onClick={handleUtilityLinkClick(handleMobileAuthClose)}
               >
                 {link.label}
               </Link>
@@ -632,6 +647,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 data-utility-first={index === 0}
                 role="menuitem"
                 onMouseEnter={() => setActiveMenu(null)}
+                onClick={handleUtilityLinkClick()}
               >
                 {link.label}
               </Link>
