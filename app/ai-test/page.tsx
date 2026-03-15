@@ -16,14 +16,150 @@ type ApiState = {
   result: unknown | null
 }
 
-const DEFAULT_VIBE = "chaotic and funny"
-const DEFAULT_DURATION = 45
+type TroubleshootingPack = {
+  title: string
+  why: string
+  checklist: string[]
+  chatPrompt: string
+}
+
+const DEFAULT_PROMPT = "chaotic and funny"
+
+function buildPingTroubleshooting(state: ApiState): TroubleshootingPack {
+  const errorText = state.error?.toLowerCase() ?? ""
+  const has429 = errorText.includes("429") || errorText.includes("quota")
+  const hasAuth = errorText.includes("401") || errorText.includes("403") || errorText.includes("auth")
+  const hasMissingKey = errorText.includes("missing openai_api_key") || errorText.includes("openai_api_key")
+
+  const checklist = [
+    "Validate server env wiring in `lib/openai.ts` and verify `OPENAI_API_KEY` is present in the runtime where `/api/ai/test` executes.",
+    "Inspect `/api/ai/test` error payload (`error`, `hint`, HTTP status) and include it verbatim in your troubleshooting thread.",
+    "Confirm model access for `gpt-5-mini` in the same OpenAI project tied to the API key.",
+  ]
+
+  let title = "Connectivity troubleshooting"
+  let why = "Use this when `/api/ai/test` fails so ChatGPT can diagnose configuration vs quota vs auth problems quickly."
+
+  if (has429) {
+    title = "Quota or rate-limit troubleshooting (429)"
+    why = "The API reported a quota/rate issue. Most fixes involve project selection, billing limits, or usage caps."
+    checklist.unshift(
+      "Cross-check OpenAI org/project used by your key against the project with active billing and available budget.",
+      "Capture timestamp + timezone + request frequency for the failing ping to separate quota exhaustion from burst rate limits.",
+    )
+  }
+
+  if (hasAuth) {
+    title = "Authentication/authorization troubleshooting"
+    why = "The failure points to key permissions or model access restrictions."
+    checklist.unshift(
+      "Rotate the API key in the intended OpenAI project and update deployment secrets before retesting `/api/ai/test`.",
+    )
+  }
+
+  if (hasMissingKey) {
+    title = "Missing environment variable troubleshooting"
+    why = "The route explicitly checks for `OPENAI_API_KEY`; this indicates runtime env configuration drift."
+    checklist.unshift(
+      "Set `OPENAI_API_KEY` in the server environment (not only local shell) and restart/redeploy so Next.js route handlers can read it.",
+    )
+  }
+
+  const statusSummary = state.error
+    ? `Observed error: ${state.error}`
+    : "Observed outcome: request succeeded; use this to preempt future failures."
+
+  const chatPrompt = [
+    "Help me troubleshoot my OpenAI connectivity check in a Next.js app.",
+    statusSummary,
+    "Related code paths:",
+    "- app/ai-test/page.tsx (client trigger + rendered error/output)",
+    "- app/api/ai/test/route.ts (OpenAI ping route + status/hint mapping)",
+    "- lib/openai.ts (OpenAI client + OPENAI_API_KEY wiring)",
+    "Please give me a prioritized checklist to isolate env misconfiguration, model access, and quota/billing issues.",
+  ].join("\n")
+
+  return { title, why, checklist, chatPrompt }
+}
+
+function buildRecommendTroubleshooting(state: ApiState): TroubleshootingPack {
+  const errorText = state.error?.toLowerCase() ?? ""
+  const hasValidation = errorText.includes("invalid request body")
+  const hasServerFailure = errorText.includes("server failure")
+
+  const checklist = [
+    "Verify request payload shape sent from `app/ai-test/page.tsx` to `/api/ai/recommend-games` (`tournamentId`, `userPrompt`).",
+    "Confirm Supabase reads succeed for tournament players, recent plays, games, and tags in `app/api/ai/recommend-games/route.ts`.",
+    "Capture API response JSON and status code from `/api/ai/recommend-games` to distinguish validation, data eligibility, and AI parsing failures.",
+    "If AI output parsing fails, inspect JSON extraction constraints in `parseAiJson` and schema validation in `aiResponseSchema`.",
+  ]
+
+  let title = "Recommendation workflow troubleshooting"
+  let why = "Use this when model-backed recommendation tests fail so investigation covers both data and OpenAI response parsing."
+
+  if (hasValidation) {
+    title = "Input validation troubleshooting"
+    why = "The request body failed route validation before hitting core recommendation logic."
+    checklist.unshift("Ensure `selectedTournamentId` is a UUID and `userPrompt` is a non-empty string.")
+  }
+
+  if (hasServerFailure) {
+    title = "Server failure troubleshooting"
+    why = "The route returned a generic server failure, which may mask Supabase errors or OpenAI/JSON parsing issues."
+    checklist.unshift(
+      "Check server logs around `app/api/ai/recommend-games/route.ts` for thrown Supabase/OpenAI errors before generic 500 handling.",
+    )
+  }
+
+  const statusSummary = state.error
+    ? `Observed error: ${state.error}`
+    : "Observed outcome: request succeeded; use this to harden diagnostics and reliability."
+
+  const chatPrompt = [
+    "Help me debug a failing recommendation workflow in my Next.js app.",
+    statusSummary,
+    "Related code paths:",
+    "- app/ai-test/page.tsx (form inputs + API request body)",
+    "- app/api/ai/recommend-games/route.ts (zod validation, Supabase queries, OpenAI call, JSON parsing)",
+    "- lib/openai.ts and lib/supabase-admin.ts (service clients/config)",
+    "Please provide step-by-step checks to isolate validation errors, data query issues, and model response parsing failures.",
+  ].join("\n")
+
+  return { title, why, checklist, chatPrompt }
+}
+
+function TroubleshootingPanel({ pack }: { pack: TroubleshootingPack }) {
+  return (
+    <div
+      style={{
+        marginTop: 14,
+        padding: 12,
+        borderRadius: 8,
+        border: "1px solid #d5dbc8",
+        background: "#f2f5ea",
+      }}
+    >
+      <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>{pack.title}</h3>
+      <p style={{ margin: "0 0 8px", color: "#34422f" }}>{pack.why}</p>
+      <ul style={{ margin: "0 0 10px", paddingLeft: 18 }}>
+        {pack.checklist.map((item) => (
+          <li key={item} style={{ marginBottom: 6 }}>
+            {item}
+          </li>
+        ))}
+      </ul>
+      <p style={{ margin: "0 0 6px", fontWeight: 700 }}>Prompt starter for ChatGPT</p>
+      <pre style={{ marginTop: 0, padding: 10, background: "#ffffff", overflowX: "auto", fontSize: 12 }}>
+        {pack.chatPrompt}
+      </pre>
+    </div>
+  )
+}
 
 export default function AiTestPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [selectedTournamentId, setSelectedTournamentId] = useState("")
-  const [desiredVibe, setDesiredVibe] = useState(DEFAULT_VIBE)
-  const [maxDuration, setMaxDuration] = useState(String(DEFAULT_DURATION))
+  const [userPrompt, setUserPrompt] = useState(DEFAULT_PROMPT)
 
   const [pingState, setPingState] = useState<ApiState>({
     loading: false,
@@ -35,6 +171,12 @@ export default function AiTestPage() {
     error: null,
     result: null,
   })
+
+  const pingTroubleshooting = useMemo(() => buildPingTroubleshooting(pingState), [pingState])
+  const recommendTroubleshooting = useMemo(
+    () => buildRecommendTroubleshooting(recommendState),
+    [recommendState],
+  )
 
   const selectedTournament = useMemo(
     () => tournaments.find((tournament) => tournament.id === selectedTournamentId) ?? null,
@@ -99,13 +241,9 @@ export default function AiTestPage() {
       return
     }
 
-    const parsedMaxDuration = Number(maxDuration)
-    const hasDuration = Number.isFinite(parsedMaxDuration) && parsedMaxDuration > 0
-
     const requestBody = {
       tournamentId: selectedTournamentId,
-      desiredVibe,
-      ...(hasDuration ? { maxDuration: parsedMaxDuration } : {}),
+      userPrompt,
     }
 
     setRecommendState({ loading: true, error: null, result: null })
@@ -152,13 +290,14 @@ export default function AiTestPage() {
             {JSON.stringify(pingState.result, null, 2)}
           </pre>
         ) : null}
+        <TroubleshootingPanel pack={pingTroubleshooting} />
       </section>
 
       <section style={{ marginTop: 24, padding: 16, border: "1px solid #ddd", borderRadius: 8 }}>
         <h2 style={{ marginTop: 0 }}>2) Recommendation workflow check</h2>
         <p>
-          Calls <code>/api/ai/recommend-games</code> using real tournaments and returns model-picked games plus
-          metadata.
+          Calls <code>/api/ai/recommend-games</code> using real tournaments and maps your natural-language prompt to
+          relevant game tags (for example: "large group" + "early in the day").
         </p>
 
         <label style={{ display: "block", marginBottom: 8 }}>
@@ -180,21 +319,11 @@ export default function AiTestPage() {
         </label>
 
         <label style={{ display: "block", marginBottom: 8 }}>
-          Desired vibe
+          Recommendation prompt
           <input
-            value={desiredVibe}
-            onChange={(event) => setDesiredVibe(event.target.value)}
-            placeholder="cozy strategy"
-            style={{ display: "block", width: "100%", marginTop: 4, padding: 8 }}
-          />
-        </label>
-
-        <label style={{ display: "block", marginBottom: 8 }}>
-          Max duration in minutes (optional)
-          <input
-            value={maxDuration}
-            onChange={(event) => setMaxDuration(event.target.value)}
-            placeholder="45"
+            value={userPrompt}
+            onChange={(event) => setUserPrompt(event.target.value)}
+            placeholder="large group game before 7pm with chaotic energy"
             style={{ display: "block", width: "100%", marginTop: 4, padding: 8 }}
           />
         </label>
@@ -215,6 +344,7 @@ export default function AiTestPage() {
             {JSON.stringify(recommendState.result, null, 2)}
           </pre>
         ) : null}
+        <TroubleshootingPanel pack={recommendTroubleshooting} />
       </section>
     </main>
   )

@@ -2867,3 +2867,60 @@ button:not(.cabbage-roll-button) svg,
   margin: 0;
   color: var(--text-secondary);
 }
+
+.floating-ai-test-link {
+  position: fixed;
+  right: 24px;
+  bottom: 106px;
+  z-index: 59;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid var(--nav-surface);
+  background: rgba(46, 63, 42, 0.92);
+  color: var(--text-inverse);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+  text-decoration: none;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.floating-ai-test-link:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.32);
+}
+
+.floating-ai-test-link:active {
+  transform: translateY(2px);
+}
+
+.floating-ai-test-link:focus-visible {
+  outline: 3px solid rgba(46, 63, 42, 0.45);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .floating-ai-test-link {
+    right: 16px;
+    bottom: 92px;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.68rem;
+  }
+
+  .floating-utility-button {
+    right: 16px;
+    bottom: 16px;
+    width: 64px;
+    height: 64px;
+  }
+}
