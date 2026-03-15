@@ -1854,22 +1854,6 @@ button:not(.cabbage-roll-button) svg,
   display: inline-flex;
 }
 
-.main-nav__desktop-auth-button {
-  border-radius: 12px;
-  border: 1px solid rgba(231, 234, 219, 0.4);
-  background: rgba(231, 234, 219, 0.15);
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.main-nav__desktop-auth-button:hover {
-  background: rgba(231, 234, 219, 0.3);
-  border-color: rgba(231, 234, 219, 0.65);
-}
 
 .main-nav__desktop {
   display: none;

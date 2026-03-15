@@ -635,7 +635,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
             <div className="main-nav__desktop-auth">
               <button
                 type="button"
-                className="main-nav__desktop-auth-button"
+                className="main-nav__mobile-auth-button"
                 aria-haspopup="menu"
                 aria-label={auth.isAuthenticated ? 'Open sign out menu' : 'Open sign in menu'}
                 aria-expanded={isAuthMenuOpen}
