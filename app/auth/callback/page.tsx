@@ -18,32 +18,49 @@ function AuthCallbackContent() {
     let isMounted = true
 
     const completeAuth = async () => {
-      const code = searchParams.get('code')
-
-      if (!code) {
-        if (isMounted) setStatus('Missing OAuth code. Please try signing in again.')
-        return
-      }
-
       const supabase = supabaseBrowser()
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+      const code = searchParams.get('code')
+      let accessToken: string | null = null
+      let expiresIn: number | undefined
+      let userRole: string | undefined
 
-      if (error || !data.session || !data.user) {
-        if (isMounted) setStatus(error?.message ?? 'Failed to complete OAuth sign-in.')
-        return
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+        if (error || !data.session || !data.user) {
+          if (isMounted) setStatus(error?.message ?? 'Failed to complete OAuth sign-in.')
+          return
+        }
+
+        accessToken = data.session.access_token
+        expiresIn = data.session.expires_in
+        userRole = data.user.app_metadata?.role ?? data.user.user_metadata?.role
+      } else {
+        const [{ data: sessionData }, { data: userData }] = await Promise.all([
+          supabase.auth.getSession(),
+          supabase.auth.getUser(),
+        ])
+
+        if (!sessionData.session || !userData.user) {
+          if (isMounted) setStatus('Missing OAuth code. Please try signing in again.')
+          return
+        }
+
+        accessToken = sessionData.session.access_token
+        expiresIn = sessionData.session.expires_in
+        userRole = userData.user.app_metadata?.role ?? userData.user.user_metadata?.role
       }
 
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          accessToken: data.session.access_token,
-          expiresIn: data.session.expires_in,
+          accessToken,
+          expiresIn,
         }),
       })
 
-      const role = data.user.app_metadata?.role ?? data.user.user_metadata?.role
-      router.replace(role === 'admin' ? nextPath : '/auth/unauthorized')
+      router.replace(userRole === 'admin' ? nextPath : '/auth/unauthorized')
     }
 
     void completeAuth()
