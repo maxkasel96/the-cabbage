@@ -361,6 +361,13 @@ export default function Home() {
   }
 
   async function runRecommendations() {
+    if (!isAuthenticated) {
+      setStatus('Sign in is required to harness the power of the cabbage.')
+      return
+    }
+
+    setStatus('')
+
     if (!activeTournamentId) {
       setRecommendState({ loading: false, result: null, error: 'No active tournament found.' })
       return
