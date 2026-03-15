@@ -442,6 +442,14 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
     return [{ href: '/auth/logout', label: 'Sign out' }]
   }, [auth.isAuthenticated, auth.isAuthorized])
 
+  const desktopUtilityLinks = useMemo(() => {
+    const adminLink = auth.isAuthenticated && auth.role === 'admin'
+      ? [{ href: '/admin/games', label: 'Admin' }]
+      : []
+
+    return [...adminLink, ...utilityLinks]
+  }, [auth.isAuthenticated, auth.role, utilityLinks])
+
   return (
     <nav
       className={`main-nav ${isNavHidden && !isMobileMenuOpen ? 'is-hidden' : ''}`}
@@ -525,15 +533,15 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 </div>
               )
             })}
-          </div>
-          <div className="main-nav__utility" aria-label="Utility">
-            {auth.isAuthenticated && auth.role === 'admin' ? (
-              <Link href="/admin/games" className="main-nav__utility-link">
-                Admin
-              </Link>
-            ) : null}
-            {utilityLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="main-nav__utility-link">
+            {desktopUtilityLinks.map((link, index) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="main-nav__desktop-link main-nav__desktop-link--utility"
+                data-utility-first={index === 0}
+                role="menuitem"
+                onMouseEnter={() => setActiveMenu(null)}
+              >
                 {link.label}
               </Link>
             ))}
