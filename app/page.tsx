@@ -871,18 +871,18 @@ export default function Home() {
         }
 
         .tagCategorySummaryMeta {
-          font-size: 10px;
+          font-size: 9px;
           color: var(--text-muted);
           border: 1px solid var(--divider-soft);
           border-radius: 999px;
-          padding: 2px 7px;
+          padding: 1px 6px;
           background: var(--page-background);
         }
 
         .tagChipWrap {
           margin-top: 6px;
           display: flex;
-          gap: 3px;
+          gap: 2px;
           flex-wrap: wrap;
         }
 
@@ -890,28 +890,33 @@ export default function Home() {
           display: none;
         }
 
-        .chip {
-          padding: 2px 6px;
+        .filtersCard button.chip {
+          font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+          text-transform: none;
+          padding: 1px 6px;
+          min-height: 22px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 10px;
-          font-weight: 600;
+          font-size: 9px;
+          font-weight: 700;
           letter-spacing: 0;
+          line-height: 1;
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 3px;
           background: var(--page-background);
           color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
-        .chip:hover {
+        .filtersCard button.chip:hover {
           transform: translateY(-1px);
           box-shadow: 0 2px 6px rgba(63, 90, 42, 0.14);
         }
 
-        .chipActive {
+        .filtersCard button.chip.chipActive {
           background: var(--secondary);
           color: var(--text-inverse);
           border-color: var(--primary);
@@ -919,7 +924,7 @@ export default function Home() {
         }
 
         .chipIcon {
-          font-size: 9px;
+          font-size: 8px;
           line-height: 1;
         }
 
