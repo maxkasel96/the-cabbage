@@ -47,20 +47,60 @@ function parseAiJson(text: string) {
   }
 }
 
+function extractErrorDetails(error: unknown) {
+  if (error instanceof z.ZodError) {
+    return {
+      kind: "zod",
+      issues: error.issues,
+    }
+  }
+
+  if (error instanceof Error) {
+    const maybe = error as Error & { status?: number; code?: string; type?: string }
+    return {
+      kind: "error",
+      message: error.message,
+      status: maybe.status,
+      code: maybe.code,
+      type: maybe.type,
+    }
+  }
+
+  if (typeof error === "object" && error !== null) {
+    return {
+      kind: "object",
+      ...error,
+    }
+  }
+
+  return {
+    kind: "unknown",
+    value: String(error),
+  }
+}
+
 export async function POST(request: Request) {
+  let stage = "read_request"
+
   try {
     const json = await request.json()
     const parsedInput = requestSchema.safeParse(json)
 
     if (!parsedInput.success) {
       return NextResponse.json(
-        { ok: false, error: "Invalid request body", details: parsedInput.error.flatten() },
+        {
+          ok: false,
+          error: "Invalid request body",
+          stage: "validate_request",
+          details: parsedInput.error.flatten(),
+        },
         { status: 400 },
       )
     }
 
     const { tournamentId, userPrompt } = parsedInput.data
 
+    stage = "load_players"
     const playersResult = await supabaseAdmin
       .from("tournament_players")
       .select("id")
@@ -73,6 +113,7 @@ export async function POST(request: Request) {
 
     const playerCount = playersResult.data.length
 
+    stage = "load_recent_plays"
     const recentPlaysResult = await supabaseAdmin
       .from("plays")
       .select("game_id")
@@ -88,14 +129,13 @@ export async function POST(request: Request) {
       new Set(recentPlaysResult.data.map((play) => play.game_id).filter((id): id is string => Boolean(id))),
     )
 
-    let gamesQuery = supabaseAdmin
+    stage = "load_games"
+    const gamesResult = await supabaseAdmin
       .from("games")
       .select("id,name,min_players,max_players,playtime_minutes,notes")
       .eq("is_active", true)
       .lte("min_players", playerCount)
       .gte("max_players", playerCount)
-
-    const gamesResult = await gamesQuery
 
     if (gamesResult.error) {
       throw gamesResult.error
@@ -117,6 +157,7 @@ export async function POST(request: Request) {
 
     const gameIds = games.map((game) => game.id)
 
+    stage = "load_game_tags"
     const gameTagsResult = await supabaseAdmin
       .from("game_tags")
       .select("game_id,tag_id")
@@ -130,6 +171,7 @@ export async function POST(request: Request) {
 
     const tagsById = new Map<string, string>()
     if (tagIds.length > 0) {
+      stage = "load_tags"
       const tagsResult = await supabaseAdmin.from("tags").select("id,slug,label").in("id", tagIds)
       if (tagsResult.error) {
         throw tagsResult.error
@@ -162,6 +204,7 @@ export async function POST(request: Request) {
       new Set(candidateGames.flatMap((game) => game.tags.map((tag) => tag.trim()).filter(Boolean))),
     )
 
+    stage = "openai_request"
     const response = await openai.responses.create({
       model: "gpt-5-mini",
       input: [
@@ -192,11 +235,33 @@ export async function POST(request: Request) {
       ],
     })
 
+    stage = "parse_ai_json"
     const outputText = response.output_text
     const aiJson = parseAiJson(outputText)
-    const aiResult = aiResponseSchema.parse(aiJson)
+
+    stage = "validate_ai_json"
+    const validated = aiResponseSchema.safeParse(aiJson)
+    if (!validated.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "AI response schema mismatch",
+          stage,
+          details: validated.error.flatten(),
+          meta: {
+            playerCount,
+            candidateCount: candidateGames.length,
+            knownTagCount: allKnownTags.length,
+          },
+        },
+        { status: 502 },
+      )
+    }
+
+    const aiResult = validated.data
 
     if (aiResult.recommendations.length > 0) {
+      stage = "log_suggestions"
       const impressionRows = aiResult.recommendations.map((recommendation) => ({
         tournament_id: tournamentId,
         game_id: recommendation.gameId,
@@ -213,13 +278,21 @@ export async function POST(request: Request) {
       meta: {
         playerCount,
         candidateCount: candidateGames.length,
+        knownTagCount: allKnownTags.length,
       },
     })
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return NextResponse.json({ ok: false, error: "Invalid request body" }, { status: 400 })
-    }
+    const details = extractErrorDetails(error)
+    console.error("recommend-games route failed", { stage, details })
 
-    return NextResponse.json({ ok: false, error: "Server failure" }, { status: 500 })
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Server failure",
+        stage,
+        details,
+      },
+      { status: 500 },
+    )
   }
 }
