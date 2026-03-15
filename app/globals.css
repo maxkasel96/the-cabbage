@@ -153,7 +153,7 @@ textarea {
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__desktop-trigger):not(
     .main-nav__menu-button
-  ):not(.btn--secondary),
+  ):not(.main-nav__mobile-auth-button):not(.btn--secondary),
 .btn {
   /* Type */
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -189,7 +189,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__de
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.btn--secondary):hover,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):hover,
 .btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
@@ -198,7 +198,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.btn--secondary):active,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):active,
 .btn:active {
   transform: translateY(6px);
   box-shadow: 0 4px 0 rgba(46, 63, 42, 0.35);
@@ -207,7 +207,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.btn--secondary):focus-visible,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):focus-visible,
 .btn:focus-visible {
   outline: 4px solid rgba(110, 127, 74, 0.55);
   outline-offset: 3px;
@@ -215,10 +215,10 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.btn--secondary):disabled,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):disabled,
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.btn--secondary)[aria-disabled="true"],
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary)[aria-disabled="true"],
 .btn:disabled,
 .btn[aria-disabled="true"] {
   cursor: not-allowed;
@@ -1802,25 +1802,6 @@ button:not(.cabbage-roll-button) svg,
   position: relative;
 }
 
-.main-nav__mobile-auth-button {
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.14);
-  padding: 0;
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.main-nav__mobile-auth-button:hover {
-  background: #ffffff;
-  border-color: #ffffff;
-  color: #2e3f2a;
-}
 
 .main-nav__mobile-auth-icon {
   width: 20px;
