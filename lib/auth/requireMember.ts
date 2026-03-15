@@ -3,6 +3,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 
 type AuthenticatedMember = {
   ok: true
+  token: string
   userId: string
   role: string | null
 }
@@ -34,6 +35,7 @@ export async function requireMember(req: Request): Promise<AuthenticatedMember |
 
   return {
     ok: true,
+    token,
     userId: data.user.id,
     role,
   }

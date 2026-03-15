@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireMember } from '@/lib/auth/requireMember'
-import { supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServer, supabaseServerForToken } from '@/lib/supabaseServer'
 
 type RulePayload = {
   id?: string
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: auth.message }, { status: auth.status })
   }
 
+  const supabase = supabaseServerForToken(auth.token)
   const body = (await req.json().catch(() => null)) as RulePayload | null
 
   const tournament_id = body?.tournament_id?.trim() ?? ''
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'tournament_id and content are required' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await supabase
     .from('rules')
     .insert([{ tournament_id, content, status: 'Proposed' }])
     .select('id, tournament_id, content, status, created_at, updated_at')
@@ -56,6 +57,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: auth.message }, { status: auth.status })
   }
 
+  const supabase = supabaseServerForToken(auth.token)
   const body = (await req.json().catch(() => null)) as RulePayload | null
   const id = body?.id?.trim() ?? ''
   const status = body?.status ?? 'Proposed'
@@ -64,7 +66,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: 'id and valid status are required' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await supabase
     .from('rules')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -83,6 +85,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: auth.message }, { status: auth.status })
   }
 
+  const supabase = supabaseServerForToken(auth.token)
   const body = (await req.json().catch(() => null)) as RulePayload | null
   const id = body?.id?.trim() ?? ''
 
@@ -90,7 +93,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: 'id is required' }, { status: 400 })
   }
 
-  const { error } = await supabaseServer.from('rules').delete().eq('id', id)
+  const { error } = await supabase.from('rules').delete().eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
