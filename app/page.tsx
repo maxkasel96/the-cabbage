@@ -33,6 +33,19 @@ type Team = {
   players: Player[]
 }
 
+type Tournament = {
+  id: string
+  is_active: boolean | null
+}
+
+type ApiState = {
+  loading: boolean
+  error: string | null
+  result: unknown | null
+}
+
+const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
+
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
@@ -40,6 +53,13 @@ export default function Home() {
 
   const [status, setStatus] = useState<string>('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [activeTournamentId, setActiveTournamentId] = useState('')
+  const [recommendationPrompt, setRecommendationPrompt] = useState(DEFAULT_RECOMMENDATION_PROMPT)
+  const [recommendState, setRecommendState] = useState<ApiState>({
+    loading: false,
+    error: null,
+    result: null,
+  })
 
   // note modal state
   const [noteModalOpen, setNoteModalOpen] = useState(false)
@@ -85,6 +105,36 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
+  }, [])
+
+  useEffect(() => {
+    const loadActiveTournament = async () => {
+      try {
+        const response = await fetch('/api/tournaments')
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to fetch tournaments')
+        }
+
+        const rows = Array.isArray(data?.tournaments) ? (data.tournaments as Tournament[]) : []
+        const activeTournament = rows.find((row) => row.is_active)
+
+        if (activeTournament) {
+          setActiveTournamentId(activeTournament.id)
+        } else if (rows[0]) {
+          setActiveTournamentId(rows[0].id)
+        }
+      } catch (error) {
+        setRecommendState({
+          loading: false,
+          result: null,
+          error: error instanceof Error ? error.message : 'Failed to load active tournament',
+        })
+      }
+    }
+
+    void loadActiveTournament()
   }, [])
 
   useEffect(() => {
@@ -240,6 +290,41 @@ export default function Home() {
     setGame(json.game)
     setRollKey((k) => k + 1) // retrigger pop animation
     setIsRolling(false)
+  }
+
+  async function runRecommendations() {
+    if (!activeTournamentId) {
+      setRecommendState({ loading: false, result: null, error: 'No active tournament found.' })
+      return
+    }
+
+    const requestBody = {
+      tournamentId: activeTournamentId,
+      userPrompt: recommendationPrompt,
+    }
+
+    setRecommendState({ loading: true, error: null, result: null })
+
+    try {
+      const response = await fetch('/api/ai/recommend-games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(typeof data?.error === 'string' ? data.error : 'Recommendation request failed')
+      }
+
+      setRecommendState({ loading: false, error: null, result: data })
+    } catch (error) {
+      setRecommendState({
+        loading: false,
+        result: null,
+        error: error instanceof Error ? error.message : 'Recommendation request failed',
+      })
+    }
   }
 
   function startGame() {
@@ -1191,6 +1276,32 @@ export default function Home() {
                 </button>
               )}
             </div>
+
+            <label style={{ display: 'block', marginTop: 14 }}>
+              Recommendation prompt
+              <input
+                value={recommendationPrompt}
+                onChange={(event) => setRecommendationPrompt(event.target.value)}
+                placeholder="large group game before 7pm with chaotic energy"
+                style={{ display: 'block', width: '100%', marginTop: 4, padding: 8 }}
+              />
+            </label>
+
+            <button
+              onClick={runRecommendations}
+              disabled={recommendState.loading}
+              className="btn--secondary"
+              style={{ marginTop: 10 }}
+            >
+              {recommendState.loading ? 'Loading recommendations...' : 'Run Recommendation Test'}
+            </button>
+
+            {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
+            {recommendState.result ? (
+              <pre style={{ marginTop: 12, padding: 12, background: '#f5f5f5', overflowX: 'auto' }}>
+                {JSON.stringify(recommendState.result, null, 2)}
+              </pre>
+            ) : null}
 
             <button
               onClick={rollRandom}
