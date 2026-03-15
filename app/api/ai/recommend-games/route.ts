@@ -77,6 +77,73 @@ function extractErrorDetails(error: unknown) {
   }
 }
 
+function firstString(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.trim()
+    }
+  }
+  return undefined
+}
+
+function firstNumber(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value
+    }
+    if (typeof value === "string" && value.trim().length > 0) {
+      const parsed = Number(value)
+      if (Number.isFinite(parsed)) {
+        return parsed
+      }
+    }
+  }
+  return undefined
+}
+
+function normalizePick(raw: unknown) {
+  if (!raw || typeof raw !== "object") return null
+  const source = raw as Record<string, unknown>
+
+  return {
+    gameId: firstString(source.gameId, source.game_id, source.id),
+    name: firstString(source.name, source.gameName, source.game_name),
+    reason: firstString(source.reason, source.why, source.explanation) ?? "",
+  }
+}
+
+function normalizeAiPayload(raw: unknown) {
+  if (!raw || typeof raw !== "object") return raw
+  const payload = raw as Record<string, unknown>
+
+  const rawRecommendations = Array.isArray(payload.recommendations)
+    ? payload.recommendations
+    : Array.isArray(payload.picks)
+      ? payload.picks
+      : []
+
+  const recommendations = rawRecommendations
+    .map((item) => {
+      if (!item || typeof item !== "object") return null
+      const rec = item as Record<string, unknown>
+
+      return {
+        gameId: firstString(rec.gameId, rec.game_id, rec.id),
+        name: firstString(rec.name, rec.gameName, rec.game_name),
+        fitScore: firstNumber(rec.fitScore, rec.fit_score, rec.score),
+        reason: firstString(rec.reason, rec.why, rec.explanation) ?? "",
+        warning: firstString(rec.warning, rec.note, rec.caveat) ?? "",
+      }
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+
+  return {
+    recommendations,
+    safePick: normalizePick(payload.safePick ?? payload.safe_pick),
+    wildcardPick: normalizePick(payload.wildcardPick ?? payload.wildcard_pick),
+  }
+}
+
 function fallbackPick(
   recommendations: z.infer<typeof recommendationSchema>[],
   index: number,
@@ -251,7 +318,7 @@ export async function POST(request: Request) {
 
     stage = "parse_ai_json"
     const outputText = response.output_text
-    const aiJson = parseAiJson(outputText)
+    const aiJson = normalizeAiPayload(parseAiJson(outputText))
 
     stage = "validate_ai_json"
     const validated = aiResponseSchema.safeParse(aiJson)
