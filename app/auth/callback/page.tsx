@@ -22,6 +22,7 @@ function AuthCallbackContent() {
       const code = searchParams.get('code')
       let accessToken: string | null = null
       let expiresIn: number | undefined
+      let expiresAt: number | undefined
       let userRole: string | undefined
 
       if (code) {
@@ -34,6 +35,7 @@ function AuthCallbackContent() {
 
         accessToken = data.session.access_token
         expiresIn = data.session.expires_in
+        expiresAt = data.session.expires_at
         userRole = data.user.app_metadata?.role ?? data.user.user_metadata?.role
       } else {
         const [{ data: sessionData }, { data: userData }] = await Promise.all([
@@ -48,17 +50,24 @@ function AuthCallbackContent() {
 
         accessToken = sessionData.session.access_token
         expiresIn = sessionData.session.expires_in
+        expiresAt = sessionData.session.expires_at
         userRole = userData.user.app_metadata?.role ?? userData.user.user_metadata?.role
       }
 
-      await fetch('/api/auth/session', {
+      const sessionRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           accessToken,
           expiresIn,
+          expiresAt,
         }),
       })
+
+      if (!sessionRes.ok) {
+        if (isMounted) setStatus('Signed in, but failed to persist session. Please retry sign-in.')
+        return
+      }
 
       router.replace(userRole === 'admin' ? nextPath : '/auth/unauthorized')
     }

@@ -72,6 +72,7 @@ function LoginContent() {
       body: JSON.stringify({
         accessToken: data.session.access_token,
         expiresIn: data.session.expires_in,
+        expiresAt: data.session.expires_at,
       }),
     })
 
