@@ -871,18 +871,18 @@ export default function Home() {
         }
 
         .tagCategorySummaryMeta {
-          font-size: 12px;
+          font-size: 11px;
           color: var(--text-muted);
           border: 1px solid var(--divider-soft);
           border-radius: 999px;
-          padding: 3px 8px;
+          padding: 2px 7px;
           background: var(--page-background);
         }
 
         .tagChipWrap {
-          margin-top: 10px;
+          margin-top: 6px;
           display: flex;
-          gap: 6px;
+          gap: 4px;
           flex-wrap: wrap;
         }
 
@@ -891,16 +891,16 @@ export default function Home() {
         }
 
         .chip {
-          padding: 5px 10px;
+          padding: 3px 8px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 600;
-          letter-spacing: 0.15px;
+          letter-spacing: 0.1px;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 4px;
           background: var(--page-background);
           color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
@@ -908,18 +908,18 @@ export default function Home() {
 
         .chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(63, 90, 42, 0.18);
+          box-shadow: 0 3px 8px rgba(63, 90, 42, 0.16);
         }
 
         .chipActive {
           background: var(--secondary);
           color: var(--text-inverse);
           border-color: var(--primary);
-          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 4px 10px rgba(63, 90, 42, 0.18);
         }
 
         .chipIcon {
-          font-size: 11px;
+          font-size: 10px;
           line-height: 1;
         }
 
