@@ -9,14 +9,12 @@ import type {
   MouseEvent as ReactMouseEvent,
 } from 'react'
 import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
-import type { NavConfig } from '@/lib/navigation/schema'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
 type NavProps = {
   showAdminMenu?: boolean
-  initialConfig?: NavConfig
 }
 
 type NavLink = {
@@ -116,7 +114,7 @@ const MegaMenuItemCard = ({ item, onNavigate }: MegaMenuItemProps) => (
   </Link>
 )
 
-export default function NavClient({ showAdminMenu = true, initialConfig }: NavProps) {
+export default function NavClient({ showAdminMenu = true }: NavProps) {
   const pathname = usePathname()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const authButtonRef = useRef<HTMLButtonElement>(null)
@@ -132,9 +130,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   const [isMobileAuthMenuOpen, setIsMobileAuthMenuOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
-  const [navConfig, setNavConfig] = useState<NavConfig>(
-    initialConfig ?? defaultNavConfig
-  )
+  const navConfig = defaultNavConfig
   const [auth, setAuth] = useState<AuthState>({
     isAuthenticated: false,
     isAuthorized: false,
@@ -142,28 +138,6 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   })
 
   useBodyScrollLock(isMobileMenuOpen)
-
-  useEffect(() => {
-    if (initialConfig) {
-      return
-    }
-
-    let isMounted = true
-
-    fetch('/api/navigation?name=main')
-      .then((res) => res.json())
-      .then((json) => {
-        if (!isMounted) return
-        if (json?.config) {
-          setNavConfig(json.config)
-        }
-      })
-      .catch(() => null)
-
-    return () => {
-      isMounted = false
-    }
-  }, [initialConfig])
 
   useEffect(() => {
     const supabase = supabaseBrowser()

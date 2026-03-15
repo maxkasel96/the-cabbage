@@ -48,12 +48,6 @@ export default function AdminSubNav() {
         >
         App configurations
         </Link>
-        <Link
-          href="/admin/navigation"
-          className={`admin-side-nav__link${pathname === '/admin/navigation' ? ' is-active' : ''}`}
-        >
-        Navigation
-        </Link>
       </div>
     </nav>
   )

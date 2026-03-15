@@ -1,4 +1,43 @@
-import type { NavConfig } from '@/lib/navigation/schema'
+export type NavItem = {
+  id: string
+  href: string
+  title: string
+  description: string
+  icon: 'leaf' | 'scroll' | 'bracket' | 'guide' | 'tags' | 'users' | 'trophy' | 'controller'
+  tone: 'sage' | 'mint' | 'wheat' | 'sky' | 'moss' | 'peach'
+  sortOrder: number
+  isVisible: boolean
+}
+
+export type NavGroup = {
+  id: string
+  title: string
+  sortOrder: number
+  isVisible: boolean
+  items: NavItem[]
+}
+
+export type MegaMenu = {
+  id: string
+  label: string
+  sortOrder: number
+  isVisible: boolean
+  groups: NavGroup[]
+}
+
+export type PrimaryLink = {
+  id: string
+  href: string
+  label: string
+  icon: string
+  sortOrder: number
+  isVisible: boolean
+}
+
+export type NavConfig = {
+  primaryLinks: PrimaryLink[]
+  megaMenus: MegaMenu[]
+}
 
 export const defaultNavConfig: NavConfig = {
   primaryLinks: [
@@ -178,16 +217,6 @@ export const defaultNavConfig: NavConfig = {
               icon: 'users',
               tone: 'mint',
               sortOrder: 2,
-              isVisible: true,
-            },
-            {
-              id: 'b1c8e63c-7b6a-47d0-a40f-7ca0a77c0d11',
-              href: '/admin/navigation',
-              title: 'Navigation builder',
-              description: 'Configure the primary and mega menu layouts.',
-              icon: 'scroll',
-              tone: 'sky',
-              sortOrder: 3,
               isVisible: true,
             },
           ],
