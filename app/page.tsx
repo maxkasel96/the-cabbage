@@ -56,13 +56,6 @@ const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
 const DEFAULT_RECOMMENDATION_TONE =
   'irreverent, offensive, funny, and politically incorrect'
 
-const RECOMMENDATION_TONES = [
-  'irreverent, offensive, funny, and politically incorrect',
-  'playful and chaotic',
-  'straightforward and concise',
-  'hype and high-energy',
-] as const
-
 function stripSupportingTags(text: string): string {
   return text
     .replace(/\bSupporting tags?\s*:[^\n]*/gi, '')
@@ -113,7 +106,6 @@ export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeTournamentId, setActiveTournamentId] = useState('')
   const [recommendationPrompt, setRecommendationPrompt] = useState(DEFAULT_RECOMMENDATION_PROMPT)
-  const [recommendationTone, setRecommendationTone] = useState(DEFAULT_RECOMMENDATION_TONE)
   const [recommendState, setRecommendState] = useState<ApiState>({
     loading: false,
     error: null,
@@ -376,7 +368,7 @@ export default function Home() {
 
     const requestBody = {
       tournamentId: activeTournamentId,
-      userPrompt: `${recommendationPrompt}\n\nPreferred tone: ${recommendationTone}`,
+      userPrompt: `${recommendationPrompt}\n\nPreferred tone: ${DEFAULT_RECOMMENDATION_TONE}`,
     }
 
     setRecommendState({ loading: true, error: null, result: null })
@@ -1361,21 +1353,6 @@ export default function Home() {
                 placeholder="large group game before 7pm with chaotic energy"
                 style={{ display: 'block', width: '100%', marginTop: 4, padding: 8 }}
               />
-            </label>
-
-            <label style={{ display: 'block', marginTop: 12 }}>
-              Tone
-              <select
-                value={recommendationTone}
-                onChange={(event) => setRecommendationTone(event.target.value)}
-                style={{ display: 'block', width: '100%', marginTop: 4, padding: 8 }}
-              >
-                {RECOMMENDATION_TONES.map((tone) => (
-                  <option key={tone} value={tone}>
-                    {tone}
-                  </option>
-                ))}
-              </select>
             </label>
 
             <button
