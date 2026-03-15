@@ -510,7 +510,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
           <span aria-hidden="true">{isMobileMenuOpen ? '✕' : '☰'}</span>
         </button>
         <Link href="/" className="main-nav__brand">
-          <span>The Cabbage</span>
+          <span className="main-nav__brand-title">The Cabbage</span>
           <img
             src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png"
             alt="The Cabbage logo"
@@ -531,7 +531,8 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
             }}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M12 12.5a4.25 4.25 0 1 1 0-8.5 4.25 4.25 0 0 1 0 8.5zm0 1.75c4.03 0 7.3 2.52 7.3 5.63a1 1 0 0 1-1 1H5.7a1 1 0 0 1-1-1c0-3.11 3.27-5.63 7.3-5.63z" />
+              <circle cx="12" cy="8" r="3.75" />
+              <path d="M4.75 19.25c0-3.53 3.25-6.25 7.25-6.25s7.25 2.72 7.25 6.25" />
             </svg>
           </button>
           <div

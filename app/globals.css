@@ -1769,6 +1769,13 @@ button:not(.cabbage-roll-button) svg,
   color: #f7f9f0;
 }
 
+.main-nav__brand-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .main-nav__menu-button {
   display: none;
   border-radius: 12px;
@@ -1797,27 +1804,31 @@ button:not(.cabbage-roll-button) svg,
 
 .main-nav__mobile-auth-button {
   border-radius: 12px;
-  border: 1px solid rgba(231, 234, 219, 0.4);
-  background: rgba(231, 234, 219, 0.15);
+  border: 1px solid rgba(231, 234, 219, 0.8);
+  background: #f3f5ec;
   padding: 0;
   width: 44px;
   height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-inverse);
+  color: #2e3f2a;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .main-nav__mobile-auth-button:hover {
-  background: rgba(231, 234, 219, 0.3);
-  border-color: rgba(231, 234, 219, 0.65);
+  background: #ffffff;
+  border-color: rgba(231, 234, 219, 0.95);
 }
 
 .main-nav__mobile-auth-button svg {
   width: 20px;
   height: 20px;
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .main-nav__mobile-auth-menu {
@@ -2216,7 +2227,7 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .main-nav__brand {
-    font-size: 32px;
+    font-size: clamp(22px, 4.6vw, 32px);
     padding: 0;
   }
 
@@ -2246,15 +2257,12 @@ button:not(.cabbage-roll-button) svg,
   .main-nav__brand {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 24px;
+    font-size: clamp(18px, 6.8vw, 24px);
     justify-content: center;
   }
 
-  .main-nav__brand span {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .main-nav__brand-title {
+    text-align: center;
   }
 
   .table-scroll {
