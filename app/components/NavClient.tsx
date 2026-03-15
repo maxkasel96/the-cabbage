@@ -11,6 +11,7 @@ import type {
 import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import type { NavConfig } from '@/lib/navigation/schema'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 type NavProps = {
   showAdminMenu?: boolean
@@ -42,6 +43,12 @@ type MegaMenuConfig = {
   label: string
   sortOrder: number
   groups: MegaMenuGroup[]
+}
+
+type AuthState = {
+  isAuthenticated: boolean
+  isAuthorized: boolean
+  role: string | null
 }
 
 const iconPaths = {
@@ -124,6 +131,11 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   const [navConfig, setNavConfig] = useState<NavConfig>(
     initialConfig ?? defaultNavConfig
   )
+  const [auth, setAuth] = useState<AuthState>({
+    isAuthenticated: false,
+    isAuthorized: false,
+    role: null,
+  })
 
   useBodyScrollLock(isMobileMenuOpen)
 
@@ -148,6 +160,43 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       isMounted = false
     }
   }, [initialConfig])
+
+  useEffect(() => {
+    const supabase = supabaseBrowser()
+
+    supabase.auth.getUser().then(({ data }) => {
+      const user = data.user
+      if (!user) {
+        setAuth({ isAuthenticated: false, isAuthorized: false, role: null })
+        return
+      }
+
+      setAuth({
+        isAuthenticated: true,
+        isAuthorized: true,
+        role: user.app_metadata?.role ?? user.user_metadata?.role ?? null,
+      })
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setAuth({ isAuthenticated: false, isAuthorized: false, role: null })
+        return
+      }
+
+      setAuth({
+        isAuthenticated: true,
+        isAuthorized: true,
+        role: session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null,
+      })
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const primaryLinks: NavLink[] = useMemo(() => {
     return navConfig.primaryLinks
@@ -385,6 +434,22 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
     setActiveMenu(null)
   }
 
+  const utilityLinks = useMemo(() => {
+    if (!auth.isAuthenticated || !auth.isAuthorized) {
+      return [{ href: '/auth/login', label: 'Sign in' }]
+    }
+
+    return [{ href: '/auth/logout', label: 'Sign out' }]
+  }, [auth.isAuthenticated, auth.isAuthorized])
+
+  const desktopUtilityLinks = useMemo(() => {
+    const adminLink = auth.isAuthenticated && auth.role === 'admin'
+      ? [{ href: '/admin/games', label: 'Admin' }]
+      : []
+
+    return [...adminLink, ...utilityLinks]
+  }, [auth.isAuthenticated, auth.role, utilityLinks])
+
   return (
     <nav
       className={`main-nav ${isNavHidden && !isMobileMenuOpen ? 'is-hidden' : ''}`}
@@ -468,14 +533,18 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 </div>
               )
             })}
-            <Link
-              href="/auth/logout"
-              className="main-nav__desktop-link"
-              role="menuitem"
-              onMouseEnter={() => setActiveMenu(null)}
-            >
-              Log out
-            </Link>
+            {desktopUtilityLinks.map((link, index) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="main-nav__desktop-link main-nav__desktop-link--utility"
+                data-utility-first={index === 0}
+                role="menuitem"
+                onMouseEnter={() => setActiveMenu(null)}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
         <button
@@ -549,8 +618,14 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
               </div>
             )
           })}
-          <div className="main-nav__sheet-links main-nav__sheet-links--separated">
-            {renderMobileLink('/auth/logout', 'Log out')}
+          <div className="main-nav__sheet-section main-nav__sheet-section--utility">
+            <div className="main-nav__sheet-section-title">Utility</div>
+            <div className="main-nav__sheet-links">
+              {auth.isAuthenticated && auth.role === 'admin'
+                ? renderMobileLink('/admin/games', 'Admin')
+                : null}
+              {utilityLinks.map((link) => renderMobileLink(link.href, link.label))}
+            </div>
           </div>
         </div>
       </div>

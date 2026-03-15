@@ -1752,7 +1752,7 @@ button:not(.cabbage-roll-button) svg,
   font-weight: 700;
   text-decoration: none;
   color: var(--text-inverse);
-  font-size: 38px;
+  font-size: 30px;
   letter-spacing: 0.4px;
   padding: 0;
   text-transform: uppercase;
@@ -1803,6 +1803,8 @@ button:not(.cabbage-roll-button) svg,
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .main-nav__desktop-link,
@@ -1818,6 +1820,7 @@ button:not(.cabbage-roll-button) svg,
   text-transform: uppercase;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   background: transparent;
+  white-space: nowrap;
 }
 
 .main-nav__desktop-link:hover,
@@ -1980,6 +1983,27 @@ button:not(.cabbage-roll-button) svg,
   color: rgba(46, 63, 42, 0.7);
 }
 
+
+.main-nav__desktop-link--utility {
+  border-color: rgba(231, 234, 219, 0.32);
+  font-size: 13px;
+}
+
+.main-nav__desktop-link--utility[data-utility-first='true'] {
+  margin-left: 6px;
+  position: relative;
+}
+
+.main-nav__desktop-link--utility[data-utility-first='true']::before {
+  content: '';
+  position: absolute;
+  left: -11px;
+  top: 9px;
+  bottom: 9px;
+  width: 1px;
+  background: rgba(231, 234, 219, 0.35);
+}
+
 .main-nav__scrim {
   position: fixed;
   inset: 0;
@@ -2103,6 +2127,10 @@ button:not(.cabbage-roll-button) svg,
   color: #5a4a2e;
   font-weight: 700;
   padding: 8px 0 0;
+}
+
+.main-nav__sheet-section--utility {
+  margin-top: 4px;
 }
 
 .main-nav__sheet-group-title {
