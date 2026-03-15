@@ -1804,21 +1804,22 @@ button:not(.cabbage-roll-button) svg,
 
 .main-nav__mobile-auth-button {
   border-radius: 12px;
-  border: 1px solid rgba(231, 234, 219, 0.8);
-  background: #f3f5ec;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.14);
   padding: 0;
   width: 44px;
   height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #2e3f2a;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  color: #ffffff;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .main-nav__mobile-auth-button:hover {
   background: #ffffff;
-  border-color: rgba(231, 234, 219, 0.95);
+  border-color: #ffffff;
+  color: #2e3f2a;
 }
 
 .main-nav__mobile-auth-button svg {
