@@ -1261,7 +1261,7 @@ export default function Home() {
                             <button
                               key={t.id}
                               onClick={() => toggleTag(t.slug)}
-                              className={`chip ${active ? 'chipActive' : ''}`}
+                              className={`filter-chip-button chip ${active ? 'chipActive' : ''}`}
                               title={t.slug}
                               aria-pressed={active}
                             >
