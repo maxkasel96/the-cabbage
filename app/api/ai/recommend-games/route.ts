@@ -11,26 +11,24 @@ const requestSchema = z.object({
   userPrompt: z.string().min(1),
 })
 
+const recommendationSchema = z.object({
+  gameId: z.string(),
+  name: z.string(),
+  fitScore: z.coerce.number(),
+  reason: z.string().default(""),
+  warning: z.string().optional().default(""),
+})
+
+const pickSchema = z.object({
+  gameId: z.string(),
+  name: z.string(),
+  reason: z.string().default(""),
+})
+
 const aiResponseSchema = z.object({
-  recommendations: z.array(
-    z.object({
-      gameId: z.string(),
-      name: z.string(),
-      fitScore: z.number(),
-      reason: z.string(),
-      warning: z.string().optional().default(""),
-    }),
-  ),
-  safePick: z.object({
-    gameId: z.string(),
-    name: z.string(),
-    reason: z.string(),
-  }),
-  wildcardPick: z.object({
-    gameId: z.string(),
-    name: z.string(),
-    reason: z.string(),
-  }),
+  recommendations: z.array(recommendationSchema).default([]),
+  safePick: pickSchema.nullable().optional().default(null),
+  wildcardPick: pickSchema.nullable().optional().default(null),
 })
 
 function parseAiJson(text: string) {
@@ -76,6 +74,21 @@ function extractErrorDetails(error: unknown) {
   return {
     kind: "unknown",
     value: String(error),
+  }
+}
+
+function fallbackPick(
+  recommendations: z.infer<typeof recommendationSchema>[],
+  index: number,
+  label: "safe" | "wildcard",
+) {
+  const fallback = recommendations[index] ?? recommendations[0]
+  if (!fallback) return null
+
+  return {
+    gameId: fallback.gameId,
+    name: fallback.name,
+    reason: `Fallback ${label} pick derived from top recommendations. ${fallback.reason}`.trim(),
   }
 }
 
@@ -224,6 +237,7 @@ export async function POST(request: Request) {
               "Explicitly mention the supporting tags in each reason.",
               "Avoid recently played games when possible.",
               "Return JSON only.",
+              "If there are recommendations, always include safePick and wildcardPick.",
             ],
             userPrompt,
             playerCount,
@@ -259,6 +273,8 @@ export async function POST(request: Request) {
     }
 
     const aiResult = validated.data
+    const normalizedSafePick = aiResult.safePick ?? fallbackPick(aiResult.recommendations, 0, "safe")
+    const normalizedWildcardPick = aiResult.wildcardPick ?? fallbackPick(aiResult.recommendations, 1, "wildcard")
 
     if (aiResult.recommendations.length > 0) {
       stage = "log_suggestions"
@@ -275,6 +291,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ...aiResult,
+      safePick: normalizedSafePick,
+      wildcardPick: normalizedWildcardPick,
       meta: {
         playerCount,
         candidateCount: candidateGames.length,
