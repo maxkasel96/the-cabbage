@@ -1233,7 +1233,11 @@ export default function Home() {
                 {groupedTags.map((group) => {
                   const activeCount = group.tags.filter((tag) => selectedTagSlugs.has(tag.slug)).length
                   return (
-                    <details key={group.category} className="tagCategoryCard" defaultOpen={activeCount > 0}>
+                    <details
+                      key={group.category}
+                      className="tagCategoryCard"
+                      {...(activeCount > 0 ? { open: true } : {})}
+                    >
                       <summary className="tagCategorySummary">
                         <span className="tagCategoryTitle">{group.label}</span>
                         <span className="tagCategorySummaryMeta">
