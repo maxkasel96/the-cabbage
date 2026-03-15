@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('Completing sign-in...')
@@ -53,9 +53,15 @@ export default function AuthCallbackPage() {
     }
   }, [nextPath, router, searchParams])
 
+  return <p>{status}</p>
+}
+
+export default function AuthCallbackPage() {
   return (
     <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
-      <p>{status}</p>
+      <Suspense fallback={<p>Completing sign-in...</p>}>
+        <AuthCallbackContent />
+      </Suspense>
     </main>
   )
 }

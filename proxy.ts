@@ -13,7 +13,7 @@ const getToken = (req: NextRequest) => {
   return req.cookies.get(authCookieName)?.value ?? null
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const token = getToken(req)
   const isApiAdminRoute = req.nextUrl.pathname.startsWith('/api/admin')
 
