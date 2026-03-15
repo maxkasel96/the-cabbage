@@ -530,9 +530,12 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
               setIsMobileAuthMenuOpen((prev) => !prev)
             }}
           >
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M12 2.75a4.75 4.75 0 1 1 0 9.5 4.75 4.75 0 0 1 0-9.5Zm0 11.75c5 0 8.75 2.85 8.75 6.5 0 .69-.56 1.25-1.25 1.25H4.5c-.69 0-1.25-.56-1.25-1.25 0-3.65 3.75-6.5 8.75-6.5Z" />
-            </svg>
+            <img
+              src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Generic%20avatar.svg"
+              alt=""
+              aria-hidden="true"
+              className="main-nav__mobile-auth-icon"
+            />
           </button>
           <div
             className={`main-nav__mobile-auth-menu${isMobileAuthMenuOpen ? ' is-open' : ''}`}

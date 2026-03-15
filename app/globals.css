@@ -1822,10 +1822,11 @@ button:not(.cabbage-roll-button) svg,
   color: #2e3f2a;
 }
 
-.main-nav__mobile-auth-button svg {
+.main-nav__mobile-auth-icon {
   width: 20px;
   height: 20px;
-  fill: currentColor;
+  display: block;
+  object-fit: contain;
 }
 
 .main-nav__mobile-auth-menu {
