@@ -468,6 +468,14 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
                 </div>
               )
             })}
+            <Link
+              href="/auth/logout"
+              className="main-nav__desktop-link"
+              role="menuitem"
+              onMouseEnter={() => setActiveMenu(null)}
+            >
+              Log out
+            </Link>
           </div>
         </div>
         <button
@@ -541,6 +549,9 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
               </div>
             )
           })}
+          <div className="main-nav__sheet-links main-nav__sheet-links--separated">
+            {renderMobileLink('/auth/logout', 'Log out')}
+          </div>
         </div>
       </div>
     </nav>
