@@ -846,7 +846,20 @@ export default function Home() {
           border: 1px solid var(--divider-soft);
           background: var(--surface-alt);
           border-radius: 12px;
-          padding: 10px;
+          padding: 8px 10px;
+        }
+
+        .tagCategorySummary {
+          list-style: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+
+        .tagCategorySummary::-webkit-details-marker {
+          display: none;
         }
 
         .tagCategoryTitle {
@@ -857,11 +870,24 @@ export default function Home() {
           color: var(--text-secondary);
         }
 
+        .tagCategorySummaryMeta {
+          font-size: 12px;
+          color: var(--text-muted);
+          border: 1px solid var(--divider-soft);
+          border-radius: 999px;
+          padding: 3px 8px;
+          background: var(--page-background);
+        }
+
         .tagChipWrap {
-          margin-top: 8px;
+          margin-top: 10px;
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
+        }
+
+        .tagCategoryCard:not([open]) .tagChipWrap {
+          display: none;
         }
 
         .chip {
@@ -1204,28 +1230,36 @@ export default function Home() {
 
             {groupedTags.length > 0 && (
               <div className="tagCategoryGrid">
-                {groupedTags.map((group) => (
-                  <section key={group.category} className="tagCategoryCard">
-                    <h3 className="tagCategoryTitle">{group.label}</h3>
-                    <div className="tagChipWrap">
-                      {group.tags.map((t) => {
-                        const active = selectedTagSlugs.has(t.slug)
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => toggleTag(t.slug)}
-                            className={`chip ${active ? 'chipActive' : ''}`}
-                            title={t.slug}
-                            aria-pressed={active}
-                          >
-                            <span>{active ? '✅' : '○'}</span>
-                            {t.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </section>
-                ))}
+                {groupedTags.map((group) => {
+                  const activeCount = group.tags.filter((tag) => selectedTagSlugs.has(tag.slug)).length
+                  return (
+                    <details key={group.category} className="tagCategoryCard" defaultOpen={activeCount > 0}>
+                      <summary className="tagCategorySummary">
+                        <span className="tagCategoryTitle">{group.label}</span>
+                        <span className="tagCategorySummaryMeta">
+                          {activeCount > 0 ? `${activeCount} selected` : `${group.tags.length} filters`}
+                        </span>
+                      </summary>
+                      <div className="tagChipWrap">
+                        {group.tags.map((t) => {
+                          const active = selectedTagSlugs.has(t.slug)
+                          return (
+                            <button
+                              key={t.id}
+                              onClick={() => toggleTag(t.slug)}
+                              className={`chip ${active ? 'chipActive' : ''}`}
+                              title={t.slug}
+                              aria-pressed={active}
+                            >
+                              <span>{active ? '✅' : '○'}</span>
+                              {t.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </details>
+                  )
+                })}
               </div>
             )}
 
