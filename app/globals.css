@@ -1752,7 +1752,7 @@ button:not(.cabbage-roll-button) svg,
   font-weight: 700;
   text-decoration: none;
   color: var(--text-inverse);
-  font-size: 38px;
+  font-size: 30px;
   letter-spacing: 0.4px;
   padding: 0;
   text-transform: uppercase;
