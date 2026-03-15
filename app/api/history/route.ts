@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
+import { getAccessTokenFromRequest } from '@/lib/auth/token'
+import { supabaseServerForToken } from '@/lib/supabaseServer'
 import { getActiveTournamentId } from '@/lib/getActiveTournamentId'
 
 export async function GET(request: NextRequest) {
+  const token = getAccessTokenFromRequest(request)
+  const supabaseServer = supabaseServerForToken(token)
   const { searchParams } = new URL(request.url)
   const requestedTournamentId = searchParams.get('tournamentId')?.trim()
-  const tournamentId = requestedTournamentId || (await getActiveTournamentId())
+  const tournamentId = requestedTournamentId || (await getActiveTournamentId(token))
   if (!tournamentId) {
     return NextResponse.json({ error: 'No active tournament set.' }, { status: 400 })
   }

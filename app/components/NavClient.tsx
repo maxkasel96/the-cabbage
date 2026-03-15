@@ -168,12 +168,33 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   useEffect(() => {
     const supabase = supabaseBrowser()
 
+    const persistServerSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      const session = data.session
+
+      if (!session) {
+        return
+      }
+
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: session.access_token,
+          expiresIn: session.expires_in,
+          expiresAt: session.expires_at,
+        }),
+      })
+    }
+
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user
       if (!user) {
         setAuth({ isAuthenticated: false, isAuthorized: false, role: null })
         return
       }
+
+      void persistServerSession()
 
       setAuth({
         isAuthenticated: true,
@@ -189,6 +210,8 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
         setAuth({ isAuthenticated: false, isAuthorized: false, role: null })
         return
       }
+
+      void persistServerSession()
 
       setAuth({
         isAuthenticated: true,
