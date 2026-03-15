@@ -118,6 +118,8 @@ const MegaMenuItemCard = ({ item, onNavigate }: MegaMenuItemProps) => (
 export default function NavClient({ showAdminMenu = true, initialConfig }: NavProps) {
   const pathname = usePathname()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const authButtonRef = useRef<HTMLButtonElement>(null)
+  const authMenuRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
   const desktopNavRef = useRef<HTMLDivElement>(null)
   const scrollStateRef = useRef({
@@ -126,6 +128,7 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
   })
   const wasMenuOpenRef = useRef(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileAuthMenuOpen, setIsMobileAuthMenuOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [navConfig, setNavConfig] = useState<NavConfig>(
@@ -260,11 +263,16 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
 
   useEffect(() => {
     setIsMobileMenuOpen(false)
+    setIsMobileAuthMenuOpen(false)
     setIsNavHidden(false)
   }, [pathname])
 
   const handleMobileClose = () => {
     setIsMobileMenuOpen(false)
+  }
+
+  const handleMobileAuthClose = () => {
+    setIsMobileAuthMenuOpen(false)
   }
 
   useEffect(() => {
@@ -310,6 +318,38 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
+
+  useEffect(() => {
+    if (!isMobileAuthMenuOpen) {
+      return
+    }
+
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target as Node | null
+      if (
+        authMenuRef.current?.contains(target ?? null)
+        || authButtonRef.current?.contains(target ?? null)
+      ) {
+        return
+      }
+      setIsMobileAuthMenuOpen(false)
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileAuthMenuOpen(false)
+        authButtonRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('mousedown', handleDocumentClick)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isMobileAuthMenuOpen])
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -456,14 +496,65 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
       aria-label="Primary"
     >
       <div className="main-nav__bar">
+        <button
+          type="button"
+          className="main-nav__menu-button"
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          ref={menuButtonRef}
+          onClick={() => {
+            setIsMobileAuthMenuOpen(false)
+            setIsMobileMenuOpen((prev) => !prev)
+          }}
+        >
+          <span aria-hidden="true">{isMobileMenuOpen ? '✕' : '☰'}</span>
+        </button>
         <Link href="/" className="main-nav__brand">
-          <span>The Cabbage</span>
+          <span className="main-nav__brand-title">The Cabbage</span>
           <img
             src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png"
             alt="The Cabbage logo"
             className="main-nav__brand-image"
           />
         </Link>
+        <div className="main-nav__mobile-auth">
+          <button
+            type="button"
+            className="main-nav__mobile-auth-button"
+            aria-haspopup="menu"
+            aria-label={auth.isAuthenticated ? 'Open sign out menu' : 'Open sign in menu'}
+            aria-expanded={isMobileAuthMenuOpen}
+            ref={authButtonRef}
+            onClick={() => {
+              setIsMobileMenuOpen(false)
+              setIsMobileAuthMenuOpen((prev) => !prev)
+            }}
+          >
+            <img
+              src="https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Generic%20avatar.svg"
+              alt=""
+              aria-hidden="true"
+              className="main-nav__mobile-auth-icon"
+            />
+          </button>
+          <div
+            className={`main-nav__mobile-auth-menu${isMobileAuthMenuOpen ? ' is-open' : ''}`}
+            role="menu"
+            ref={authMenuRef}
+          >
+            {utilityLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="main-nav__mobile-auth-link"
+                role="menuitem"
+                onClick={handleMobileAuthClose}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
         <div
           className="main-nav__desktop"
           ref={desktopNavRef}
@@ -547,16 +638,6 @@ export default function NavClient({ showAdminMenu = true, initialConfig }: NavPr
             ))}
           </div>
         </div>
-        <button
-          type="button"
-          className="main-nav__menu-button"
-          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          aria-expanded={isMobileMenuOpen}
-          ref={menuButtonRef}
-          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-        >
-          <span aria-hidden="true">{isMobileMenuOpen ? '✕' : '☰'}</span>
-        </button>
       </div>
 
       <button
