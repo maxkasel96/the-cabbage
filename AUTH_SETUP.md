@@ -67,3 +67,28 @@ You need one initial admin account. Two options:
 2. Use SQL editor with service tooling (or edge function) to update user metadata.
 
 After first admin exists, manage all roles from `/admin/users`.
+
+## 7) Optional public user profile table (recommended)
+
+If you want a queryable `public` table for app-side user metadata (instead of reading only from
+`auth.users` metadata), apply migration:
+
+- `supabase/migrations/20260315103000_user_profiles.sql`
+
+This creates `public.user_profiles` keyed by `auth.users.id`, with:
+
+- `user_id` (PK/FK to `auth.users`)
+- `email`
+- `display_name`
+- `role` (`member`/`admin`)
+- `is_active`
+- `created_at`, `updated_at`, `last_sign_in_at`
+
+It also adds:
+
+- Trigger-based sync from `auth.users` on insert/update.
+- Backfill for existing auth users.
+- RLS policies so users can view their own row and admins can view/update all rows.
+
+This table is optional for your current role-assignment flow, but useful for admin dashboards,
+auditing, and future profile features.
