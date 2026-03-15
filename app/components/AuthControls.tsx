@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
 type AuthState = {
   isAuthenticated: boolean
@@ -64,7 +65,12 @@ export default function AuthControls() {
       }}
     >
       {auth.role === 'admin' ? <Link href="/admin/games">Admin</Link> : null}
-      <Link href="/auth/logout">Sign out</Link>
+      <Link href="/auth/logout" onClick={(event) => {
+        event.preventDefault()
+        void signOutAndRedirect()
+      }}>
+        Sign out
+      </Link>
     </div>
   )
 }
