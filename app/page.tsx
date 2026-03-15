@@ -54,6 +54,14 @@ type Recommendation = {
 
 const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
 
+function stripSupportingTags(text: string): string {
+  return text
+    .replace(/\bSupporting tags?\s*:[^\n]*/gi, '')
+    .replace(/\bMatched tags?\s*:[^\n]*/gi, '')
+    .replace(/\n{2,}/g, '\n')
+    .trim()
+}
+
 function getRecommendations(result: unknown): Recommendation[] {
   if (!result || typeof result !== 'object') return []
 
@@ -80,8 +88,8 @@ function getRecommendations(result: unknown): Recommendation[] {
         gameId: candidate.gameId,
         name: candidate.name,
         fitScore: typeof candidate.fitScore === 'number' ? candidate.fitScore : 0,
-        reason: typeof candidate.reason === 'string' ? candidate.reason : '',
-        warning: typeof candidate.warning === 'string' ? candidate.warning : '',
+        reason: typeof candidate.reason === 'string' ? stripSupportingTags(candidate.reason) : '',
+        warning: typeof candidate.warning === 'string' ? stripSupportingTags(candidate.warning) : '',
       }
     })
     .filter((item): item is Recommendation => Boolean(item))
