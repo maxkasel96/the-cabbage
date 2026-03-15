@@ -92,3 +92,15 @@ It also adds:
 
 This table is optional for your current role-assignment flow, but useful for admin dashboards,
 auditing, and future profile features.
+
+## 8) Preview/local password sign-in
+
+For local development and Vercel preview deployments, the login page supports
+`signInWithPassword({ email, password })` in addition to Google OAuth.
+
+Environment gating:
+
+- Local dev: `NODE_ENV=development` enables password sign-in.
+- Preview: `NEXT_PUBLIC_VERCEL_ENV=preview` enables password sign-in.
+- Production: password sign-in is hidden; Google OAuth remains available.
+
