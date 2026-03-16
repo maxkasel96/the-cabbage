@@ -1848,6 +1848,13 @@ button:not(.cabbage-roll-button) svg,
   background: rgba(110, 127, 74, 0.16);
 }
 
+
+.main-nav__desktop-auth {
+  position: relative;
+  display: inline-flex;
+}
+
+
 .main-nav__desktop {
   display: none;
   align-items: center;
