@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
 import PageTitle from './components/PageTitle'
@@ -26,20 +26,11 @@ type Tag = {
   slug: string
   label: string
   sort_order: number
-  category: string | null
 }
 
 type Team = {
   id: number
   players: Player[]
-}
-
-
-function formatCategoryLabel(category: string) {
-  return category
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
 }
 
 export default function Home() {
@@ -49,15 +40,6 @@ export default function Home() {
 
   const [status, setStatus] = useState<string>('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [activeTournamentId, setActiveTournamentId] = useState('')
-  const [recommendationPrompt, setRecommendationPrompt] = useState(DEFAULT_RECOMMENDATION_PROMPT)
-  const [recommendState, setRecommendState] = useState<ApiState>({
-    loading: false,
-    error: null,
-    result: null,
-  })
-  const aiRecommendations = getRecommendations(recommendState.result)
-
 
   // note modal state
   const [noteModalOpen, setNoteModalOpen] = useState(false)
@@ -69,7 +51,6 @@ export default function Home() {
 
   // Multi-select tag filters (by slug)
   const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
-  const [openTagCategories, setOpenTagCategories] = useState<Record<string, boolean>>({})
 
   const [playerCount, setPlayerCount] = useState('')
 
@@ -104,36 +85,6 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
     fetchTags()
-  }, [])
-
-  useEffect(() => {
-    const loadActiveTournament = async () => {
-      try {
-        const response = await fetch('/api/tournaments')
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to fetch tournaments')
-        }
-
-        const rows = Array.isArray(data?.tournaments) ? (data.tournaments as Tournament[]) : []
-        const activeTournament = rows.find((row) => row.is_active)
-
-        if (activeTournament) {
-          setActiveTournamentId(activeTournament.id)
-        } else if (rows[0]) {
-          setActiveTournamentId(rows[0].id)
-        }
-      } catch (error) {
-        setRecommendState({
-          loading: false,
-          result: null,
-          error: error instanceof Error ? error.message : 'Failed to load active tournament',
-        })
-      }
-    }
-
-    void loadActiveTournament()
   }, [])
 
   useEffect(() => {
@@ -289,63 +240,6 @@ export default function Home() {
     setGame(json.game)
     setRollKey((k) => k + 1) // retrigger pop animation
     setIsRolling(false)
-  }
-
-  function applyRecommendedGame(recommendation: Recommendation) {
-    const recommendedGame: Game = {
-      id: recommendation.gameId,
-      name: recommendation.name,
-      min_players: null,
-      max_players: null,
-      playtime_minutes: null,
-      notes: recommendation.reason || recommendation.warning || null,
-    }
-
-    resetRecommendation()
-    setGame(recommendedGame)
-    setStatus('')
-  }
-
-  async function runRecommendations() {
-    if (!isAuthenticated) {
-      setStatus('Sign in is required to harness the power of the cabbage.')
-      return
-    }
-
-    setStatus('')
-
-    if (!activeTournamentId) {
-      setRecommendState({ loading: false, result: null, error: 'No active tournament found.' })
-      return
-    }
-
-    const requestBody = {
-      tournamentId: activeTournamentId,
-      userPrompt: `${recommendationPrompt}\n\nPreferred tone: ${DEFAULT_RECOMMENDATION_TONE}`,
-    }
-
-    setRecommendState({ loading: true, error: null, result: null })
-
-    try {
-      const response = await fetch('/api/ai/recommend-games', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(typeof data?.error === 'string' ? data.error : 'Recommendation request failed')
-      }
-
-      setRecommendState({ loading: false, error: null, result: data })
-    } catch (error) {
-      setRecommendState({
-        loading: false,
-        result: null,
-        error: error instanceof Error ? error.message : 'Recommendation request failed',
-      })
-    }
   }
 
   function startGame() {
@@ -569,52 +463,6 @@ export default function Home() {
           .filter((t) => selectedTagSlugs.has(t.slug))
           .map((t) => t.label)
           .join(', ')
-
-
-  const groupedTags = useMemo(() => {
-    const grouped = new Map<string, Tag[]>()
-
-    for (const tag of tags) {
-      const categoryKey = tag.category ?? 'uncategorized'
-      if (!grouped.has(categoryKey)) {
-        grouped.set(categoryKey, [])
-      }
-      grouped.get(categoryKey)?.push(tag)
-    }
-
-    return Array.from(grouped.entries())
-      .map(([category, categoryTags]) => ({
-        category,
-        label: formatCategoryLabel(category),
-        tags: categoryTags,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-  }, [tags])
-
-
-  useEffect(() => {
-    setOpenTagCategories((prev) => {
-      const next: Record<string, boolean> = { ...prev }
-      let changed = false
-      const currentCategories = new Set(groupedTags.map((group) => group.category))
-
-      for (const category of Object.keys(next)) {
-        if (!currentCategories.has(category)) {
-          delete next[category]
-          changed = true
-        }
-      }
-
-      for (const group of groupedTags) {
-        if (next[group.category] === undefined) {
-          next[group.category] = group.tags.some((tag) => selectedTagSlugs.has(tag.slug))
-          changed = true
-        }
-      }
-
-      return changed ? next : prev
-    })
-  }, [groupedTags, selectedTagSlugs])
 
   const selectedWinnersLabel =
     winnerPlayerIds.size === 0
@@ -958,98 +806,32 @@ export default function Home() {
           color: var(--text-primary);
         }
 
-        .tagCategoryGrid {
-          margin-top: 12px;
-          display: grid;
-          gap: 12px;
-        }
-
-        .tagCategoryCard {
-          border: 1px solid var(--divider-soft);
-          background: var(--surface-alt);
-          border-radius: 12px;
-          padding: 8px 10px;
-        }
-
-        .tagCategorySummary {
-          list-style: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-        }
-
-        .tagCategorySummary::-webkit-details-marker {
-          display: none;
-        }
-
-        .tagCategoryTitle {
-          margin: 0;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.6px;
-          color: var(--text-secondary);
-        }
-
-        .tagCategorySummaryMeta {
-          font-size: 10px;
-          color: var(--text-muted);
-          border: 1px solid var(--divider-soft);
-          border-radius: 999px;
-          padding: 2px 8px;
-          background: var(--page-background);
-        }
-
-        .tagChipWrap {
-          margin-top: 6px;
-          display: flex;
-          gap: 3px;
-          flex-wrap: wrap;
-        }
-
-        .tagCategoryCard:not([open]) .tagChipWrap {
-          display: none;
-        }
-
-        .filtersCard button.chip {
-          font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-          text-transform: none;
-          padding: 2px 8px;
-          min-height: 28px;
+        .chip {
+          padding: 7px 14px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0;
-          line-height: 1;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          gap: 4px;
-          background: #dbe5cb;
-          color: #2e3f2a;
+          gap: 6px;
+          background: var(--page-background);
+          color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
-        .filtersCard button.chip:hover {
+        .chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(63, 90, 42, 0.22);
-          background: #cddbb7;
-          border-color: var(--primary);
+          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.2);
         }
 
-        .filtersCard button.chip.chipActive {
-          background: var(--primary);
+        .chipActive {
+          background: var(--secondary);
           color: var(--text-inverse);
           border-color: var(--primary);
-          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.28);
-        }
-
-        .chipIcon {
-          font-size: 10px;
-          line-height: 1;
+          box-shadow: 0 8px 16px rgba(63, 90, 42, 0.2);
         }
 
         .filtersSummary {
@@ -1362,44 +1144,20 @@ export default function Home() {
               </div>
             </div>
 
-            {groupedTags.length > 0 && (
-              <div className="tagCategoryGrid">
-                {groupedTags.map((group) => {
-                  const activeCount = group.tags.filter((tag) => selectedTagSlugs.has(tag.slug)).length
+            {tags.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                {tags.map((t) => {
+                  const active = selectedTagSlugs.has(t.slug)
                   return (
-                    <details
-                      key={group.category}
-                      className="tagCategoryCard"
-                      open={Boolean(openTagCategories[group.category])}
-                      onToggle={(event) => {
-                        const isOpen = event.currentTarget.open
-                        setOpenTagCategories((prev) => ({ ...prev, [group.category]: isOpen }))
-                      }}
+                    <button
+                      key={t.id}
+                      onClick={() => toggleTag(t.slug)}
+                      className={`chip ${active ? 'chipActive' : ''}`}
+                      title={t.slug}
                     >
-                      <summary className="tagCategorySummary">
-                        <span className="tagCategoryTitle">{group.label}</span>
-                        <span className="tagCategorySummaryMeta">
-                          {activeCount > 0 ? `${activeCount} selected` : `${group.tags.length} filters`}
-                        </span>
-                      </summary>
-                      <div className="tagChipWrap">
-                        {group.tags.map((t) => {
-                          const active = selectedTagSlugs.has(t.slug)
-                          return (
-                            <button
-                              key={t.id}
-                              onClick={() => toggleTag(t.slug)}
-                              className={`filter-chip-button chip ${active ? 'chipActive' : ''}`}
-                              title={t.slug}
-                              aria-pressed={active}
-                            >
-                              <span className="chipIcon">{active ? '✅' : '○'}</span>
-                              {t.label}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </details>
+                      <span>{active ? '✨' : '•'}</span>
+                      {t.label}
+                    </button>
                   )
                 })}
               </div>
@@ -1434,27 +1192,6 @@ export default function Home() {
               )}
             </div>
 
-            <label style={{ display: 'block', marginTop: 14 }}>
-              Recommendation prompt
-              <input
-                value={recommendationPrompt}
-                onChange={(event) => setRecommendationPrompt(event.target.value)}
-                placeholder="large group game before 7pm with chaotic energy"
-                style={{ display: 'block', width: '100%', marginTop: 4, padding: 8 }}
-              />
-            </label>
-
-            <button
-              onClick={runRecommendations}
-              disabled={recommendState.loading}
-              className="btn--secondary"
-              style={{ marginTop: 10 }}
-            >
-              {recommendState.loading ? 'Loading recommendations...' : 'Run Recommendation Test'}
-            </button>
-
-            {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
-
             <button
               onClick={rollRandom}
               ref={rollButtonRef}
@@ -1477,47 +1214,6 @@ export default function Home() {
               <div className="sectionTitle">🎮 Game Setup & Results</div>
               <div className="sectionSubtitle">Configure, shuffle, and celebrate the winners.</div>
             </div>
-
-            {aiRecommendations.length > 0 && (
-              <div style={{ display: 'grid', gap: 12 }}>
-                {aiRecommendations.map((recommendation, index) => (
-                  <div key={`${recommendation.gameId}-${index}`} className="resultCard">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                      <div className="resultBadge">🤖 AI recommendation</div>
-                      <div style={{ fontSize: 12, opacity: 0.7, color: 'var(--text-secondary)' }}>
-                        Fit score: {recommendation.fitScore.toFixed(2)}
-                      </div>
-                    </div>
-                    <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{recommendation.name}</h2>
-
-                    <div className="statRow">
-                      <div className="statPill">👥 Players: —</div>
-                      <div className="statPill">⏱️ Playtime: —</div>
-                    </div>
-
-                    {recommendation.reason && (
-                      <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--text-secondary)' }}>
-                        {recommendation.reason}
-                      </p>
-                    )}
-
-                    {recommendation.warning && (
-                      <p style={{ margin: '8px 0', color: 'var(--text-secondary)' }}>⚠️ {recommendation.warning}</p>
-                    )}
-
-                    <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-                      <button
-                        onClick={() => applyRecommendedGame(recommendation)}
-                        className="startGameButton"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        Play this game ▶
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {status && (
               <p style={{ marginBottom: 16 }}>
