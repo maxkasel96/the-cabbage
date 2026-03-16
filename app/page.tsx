@@ -34,6 +34,11 @@ type Team = {
   players: Player[]
 }
 
+type ApiState = {
+  loading: boolean
+  error: string | null
+  result: unknown | null
+}
 
 function formatCategoryLabel(category: string) {
   return category
@@ -41,6 +46,8 @@ function formatCategoryLabel(category: string) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
+
+const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
 
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null)
