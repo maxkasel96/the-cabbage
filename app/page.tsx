@@ -852,8 +852,33 @@ export default function Home() {
         .categorySection {
           border: 1px solid var(--border-strong);
           border-radius: 12px;
-          padding: 10px;
           background: var(--page-background);
+          overflow: hidden;
+        }
+
+        .categorySummary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 10px;
+          cursor: pointer;
+          list-style: none;
+          user-select: none;
+        }
+
+        .categorySummary::-webkit-details-marker {
+          display: none;
+        }
+
+        .categorySummaryCaret {
+          font-size: 12px;
+          color: var(--text-muted);
+          transition: transform 140ms ease;
+        }
+
+        .categorySection[open] .categorySummaryCaret {
+          transform: rotate(90deg);
         }
 
         .categoryTitle {
@@ -861,27 +886,37 @@ export default function Home() {
           text-transform: uppercase;
           letter-spacing: 0.5px;
           font-weight: 800;
-          margin-bottom: 8px;
           color: var(--text-muted);
+        }
+
+        .categoryCount {
+          font-size: 12px;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 1px solid var(--border-strong);
+          background: var(--surface-alt);
+          color: var(--text-muted);
+          font-weight: 700;
         }
 
         .categoryChips {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
+          padding: 0 10px 10px;
         }
 
         .chip {
-          padding: 7px 14px;
+          padding: 9px 18px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 13px;
+          font-size: 17px;
           font-weight: 600;
           letter-spacing: 0.2px;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           background: var(--page-background);
           color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
@@ -1212,8 +1247,14 @@ export default function Home() {
             {tagsByCategory.length > 0 && (
               <div className="categoryGrid">
                 {tagsByCategory.map(({ category, tags: categoryTags }) => (
-                  <div key={category} className="categorySection">
-                    <div className="categoryTitle">{getTagCategoryLabel(category)}</div>
+                  <details key={category} className="categorySection" open>
+                    <summary className="categorySummary">
+                      <div className="categoryTitle">{getTagCategoryLabel(category)}</div>
+                      <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                        <div className="categoryCount">{categoryTags.length}</div>
+                        <span className="categorySummaryCaret">▶</span>
+                      </div>
+                    </summary>
                     <div className="categoryChips">
                       {categoryTags.map((t) => {
                         const active = selectedTagSlugs.has(t.slug)
@@ -1230,7 +1271,7 @@ export default function Home() {
                         )
                       })}
                     </div>
-                  </div>
+                  </details>
                 ))}
               </div>
             )}
