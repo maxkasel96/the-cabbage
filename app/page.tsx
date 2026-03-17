@@ -807,16 +807,16 @@ export default function Home() {
         }
 
         .chip {
-          padding: 7px 14px;
+          padding: 5px 10px;
           border-radius: 999px;
           border: 1px solid var(--border-strong);
           cursor: pointer;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
           letter-spacing: 0.2px;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
           background: var(--page-background);
           color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
