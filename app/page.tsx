@@ -1262,7 +1262,7 @@ export default function Home() {
                           <button
                             key={t.id}
                             onClick={() => toggleTag(t.slug)}
-                            className={`chip ${active ? 'chipActive' : ''}`}
+                            className={`chip filter-chip-button ${active ? 'chipActive' : ''}`}
                             title={t.slug}
                           >
                             <span>{active ? '✨' : '•'}</span>
