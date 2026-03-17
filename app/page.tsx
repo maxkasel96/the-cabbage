@@ -26,11 +26,34 @@ type Tag = {
   slug: string
   label: string
   sort_order: number
+  category: string | null
 }
 
 type Team = {
   id: number
   players: Player[]
+}
+
+
+const TAG_CATEGORY_ORDER = [
+  'group_structure',
+  'complexity_time',
+  'gameplay_mechanics',
+  'social_vibe',
+  'custom_house_tags',
+] as const
+
+const TAG_CATEGORY_LABELS: Record<string, string> = {
+  group_structure: 'Group structure',
+  complexity_time: 'Complexity & time',
+  gameplay_mechanics: 'Gameplay mechanics',
+  social_vibe: 'Social vibe',
+  custom_house_tags: 'House tags',
+  uncategorized: 'Other',
+}
+
+function getTagCategoryLabel(category: string) {
+  return TAG_CATEGORY_LABELS[category] ?? category.replace(/_/g, ' ')
 }
 
 export default function Home() {
@@ -472,6 +495,20 @@ export default function Home() {
           .map((p) => p.display_name)
           .join(', ')
 
+  const orderedCategoryKeys = [
+    ...TAG_CATEGORY_ORDER,
+    ...Array.from(new Set(tags.map((tag) => tag.category || 'uncategorized'))).filter(
+      (category) => !TAG_CATEGORY_ORDER.includes(category as (typeof TAG_CATEGORY_ORDER)[number])
+    ),
+  ]
+
+  const tagsByCategory = orderedCategoryKeys
+    .map((category) => ({
+      category,
+      tags: tags.filter((tag) => (tag.category || 'uncategorized') === category),
+    }))
+    .filter((entry) => entry.tags.length > 0)
+
   return (
     <main
       style={{
@@ -798,47 +835,112 @@ export default function Home() {
         }
 
         .filtersCard {
-          background: var(--surface);
-          border: 1px solid var(--border-strong);
+          background: color-mix(in srgb, var(--surface) 85%, #ffffff 15%);
+          border: 2px solid color-mix(in srgb, var(--primary) 45%, var(--border-strong) 55%);
           border-radius: 16px;
           padding: 16px;
-          box-shadow: 0 16px 34px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 16px 34px rgba(33, 54, 22, 0.28);
           color: var(--text-primary);
+        }
+
+        .categoryGrid {
+          display: grid;
+          gap: 12px;
+          margin-top: 12px;
+        }
+
+        .categorySection {
+          border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border-strong) 65%);
+          border-radius: 12px;
+          background: color-mix(in srgb, var(--page-background) 92%, #f1f5e8 8%);
+          overflow: hidden;
+        }
+
+        .categorySummary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 10px;
+          cursor: pointer;
+          list-style: none;
+          user-select: none;
+          background: color-mix(in srgb, var(--surface-alt) 84%, #e3edd3 16%);
+        }
+
+        .categorySummary::-webkit-details-marker {
+          display: none;
+        }
+
+        .categorySummaryCaret {
+          font-size: 12px;
+          color: var(--text-primary);
+          transition: transform 140ms ease;
+        }
+
+        .categorySection[open] .categorySummaryCaret {
+          transform: rotate(90deg);
+        }
+
+        .categoryTitle {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+
+        .categoryCount {
+          font-size: 12px;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 2px solid color-mix(in srgb, var(--primary) 45%, var(--border-strong) 55%);
+          background: color-mix(in srgb, var(--surface-alt) 80%, #ddeac5 20%);
+          color: var(--text-primary);
+          font-weight: 800;
+        }
+
+        .categoryChips {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 8px;
+          padding: 0 10px 12px;
         }
 
         .chip {
           padding: 7px 14px;
           border-radius: 999px;
-          border: 1px solid var(--border-strong);
+          border: 2px solid color-mix(in srgb, var(--primary) 40%, var(--border-strong) 60%);
           cursor: pointer;
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 14px;
+          font-weight: 700;
           letter-spacing: 0.2px;
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: var(--page-background);
+          background: color-mix(in srgb, var(--page-background) 88%, #f2f7e8 12%);
           color: var(--text-primary);
           transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
         .chip:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 12px rgba(63, 90, 42, 0.2);
+          box-shadow: 0 6px 12px rgba(33, 54, 22, 0.28);
         }
 
         .chipActive {
-          background: var(--secondary);
+          background: var(--primary);
           color: var(--text-inverse);
-          border-color: var(--primary);
-          box-shadow: 0 8px 16px rgba(63, 90, 42, 0.2);
+          border-color: color-mix(in srgb, var(--primary) 65%, #1f2d17 35%);
+          box-shadow: 0 8px 16px rgba(33, 54, 22, 0.34);
         }
 
         .filtersSummary {
-          background: var(--page-background);
+          background: color-mix(in srgb, var(--page-background) 92%, #eaf3da 8%);
           border-radius: 12px;
           padding: 10px 12px;
-          border: 1px dashed var(--divider-soft);
+          border: 2px solid color-mix(in srgb, var(--primary) 32%, var(--divider-soft) 68%);
           font-size: 13px;
           color: var(--text-primary);
         }
@@ -847,20 +949,21 @@ export default function Home() {
           font-size: 12px;
           padding: 6px 10px;
           border-radius: 999px;
-          background: var(--surface-alt);
-          border: 1px solid var(--border-strong);
-          font-weight: 700;
+          background: color-mix(in srgb, var(--surface-alt) 80%, #deebc7 20%);
+          border: 2px solid color-mix(in srgb, var(--primary) 40%, var(--border-strong) 60%);
+          color: var(--text-primary);
+          font-weight: 800;
         }
 
         .playersInput {
           padding: 8px 12px;
           border-radius: 10px;
-          border: 1px solid var(--border-strong);
+          border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border-strong) 65%);
           font-size: 14px;
           width: 140px;
-          background: var(--page-background);
+          background: color-mix(in srgb, var(--page-background) 90%, #f0f6e6 10%);
           color: var(--text-primary);
-          box-shadow: inset 0 1px 2px rgba(63, 90, 42, 0.2);
+          box-shadow: inset 0 1px 2px rgba(33, 54, 22, 0.22);
         }
 
         .playersInput::placeholder {
@@ -1144,22 +1247,35 @@ export default function Home() {
               </div>
             </div>
 
-            {tags.length > 0 && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-                {tags.map((t) => {
-                  const active = selectedTagSlugs.has(t.slug)
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => toggleTag(t.slug)}
-                      className={`chip ${active ? 'chipActive' : ''}`}
-                      title={t.slug}
-                    >
-                      <span>{active ? '✨' : '•'}</span>
-                      {t.label}
-                    </button>
-                  )
-                })}
+            {tagsByCategory.length > 0 && (
+              <div className="categoryGrid">
+                {tagsByCategory.map(({ category, tags: categoryTags }) => (
+                  <details key={category} className="categorySection" open>
+                    <summary className="categorySummary">
+                      <div className="categoryTitle">{getTagCategoryLabel(category)}</div>
+                      <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                        <div className="categoryCount">{categoryTags.length}</div>
+                        <span className="categorySummaryCaret">▶</span>
+                      </div>
+                    </summary>
+                    <div className="categoryChips">
+                      {categoryTags.map((t) => {
+                        const active = selectedTagSlugs.has(t.slug)
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => toggleTag(t.slug)}
+                            className={`chip filter-chip-button ${active ? 'chipActive' : ''}`}
+                            title={t.slug}
+                          >
+                            <span>{active ? '✨' : '•'}</span>
+                            {t.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </details>
+                ))}
               </div>
             )}
 
