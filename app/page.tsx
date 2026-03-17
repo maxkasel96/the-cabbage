@@ -26,11 +26,34 @@ type Tag = {
   slug: string
   label: string
   sort_order: number
+  category: string | null
 }
 
 type Team = {
   id: number
   players: Player[]
+}
+
+
+const TAG_CATEGORY_ORDER = [
+  'group_structure',
+  'complexity_time',
+  'gameplay_mechanics',
+  'social_vibe',
+  'custom_house_tags',
+] as const
+
+const TAG_CATEGORY_LABELS: Record<string, string> = {
+  group_structure: 'Group structure',
+  complexity_time: 'Complexity & time',
+  gameplay_mechanics: 'Gameplay mechanics',
+  social_vibe: 'Social vibe',
+  custom_house_tags: 'House tags',
+  uncategorized: 'Other',
+}
+
+function getTagCategoryLabel(category: string) {
+  return TAG_CATEGORY_LABELS[category] ?? category.replace(/_/g, ' ')
 }
 
 export default function Home() {
@@ -472,6 +495,20 @@ export default function Home() {
           .map((p) => p.display_name)
           .join(', ')
 
+  const orderedCategoryKeys = [
+    ...TAG_CATEGORY_ORDER,
+    ...Array.from(new Set(tags.map((tag) => tag.category || 'uncategorized'))).filter(
+      (category) => !TAG_CATEGORY_ORDER.includes(category as (typeof TAG_CATEGORY_ORDER)[number])
+    ),
+  ]
+
+  const tagsByCategory = orderedCategoryKeys
+    .map((category) => ({
+      category,
+      tags: tags.filter((tag) => (tag.category || 'uncategorized') === category),
+    }))
+    .filter((entry) => entry.tags.length > 0)
+
   return (
     <main
       style={{
@@ -804,6 +841,34 @@ export default function Home() {
           padding: 16px;
           box-shadow: 0 16px 34px rgba(63, 90, 42, 0.2);
           color: var(--text-primary);
+        }
+
+        .categoryGrid {
+          display: grid;
+          gap: 12px;
+          margin-top: 12px;
+        }
+
+        .categorySection {
+          border: 1px solid var(--border-strong);
+          border-radius: 12px;
+          padding: 10px;
+          background: var(--page-background);
+        }
+
+        .categoryTitle {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 800;
+          margin-bottom: 8px;
+          color: var(--text-muted);
+        }
+
+        .categoryChips {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
         }
 
         .chip {
@@ -1144,22 +1209,29 @@ export default function Home() {
               </div>
             </div>
 
-            {tags.length > 0 && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-                {tags.map((t) => {
-                  const active = selectedTagSlugs.has(t.slug)
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => toggleTag(t.slug)}
-                      className={`chip ${active ? 'chipActive' : ''}`}
-                      title={t.slug}
-                    >
-                      <span>{active ? '✨' : '•'}</span>
-                      {t.label}
-                    </button>
-                  )
-                })}
+            {tagsByCategory.length > 0 && (
+              <div className="categoryGrid">
+                {tagsByCategory.map(({ category, tags: categoryTags }) => (
+                  <div key={category} className="categorySection">
+                    <div className="categoryTitle">{getTagCategoryLabel(category)}</div>
+                    <div className="categoryChips">
+                      {categoryTags.map((t) => {
+                        const active = selectedTagSlugs.has(t.slug)
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => toggleTag(t.slug)}
+                            className={`chip ${active ? 'chipActive' : ''}`}
+                            title={t.slug}
+                          >
+                            <span>{active ? '✨' : '•'}</span>
+                            {t.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
