@@ -904,7 +904,8 @@ export default function Home() {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
-          padding: 0 10px 10px;
+          margin-top: 8px;
+          padding: 0 10px 12px;
         }
 
         .chip {
