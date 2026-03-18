@@ -385,6 +385,15 @@ export default function Home() {
   }
 
   async function runRecommendations() {
+    if (!isAuthenticated) {
+      setRecommendState({
+        loading: false,
+        error: 'Sign in is required to harness the power of the cabbage.',
+        result: null,
+      })
+      return
+    }
+
     if (!activeTournamentId) {
       setRecommendState({
         loading: false,
