@@ -1786,16 +1786,28 @@ export default function Home() {
               </p>
             )}
 
-            {!game && recommendedGames.length === 0 ? (
-              <div className="resultCard">
-                <div className="resultBadge">✨ Awaiting a game</div>
-                <p style={{ color: 'var(--text-secondary)', marginTop: 10 }}>
-                  Let the cabbage take the guessing out of things. Choose Find My Game to get rolling.
-                </p>
-              </div>
-            ) : activeRecommendedGameId ? null : (
-              renderGameCard(game, { badge: '✨ Fresh from the cabbage', meta: 'Ready when you are', key: String(rollKey) })
-            )}
+            {(() => {
+              if (!game && recommendedGames.length === 0) {
+                return (
+                  <div className="resultCard">
+                    <div className="resultBadge">✨ Awaiting a game</div>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: 10 }}>
+                      Let the cabbage take the guessing out of things. Choose Find My Game to get rolling.
+                    </p>
+                  </div>
+                )
+              }
+
+              if (!game || activeRecommendedGameId) {
+                return null
+              }
+
+              return renderGameCard(game, {
+                badge: '✨ Fresh from the cabbage',
+                meta: 'Ready when you are',
+                key: String(rollKey),
+              })
+            })()}
           </section>
         </div>
       </div>
