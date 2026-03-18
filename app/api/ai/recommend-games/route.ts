@@ -39,6 +39,8 @@ type CandidateGame = {
   notes: string | null
   tags: string[]
   semanticSignals: string[]
+  matchedSignals: string[]
+  heuristicFitScore: number
 }
 
 function buildRecommendationSystemPrompt() {
@@ -93,18 +95,65 @@ function uniquePreservingOrder(values: string[]) {
   return Array.from(new Set(values))
 }
 
+function normalizeForMatching(text: string) {
+  return text.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim()
+}
+
+function tokenizeForMatching(text: string) {
+  return normalizeForMatching(text)
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 4)
+    .filter((token) => !NOTE_STOP_WORDS.has(token))
+}
+
 function extractSemanticSignals(notes: string | null, tags: string[]) {
-  const noteTokens =
-    notes
-      ?.toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, " ")
-      .split(/\s+/)
-      .map((token) => token.trim())
-      .filter((token) => token.length >= 4)
-      .filter((token) => !NOTE_STOP_WORDS.has(token))
-      .slice(0, 12) ?? []
+  const noteTokens = notes ? tokenizeForMatching(notes).slice(0, 12) : []
 
   return uniquePreservingOrder([...tags.map((tag) => tag.trim()).filter(Boolean), ...noteTokens])
+}
+
+function scoreCandidateGame(params: {
+  game: Pick<CandidateGame, "name" | "notes" | "tags" | "semanticSignals">
+  prompt: string
+  recentGameIds: string[]
+  gameId: string
+}) {
+  const { game, prompt, recentGameIds, gameId } = params
+
+  const normalizedPrompt = normalizeForMatching(prompt)
+  const promptTokens = new Set(tokenizeForMatching(prompt))
+  const candidateSignals = uniquePreservingOrder([
+    ...game.tags.map((tag) => tag.trim()).filter(Boolean),
+    ...game.semanticSignals,
+    ...tokenizeForMatching(game.name),
+  ])
+
+  const matchedSignals = candidateSignals.filter((signal) => {
+    const normalizedSignal = normalizeForMatching(signal)
+    if (!normalizedSignal) return false
+
+    if (normalizedSignal.includes(" ") && normalizedPrompt.includes(normalizedSignal)) {
+      return true
+    }
+
+    return normalizedSignal
+      .split(" ")
+      .some((token) => token.length >= 4 && promptTokens.has(token))
+  })
+
+  const tagPhraseMatches = game.tags.filter((tag) => normalizedPrompt.includes(normalizeForMatching(tag))).length
+  const notePhraseMatches = tokenizeForMatching(game.notes ?? "").filter((token) => promptTokens.has(token)).length
+  const nameMatches = tokenizeForMatching(game.name).filter((token) => promptTokens.has(token)).length
+  const recentPenalty = recentGameIds.includes(gameId) ? 0.15 : 0
+
+  const rawScore = matchedSignals.length * 0.12 + tagPhraseMatches * 0.2 + notePhraseMatches * 0.08 + nameMatches * 0.05
+  const heuristicFitScore = Math.max(0, Math.min(0.98, Number((rawScore - recentPenalty).toFixed(3))))
+
+  return {
+    matchedSignals: matchedSignals.slice(0, 8),
+    heuristicFitScore,
+  }
 }
 
 function buildRecommendationUserPayload(params: {
@@ -136,6 +185,7 @@ function buildRecommendationUserPayload(params: {
           "Infer what the user explicitly wants: vibe, energy level, complexity, social dynamics, competitiveness, cooperation, conflict, and pacing.",
           "Map the user's language to the closest tags from allKnownTags, even when the wording is indirect, slangy, sarcastic, or emotionally loaded.",
           "Use candidateGames.notes and candidateGames.semanticSignals to understand gameplay themes that tags alone might miss.",
+          "Use candidateGames.matchedSignals and candidateGames.heuristicFitScore as grounding hints, but not as unbreakable rules.",
           "Prefer games that satisfy more strong preferences and better semantic overlap across tags, notes, and tone cues.",
         ],
         softPreferences: [
@@ -160,6 +210,7 @@ function buildRecommendationUserPayload(params: {
         "If there are recommendations, always include safePick and wildcardPick.",
         "safePick should be the most broadly reliable option.",
         "wildcardPick should still be defensible, but may be a more surprising choice.",
+        "Treat higher heuristicFitScore as evidence of likely relevance, especially when supported by matchedSignals and notes.",
         "Do not mention inferred tags, tag names, supporting tags, ranking mechanics, or player count in any reason or warning.",
         "Do not mention numeric player ranges or say that player count fits.",
         "Keep every reason concise, punchy, and written in a crass, irreverent, inappropriate-but-non-hateful comedic tone.",
@@ -508,15 +559,41 @@ export async function POST(request: Request) {
       gameIdToTags.set(row.game_id, current)
     }
 
-    const candidateGames = games.map((game) => ({
-      id: game.id,
-      name: game.name,
-      minPlayers: game.min_players,
-      maxPlayers: game.max_players,
-      notes: game.notes,
-      tags: gameIdToTags.get(game.id) ?? [],
-      semanticSignals: extractSemanticSignals(game.notes, gameIdToTags.get(game.id) ?? []),
-    }))
+    const candidateGames = games
+      .map((game) => {
+        const tags = gameIdToTags.get(game.id) ?? []
+        const semanticSignals = extractSemanticSignals(game.notes, tags)
+        const { matchedSignals, heuristicFitScore } = scoreCandidateGame({
+          gameId: game.id,
+          game: {
+            name: game.name,
+            notes: game.notes,
+            tags,
+            semanticSignals,
+          },
+          prompt: userPrompt,
+          recentGameIds,
+        })
+
+        return {
+          id: game.id,
+          name: game.name,
+          minPlayers: game.min_players,
+          maxPlayers: game.max_players,
+          notes: game.notes,
+          tags,
+          semanticSignals,
+          matchedSignals,
+          heuristicFitScore,
+        }
+      })
+      .sort((left, right) => {
+        if (right.heuristicFitScore !== left.heuristicFitScore) {
+          return right.heuristicFitScore - left.heuristicFitScore
+        }
+
+        return left.name.localeCompare(right.name)
+      })
 
     const allKnownTags = Array.from(
       new Set(candidateGames.flatMap((game) => game.tags.map((tag) => tag.trim()).filter(Boolean))),
