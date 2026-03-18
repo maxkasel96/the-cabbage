@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Geist, Geist_Mono } from "next/font/google";
-import FloatingAiTestLink from "./components/FloatingAiTestLink";
 import FloatingUtilityButton from "./components/FloatingUtilityButton";
 import "./globals.css";
 
@@ -36,7 +35,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased`}
       >
         {children}
-        <FloatingAiTestLink />
         <FloatingUtilityButton />
       </body>
     </html>
