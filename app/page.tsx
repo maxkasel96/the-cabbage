@@ -1786,7 +1786,7 @@ export default function Home() {
               </p>
             )}
 
-            {!game ? (
+            {!game && recommendedGames.length === 0 ? (
               <div className="resultCard">
                 <div className="resultBadge">✨ Awaiting a game</div>
                 <p style={{ color: 'var(--text-secondary)', marginTop: 10 }}>
