@@ -1651,7 +1651,7 @@ export default function Home() {
 
       <div
         className="pageShell px-4 pb-12 pt-6 sm:px-6"
-        inert={recommendState.loading ? '' : undefined}
+        inert={recommendState.loading}
         aria-hidden={recommendState.loading}
       >
         <div className="stickyHeader">
