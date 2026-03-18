@@ -53,7 +53,6 @@ type RecommendedGame = {
   warning: string
 }
 
-const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
 const RECOMMENDATION_LOADING_IMAGE_URL =
   'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
 
@@ -100,7 +99,7 @@ export default function Home() {
 
   const [playerCount, setPlayerCount] = useState('')
   const [activeTournamentId, setActiveTournamentId] = useState('')
-  const [recommendationPrompt, setRecommendationPrompt] = useState(DEFAULT_RECOMMENDATION_PROMPT)
+  const [recommendationPrompt, setRecommendationPrompt] = useState('')
   const [recommendState, setRecommendState] = useState<ApiState>({
     loading: false,
     error: null,
@@ -1341,14 +1340,19 @@ export default function Home() {
           width: 100%;
           margin-top: 8px;
           padding: 14px 16px;
-          min-height: 56px;
+          min-height: 132px;
+          max-height: 132px;
           border-radius: 12px;
           border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border-strong) 65%);
           background: color-mix(in srgb, var(--page-background) 92%, #f4f8ec 8%);
           color: var(--text-primary);
           font-size: 16px;
-          line-height: 1.4;
+          line-height: 1.5;
           box-shadow: inset 0 1px 2px rgba(33, 54, 22, 0.16);
+          resize: none;
+          overflow-y: auto;
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
         }
 
         .recommendationInput::placeholder {
@@ -1687,7 +1691,7 @@ export default function Home() {
               <p style={{ margin: '4px 0 8px', fontSize: 13, color: 'var(--text-secondary)' }}>
                 Go ahead. Tell the Cabbage what you want and you're feeling. Do you want a game for a large group of people? How many Old Fashion&apos;s has TK had? Is Cory being a &apos;lil bitch and won&apos;t play with us? Give me that info and I&apos;ll recommend what you should play next.
               </p>
-              <input
+              <textarea
                 className="recommendationInput"
                 value={recommendationPrompt}
                 onChange={(event) => setRecommendationPrompt(event.target.value)}
