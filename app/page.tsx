@@ -1336,6 +1336,26 @@ export default function Home() {
           color: rgba(63, 90, 42, 0.55);
         }
 
+        .recommendationInput {
+          display: block;
+          width: 100%;
+          margin-top: 8px;
+          padding: 14px 16px;
+          min-height: 56px;
+          border-radius: 12px;
+          border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border-strong) 65%);
+          background: color-mix(in srgb, var(--page-background) 92%, #f4f8ec 8%);
+          color: var(--text-primary);
+          font-size: 16px;
+          line-height: 1.4;
+          box-shadow: inset 0 1px 2px rgba(33, 54, 22, 0.16);
+        }
+
+        .recommendationInput::placeholder {
+          color: color-mix(in srgb, var(--text-secondary) 82%, #6d7f5a 18%);
+          font-style: italic;
+        }
+
         .resultCard {
           border-radius: 18px;
           padding: 20px;
@@ -1662,9 +1682,43 @@ export default function Home() {
 
         <div className="mainLayout">
           <section className="filtersCard">
-            <div className="filtersHeader">
+            <div style={{ paddingBottom: 16, borderBottom: '1px solid var(--divider-soft)' }}>
+              <div style={{ fontWeight: 700 }}>Talk to The Cabbage</div>
+              <p style={{ margin: '4px 0 8px', fontSize: 13, color: 'var(--text-secondary)' }}>
+                Go ahead. Tell the Cabbage what you want and you're feeling. Do you want a game for a large group of people? How many Old Fashion&apos;s has TK had? Is Cory being a &apos;lil bitch and won&apos;t play with us? Give me that info and I&apos;ll recommend what you should play next.
+              </p>
+              <input
+                className="recommendationInput"
+                value={recommendationPrompt}
+                onChange={(event) => setRecommendationPrompt(event.target.value)}
+                placeholder="Type what kind of game you want, who is playing, and the vibe you're after"
+              />
+              <button
+                onClick={runRecommendations}
+                disabled={recommendState.loading}
+                className="startGameButton"
+                style={{
+                  marginTop: 16,
+                  cursor: recommendState.loading ? 'not-allowed' : 'pointer',
+                  padding: '16px 26px',
+                  fontSize: 18,
+                  width: '100%',
+                }}
+              >
+                {recommendState.loading ? 'Loading recommendations...' : 'Run Cabbage AI'}
+              </button>
+
+              {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
+              {recommendState.result && recommendedGames.length === 0 ? (
+                <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  No recommendation cards were returned for this prompt.
+                </p>
+              ) : null}
+            </div>
+
+            <div className="filtersHeader" style={{ marginTop: 16 }}>
               <div>
-                <div className="sectionTitle">🥬 Find Your Game</div>
+                <div className="sectionTitle">Guide the Cabbage</div>
                 <div className="sectionSubtitle">Choose your vibe to guide the cabbage.</div>
               </div>
               <div className="filtersMeta">
@@ -1749,41 +1803,13 @@ export default function Home() {
                 marginTop: 16,
               }}
             >
-              {isRolling ? 'Choosing from the cabbage… 🥬' : 'Pick a game from the cabbage 🥬'}
+              {isRolling ? 'Choosing from the cabbage…' : 'Give me a random game'}
             </button>
-
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--divider-soft)' }}>
-              <div style={{ fontWeight: 700 }}>Recommendation prompt</div>
-              <p style={{ margin: '4px 0 8px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                Uses the active tournament and displays the same response format as <code>/ai-test</code>.
-              </p>
-              <input
-                value={recommendationPrompt}
-                onChange={(event) => setRecommendationPrompt(event.target.value)}
-                placeholder="large group game before 7pm with chaotic energy"
-                style={{ display: 'block', width: '100%', marginTop: 4, padding: 8 }}
-              />
-              <button
-                onClick={runRecommendations}
-                disabled={recommendState.loading}
-                className="startGameButton"
-                style={{ marginTop: 10, cursor: recommendState.loading ? 'not-allowed' : 'pointer' }}
-              >
-                {recommendState.loading ? 'Loading recommendations...' : 'Run Recommendation Test'}
-              </button>
-
-              {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
-              {recommendState.result && recommendedGames.length === 0 ? (
-                <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
-                  No recommendation cards were returned for this prompt.
-                </p>
-              ) : null}
-            </div>
           </section>
 
           <section className="sectionCard">
             <div>
-              <div className="sectionTitle">🎮 Game Setup & Results</div>
+              <div className="sectionTitle">Game Setup & Results</div>
               <div className="sectionSubtitle">Configure, shuffle, and celebrate the winners.</div>
             </div>
 
