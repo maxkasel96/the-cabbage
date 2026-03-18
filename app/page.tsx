@@ -1614,7 +1614,7 @@ export default function Home() {
             {tagsByCategory.length > 0 && (
               <div className="categoryGrid">
                 {tagsByCategory.map(({ category, tags: categoryTags }) => (
-                  <details key={category} className="categorySection" open>
+                  <details key={category} className="categorySection">
                     <summary className="categorySummary">
                       <div className="categoryTitle">{getTagCategoryLabel(category)}</div>
                       <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
