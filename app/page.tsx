@@ -1664,7 +1664,7 @@ export default function Home() {
           <section className="filtersCard">
             <div className="filtersHeader">
               <div>
-                <div className="sectionTitle">🥬 Find Your Game</div>
+                <div className="sectionTitle">Find Your Game</div>
                 <div className="sectionSubtitle">Choose your vibe to guide the cabbage.</div>
               </div>
               <div className="filtersMeta">
@@ -1749,13 +1749,13 @@ export default function Home() {
                 marginTop: 16,
               }}
             >
-              {isRolling ? 'Choosing from the cabbage… 🥬' : 'Pick a game from the cabbage 🥬'}
+              {isRolling ? 'Choosing from the cabbage…' : 'Give me a random game'}
             </button>
 
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--divider-soft)' }}>
-              <div style={{ fontWeight: 700 }}>Recommendation prompt</div>
+              <div style={{ fontWeight: 700 }}>Talk to The Cabbage</div>
               <p style={{ margin: '4px 0 8px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                Uses the active tournament and displays the same response format as <code>/ai-test</code>.
+                Go ahead. Tell the Cabbage what you want and you're feeling. Do you want a game for a large group of people? How many Old Fashion&apos;s has TK had? Is Cory being a &apos;lil bitch and won&apos;t play with us? Give me that info and I&apos;ll recommend what you should play next.
               </p>
               <input
                 value={recommendationPrompt}
@@ -1767,9 +1767,15 @@ export default function Home() {
                 onClick={runRecommendations}
                 disabled={recommendState.loading}
                 className="startGameButton"
-                style={{ marginTop: 10, cursor: recommendState.loading ? 'not-allowed' : 'pointer' }}
+                style={{
+                  marginTop: 16,
+                  cursor: recommendState.loading ? 'not-allowed' : 'pointer',
+                  padding: '16px 26px',
+                  fontSize: 18,
+                  width: '100%',
+                }}
               >
-                {recommendState.loading ? 'Loading recommendations...' : 'Run Recommendation Test'}
+                {recommendState.loading ? 'Loading recommendations...' : 'Run Cabbage AI'}
               </button>
 
               {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
@@ -1783,7 +1789,7 @@ export default function Home() {
 
           <section className="sectionCard">
             <div>
-              <div className="sectionTitle">🎮 Game Setup & Results</div>
+              <div className="sectionTitle">Game Setup & Results</div>
               <div className="sectionSubtitle">Configure, shuffle, and celebrate the winners.</div>
             </div>
 
