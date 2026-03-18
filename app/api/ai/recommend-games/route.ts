@@ -31,6 +31,104 @@ const aiResponseSchema = z.object({
   wildcardPick: pickSchema.nullable().optional().default(null),
 })
 
+type CandidateGame = {
+  id: string
+  name: string
+  minPlayers: number
+  maxPlayers: number
+  notes: string | null
+  tags: string[]
+}
+
+function buildRecommendationSystemPrompt() {
+  return [
+    "You are a board game recommendation assistant.",
+    "Your job is to interpret a messy natural-language request and match it to the best games from a provided candidate list.",
+    "Think in four phases: (1) extract intent, (2) map intent to known tags, (3) rank candidate games, (4) write final user-facing copy.",
+    "Keep phases 1-3 analytical and grounded in the provided data.",
+    "Apply the crass, irreverent, inappropriate-but-non-hateful comedic tone only when writing the final user-facing reason and warning fields.",
+    "Return strict JSON only with keys: recommendations, safePick, wildcardPick.",
+  ].join(" ")
+}
+
+function buildRecommendationUserPayload(params: {
+  userPrompt: string
+  playerCount: number
+  allKnownTags: string[]
+  recentGameIds: string[]
+  candidateGames: CandidateGame[]
+}) {
+  const { userPrompt, playerCount, allKnownTags, recentGameIds, candidateGames } = params
+
+  return {
+    task: "Recommend board games from candidateGames for the current group.",
+    userPrompt,
+    context: {
+      playerCount,
+      recentGameIds,
+      allKnownTags,
+      candidateGames,
+    },
+    instructions: {
+      hardConstraints: [
+        "Only recommend games from candidateGames.",
+        "Treat candidateGames as already filtered for player-count compatibility; do not invent any game outside that set.",
+        "If candidateGames is empty, return no recommendations.",
+      ],
+      preferenceFramework: {
+        strongPreferences: [
+          "Infer what the user explicitly wants: vibe, energy level, complexity, social dynamics, competitiveness, cooperation, conflict, and pacing.",
+          "Map the user's language to the closest tags from allKnownTags, even when the wording is indirect or slangy.",
+          "Prefer games that satisfy more strong preferences and better semantic tag overlap.",
+        ],
+        softPreferences: [
+          "Use game notes to break ties when they reinforce the user's vibe.",
+          "Avoid recently played games when a similarly strong alternative exists.",
+          "Reserve wildcardPick for a plausible but slightly bolder fit than the safest top pick.",
+        ],
+      },
+      requiredReasoningSteps: [
+        "Step 1: extract hard constraints, strong preferences, soft preferences, and explicit dislikes from userPrompt.",
+        "Step 2: map the extracted intent to the closest tags from allKnownTags.",
+        "Step 3: rank candidateGames by overall fit, considering semantic tag match, vibe match, and freshness versus recentGameIds.",
+        "Step 4: write concise final reasons and warnings for the chosen games only.",
+      ],
+      outputRules: [
+        "recommendations must be ordered best fit first.",
+        "If there are recommendations, always include safePick and wildcardPick.",
+        "safePick should be the most broadly reliable option.",
+        "wildcardPick should still be defensible, but may be a more surprising choice.",
+        "Do not mention inferred tags, tag names, supporting tags, ranking mechanics, or player count in any reason or warning.",
+        "Do not mention numeric player ranges or say that player count fits.",
+        "Keep every reason concise, punchy, and written in a crass, irreverent, inappropriate-but-non-hateful comedic tone.",
+        "Warnings should only mention meaningful tradeoffs or caveats, not internal matching logic.",
+        "Return JSON only.",
+      ],
+    },
+    outputContract: {
+      recommendations: [
+        {
+          gameId: "string",
+          name: "string",
+          fitScore: "number from 0 to 1",
+          reason: "string",
+          warning: "string",
+        },
+      ],
+      safePick: {
+        gameId: "string",
+        name: "string",
+        reason: "string",
+      },
+      wildcardPick: {
+        gameId: "string",
+        name: "string",
+        reason: "string",
+      },
+    },
+  }
+}
+
 function parseAiJson(text: string) {
   const trimmed = text.trim()
 
@@ -367,30 +465,19 @@ export async function POST(request: Request) {
       input: [
         {
           role: "system",
-          content:
-            "You are a board game recommendation assistant. Write in a crass, irreverent, inappropriate-but-non-hateful comedic tone by default. Return strict JSON only with keys: recommendations, safePick, wildcardPick.",
+          content: buildRecommendationSystemPrompt(),
         },
         {
           role: "user",
-          content: JSON.stringify({
-            rules: [
-              "Only recommend games from candidateGames.",
-              "Prioritize player-count fit and semantic tag fit from the userPrompt.",
-              "Infer intent from natural language and map it to the closest tags from allKnownTags.",
-              "Prefer games that match more of the inferred tags.",
-              "Do not mention inferred tags, tag names, supporting tags, or player count in any reason or warning.",
-              "Do not mention numeric player ranges or say that player count fits.",
-              "Keep every reason concise, punchy, and written in a crass, irreverent, inappropriate-but-non-hateful comedic tone.",
-              "Avoid recently played games when possible.",
-              "Return JSON only.",
-              "If there are recommendations, always include safePick and wildcardPick.",
-            ],
-            userPrompt,
-            playerCount,
-            allKnownTags,
-            recentGameIds,
-            candidateGames,
-          }),
+          content: JSON.stringify(
+            buildRecommendationUserPayload({
+              userPrompt,
+              playerCount,
+              allKnownTags,
+              recentGameIds,
+              candidateGames,
+            }),
+          ),
         },
       ],
     })
