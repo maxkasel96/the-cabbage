@@ -38,6 +38,7 @@ type CandidateGame = {
   maxPlayers: number
   notes: string | null
   tags: string[]
+  semanticSignals: string[]
 }
 
 function buildRecommendationSystemPrompt() {
@@ -46,9 +47,64 @@ function buildRecommendationSystemPrompt() {
     "Your job is to interpret a messy natural-language request and match it to the best games from a provided candidate list.",
     "Think in four phases: (1) extract intent, (2) map intent to known tags, (3) rank candidate games, (4) write final user-facing copy.",
     "Keep phases 1-3 analytical and grounded in the provided data.",
-    "Apply the crass, irreverent, inappropriate-but-non-hateful comedic tone only when writing the final user-facing reason and warning fields.",
+    "Use both structured tags and game notes as semantic evidence when matching candidates to the user's request.",
+    "Read the user's tone, energy, and social intent as matching signals, but keep the final user-facing reason and warning in the existing crass, irreverent, inappropriate-but-non-hateful house style.",
     "Return strict JSON only with keys: recommendations, safePick, wildcardPick.",
   ].join(" ")
+}
+
+const NOTE_STOP_WORDS = new Set([
+  "about",
+  "after",
+  "again",
+  "against",
+  "being",
+  "broad",
+  "category",
+  "challenge",
+  "challenging",
+  "designed",
+  "game",
+  "games",
+  "into",
+  "just",
+  "like",
+  "make",
+  "makes",
+  "more",
+  "most",
+  "over",
+  "players",
+  "problem",
+  "skills",
+  "such",
+  "than",
+  "that",
+  "their",
+  "them",
+  "these",
+  "those",
+  "very",
+  "what",
+  "with",
+])
+
+function uniquePreservingOrder(values: string[]) {
+  return Array.from(new Set(values))
+}
+
+function extractSemanticSignals(notes: string | null, tags: string[]) {
+  const noteTokens =
+    notes
+      ?.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, " ")
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 4)
+      .filter((token) => !NOTE_STOP_WORDS.has(token))
+      .slice(0, 12) ?? []
+
+  return uniquePreservingOrder([...tags.map((tag) => tag.trim()).filter(Boolean), ...noteTokens])
 }
 
 function buildRecommendationUserPayload(params: {
@@ -78,19 +134,25 @@ function buildRecommendationUserPayload(params: {
       preferenceFramework: {
         strongPreferences: [
           "Infer what the user explicitly wants: vibe, energy level, complexity, social dynamics, competitiveness, cooperation, conflict, and pacing.",
-          "Map the user's language to the closest tags from allKnownTags, even when the wording is indirect or slangy.",
-          "Prefer games that satisfy more strong preferences and better semantic tag overlap.",
+          "Map the user's language to the closest tags from allKnownTags, even when the wording is indirect, slangy, sarcastic, or emotionally loaded.",
+          "Use candidateGames.notes and candidateGames.semanticSignals to understand gameplay themes that tags alone might miss.",
+          "Prefer games that satisfy more strong preferences and better semantic overlap across tags, notes, and tone cues.",
         ],
         softPreferences: [
-          "Use game notes to break ties when they reinforce the user's vibe.",
+          "Use game notes to break ties when they reinforce the user's vibe, desired mental load, or social energy.",
           "Avoid recently played games when a similarly strong alternative exists.",
           "Reserve wildcardPick for a plausible but slightly bolder fit than the safest top pick.",
         ],
       },
+      toneHandling: [
+        "Read the user's tone as matching evidence: examples include chaotic, serious, rowdy, sarcastic, sleepy, competitive, or brain-burny.",
+        "Use tone to help choose games, not to override hard constraints or semantic fit.",
+        "Even if the user is polite, serious, or terse, write the final reason and warning in the existing house style.",
+      ],
       requiredReasoningSteps: [
-        "Step 1: extract hard constraints, strong preferences, soft preferences, and explicit dislikes from userPrompt.",
-        "Step 2: map the extracted intent to the closest tags from allKnownTags.",
-        "Step 3: rank candidateGames by overall fit, considering semantic tag match, vibe match, and freshness versus recentGameIds.",
+        "Step 1: extract hard constraints, strong preferences, soft preferences, explicit dislikes, and tone cues from userPrompt.",
+        "Step 2: map the extracted intent to the closest tags from allKnownTags and to related ideas surfaced by candidateGames.notes and candidateGames.semanticSignals.",
+        "Step 3: rank candidateGames by overall fit, considering semantic overlap, notes alignment, tone alignment, vibe match, and freshness versus recentGameIds.",
         "Step 4: write concise final reasons and warnings for the chosen games only.",
       ],
       outputRules: [
@@ -453,6 +515,7 @@ export async function POST(request: Request) {
       maxPlayers: game.max_players,
       notes: game.notes,
       tags: gameIdToTags.get(game.id) ?? [],
+      semanticSignals: extractSemanticSignals(game.notes, gameIdToTags.get(game.id) ?? []),
     }))
 
     const allKnownTags = Array.from(
