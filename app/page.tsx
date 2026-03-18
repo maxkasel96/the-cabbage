@@ -45,6 +45,14 @@ type ApiState = {
   result: unknown | null
 }
 
+type RecommendedGame = {
+  gameId: string
+  name: string
+  fitScore: number
+  reason: string
+  warning: string
+}
+
 const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
 
 
@@ -96,6 +104,7 @@ export default function Home() {
     error: null,
     result: null,
   })
+  const [recommendedGames, setRecommendedGames] = useState<RecommendedGame[]>([])
 
   // Multi-select winners (by player id)
   const [winnerPlayerIds, setWinnerPlayerIds] = useState<Set<string>>(new Set())
@@ -304,6 +313,72 @@ export default function Home() {
     setIsRolling(false)
   }
 
+  function extractRecommendedGames(result: unknown) {
+    if (!result || typeof result !== 'object') {
+      return []
+    }
+
+    const recommendations = (result as { recommendations?: unknown }).recommendations
+    if (!Array.isArray(recommendations)) {
+      return []
+    }
+
+    return recommendations
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object') {
+          return null
+        }
+
+        const recommendation = entry as {
+          gameId?: unknown
+          name?: unknown
+          fitScore?: unknown
+          reason?: unknown
+          warning?: unknown
+        }
+
+        if (typeof recommendation.gameId !== 'string' || typeof recommendation.name !== 'string') {
+          return null
+        }
+
+        const fitScore =
+          typeof recommendation.fitScore === 'number' && Number.isFinite(recommendation.fitScore)
+            ? recommendation.fitScore
+            : 0
+
+        return {
+          gameId: recommendation.gameId,
+          name: recommendation.name,
+          fitScore,
+          reason: typeof recommendation.reason === 'string' ? recommendation.reason : '',
+          warning: typeof recommendation.warning === 'string' ? recommendation.warning : '',
+        }
+      })
+      .filter((entry): entry is RecommendedGame => Boolean(entry))
+  }
+
+  function useRecommendedGame(recommendation: RecommendedGame) {
+    setStatus('')
+    setGame({
+      id: recommendation.gameId,
+      name: recommendation.name,
+      min_players: null,
+      max_players: null,
+      playtime_minutes: null,
+      notes: recommendation.reason || recommendation.warning || null,
+    })
+    setRollKey((key) => key + 1)
+    setGameStarted(false)
+    setTeamMode('')
+    setTeamCount('')
+    setTeams([])
+    setTeamStatus('')
+    setShowWinners(false)
+    setWinningTeamId(null)
+    setWinnerPlayerIds(new Set())
+    resetWinImage()
+  }
+
   async function runRecommendations() {
     if (!activeTournamentId) {
       setRecommendState({
@@ -315,6 +390,7 @@ export default function Home() {
     }
 
     setRecommendState({ loading: true, error: null, result: null })
+    setRecommendedGames([])
 
     try {
       const response = await fetch('/api/ai/recommend-games', {
@@ -332,12 +408,14 @@ export default function Home() {
       }
 
       setRecommendState({ loading: false, error: null, result: data })
+      setRecommendedGames(extractRecommendedGames(data))
     } catch (error) {
       setRecommendState({
         loading: false,
         error: error instanceof Error ? error.message : 'Recommendation request failed',
         result: null,
       })
+      setRecommendedGames([])
     }
   }
 
@@ -1421,10 +1499,10 @@ export default function Home() {
               </button>
 
               {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
-              {recommendState.result ? (
-                <pre style={{ marginTop: 12, padding: 12, background: '#f5f5f5', overflowX: 'auto' }}>
-                  {JSON.stringify(recommendState.result, null, 2)}
-                </pre>
+              {recommendState.result && recommendedGames.length === 0 ? (
+                <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  No recommendation cards were returned for this prompt.
+                </p>
               ) : null}
             </div>
           </section>
@@ -1434,6 +1512,47 @@ export default function Home() {
               <div className="sectionTitle">🎮 Game Setup & Results</div>
               <div className="sectionSubtitle">Configure, shuffle, and celebrate the winners.</div>
             </div>
+
+            {recommendedGames.length > 0 && (
+              <div style={{ display: 'grid', gap: 12 }}>
+                {recommendedGames.map((recommendation, index) => (
+                  <div key={`${recommendation.gameId}-${index}`} className="resultCard gameCardPop">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                      <div className="resultBadge">🤖 AI recommendation #{index + 1}</div>
+                      <div style={{ fontSize: 12, opacity: 0.7, color: 'var(--text-secondary)' }}>
+                        Fit score: {recommendation.fitScore.toFixed(2)}
+                      </div>
+                    </div>
+                    <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{recommendation.name}</h2>
+
+                    <div className="statRow">
+                      <div className="statPill">👥 Players: —</div>
+                      <div className="statPill">⏱️ Playtime: —</div>
+                    </div>
+
+                    {recommendation.reason ? (
+                      <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--text-secondary)' }}>
+                        {recommendation.reason}
+                      </p>
+                    ) : null}
+
+                    {recommendation.warning ? (
+                      <p style={{ margin: '8px 0', color: '#7c4f00' }}>⚠️ {recommendation.warning}</p>
+                    ) : null}
+
+                    <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => useRecommendedGame(recommendation)}
+                        className="startGameButton"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        Play this game ▶
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {status && (
               <p style={{ marginBottom: 16 }}>
