@@ -368,7 +368,7 @@ export default function Home() {
       notes: recommendation.reason || recommendation.warning || null,
     })
     setRollKey((key) => key + 1)
-    setGameStarted(false)
+    setGameStarted(true)
     setTeamMode('')
     setTeamCount('')
     setTeams([])
