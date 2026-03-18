@@ -54,6 +54,8 @@ type RecommendedGame = {
 }
 
 const DEFAULT_RECOMMENDATION_PROMPT = 'chaotic and funny'
+const RECOMMENDATION_LOADING_IMAGE_URL =
+  'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
 
 
 const TAG_CATEGORY_ORDER = [
@@ -1424,6 +1426,63 @@ export default function Home() {
           box-shadow: 0 14px 24px rgba(63, 90, 42, 0.24);
         }
 
+        .recommendationLoadingOverlay {
+          position: fixed;
+          inset: 0;
+          z-index: 90;
+          display: grid;
+          place-items: center;
+          padding: 24px;
+          background: rgba(28, 37, 24, 0.48);
+          backdrop-filter: blur(4px);
+        }
+
+        .recommendationLoadingPanel {
+          display: grid;
+          justify-items: center;
+          gap: 14px;
+          width: min(320px, 100%);
+          padding: 28px 24px;
+          border-radius: 24px;
+          border: 1px solid rgba(243, 245, 236, 0.22);
+          background: rgba(28, 37, 24, 0.72);
+          box-shadow: 0 24px 60px rgba(15, 20, 13, 0.32);
+          color: var(--text-inverse);
+          text-align: center;
+        }
+
+        .recommendationLoadingSpinner {
+          width: min(180px, 45vw);
+          height: min(180px, 45vw);
+          object-fit: contain;
+          filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.28));
+          animation: recommendation-loading-spin 1.2s linear infinite;
+        }
+
+        .recommendationLoadingCaption {
+          margin: 0;
+          font-size: 0.95rem;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: rgba(243, 245, 236, 0.92);
+        }
+
+        @keyframes recommendation-loading-spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .recommendationLoadingSpinner {
+            animation: none;
+          }
+        }
+
         .teamPanel {
           margin-top: 16px;
           padding: 14px;
@@ -1590,7 +1649,11 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="pageShell px-4 pb-12 pt-6 sm:px-6">
+      <div
+        className="pageShell px-4 pb-12 pt-6 sm:px-6"
+        inert={recommendState.loading ? '' : undefined}
+        aria-hidden={recommendState.loading}
+      >
         <div className="stickyHeader">
           <Nav />
         </div>
@@ -1811,6 +1874,23 @@ export default function Home() {
           </section>
         </div>
       </div>
+      {recommendState.loading && (
+        <div
+          className="recommendationLoadingOverlay"
+          role="alert"
+          aria-live="assertive"
+          aria-busy="true"
+        >
+          <div className="recommendationLoadingPanel">
+            <img
+              src={RECOMMENDATION_LOADING_IMAGE_URL}
+              alt=""
+              className="recommendationLoadingSpinner"
+            />
+            <p className="recommendationLoadingCaption">Generating recommendations...</p>
+          </div>
+        </div>
+      )}
       {welcomeModalOpen && (
         <div
           style={{
