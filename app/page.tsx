@@ -1456,7 +1456,7 @@ export default function Home() {
           height: min(180px, 45vw);
           object-fit: contain;
           filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.28));
-          animation: recommendation-loading-spin 1.2s linear infinite;
+          animation: recommendation-loading-bounce 1.8s ease-in-out infinite;
         }
 
         .recommendationLoadingCaption {
@@ -1468,12 +1468,13 @@ export default function Home() {
           color: rgba(243, 245, 236, 0.92);
         }
 
-        @keyframes recommendation-loading-spin {
-          from {
-            transform: rotate(0deg);
+        @keyframes recommendation-loading-bounce {
+          0%,
+          100% {
+            transform: translateY(0);
           }
-          to {
-            transform: rotate(360deg);
+          50% {
+            transform: translateY(-18px);
           }
         }
 
