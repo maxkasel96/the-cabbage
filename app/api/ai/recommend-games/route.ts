@@ -3,6 +3,7 @@ import "server-only"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
+import { requireMember } from "@/lib/auth/requireMember"
 import openai from "@/lib/openai"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 
@@ -448,6 +449,12 @@ function fallbackPick(
 }
 
 export async function POST(request: Request) {
+  const auth = await requireMember(request)
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status })
+  }
+
   let stage = "read_request"
 
   try {
