@@ -135,6 +135,32 @@ function normalizeFitScore(raw: Record<string, unknown>, fallbackScore: number) 
   return fallbackScore
 }
 
+function sanitizeRecommendationCopy(text: string) {
+  const compact = text.replace(/\s+/g, " ").trim()
+  if (!compact) return ""
+
+  const sentencePattern = /[^.!?]+[.!?]?/g
+  const sentences = compact.match(sentencePattern) ?? [compact]
+  const filtered = sentences
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .filter((sentence) => {
+      const normalized = sentence.toLowerCase()
+
+      if (normalized.includes("inferred tag")) return false
+      if (normalized.includes("supporting tag")) return false
+      if (normalized.includes("tag fit")) return false
+      if (normalized.includes("matches inferred")) return false
+      if (normalized.includes("player count")) return false
+      if (/\b\d+\s*[-–]\s*\d+\b/.test(sentence) && normalized.includes("fit")) return false
+      if (/\b\d+\s*player\b/i.test(sentence) || /\b\d+\s*players\b/i.test(sentence)) return false
+
+      return true
+    })
+
+  return filtered.join(" ").trim()
+}
+
 function normalizePick(raw: unknown) {
   if (!raw || typeof raw !== "object") return null
   const source = raw as Record<string, unknown>
@@ -148,7 +174,7 @@ function normalizePick(raw: unknown) {
   return {
     gameId,
     name,
-    reason: firstString(source.reason, source.why, source.explanation) ?? "",
+    reason: sanitizeRecommendationCopy(firstString(source.reason, source.why, source.explanation) ?? ""),
   }
 }
 
@@ -165,8 +191,8 @@ function normalizeRecommendation(rec: Record<string, unknown>, index: number, to
     gameId,
     name,
     fitScore: normalizeFitScore(rec, fallbackScore),
-    reason: firstString(rec.reason, rec.why, rec.explanation) ?? "",
-    warning: firstString(rec.warning, rec.note, rec.caveat) ?? "",
+    reason: sanitizeRecommendationCopy(firstString(rec.reason, rec.why, rec.explanation) ?? ""),
+    warning: sanitizeRecommendationCopy(firstString(rec.warning, rec.note, rec.caveat) ?? ""),
   }
 }
 
@@ -342,7 +368,7 @@ export async function POST(request: Request) {
         {
           role: "system",
           content:
-            "You are a board game recommendation assistant. Return strict JSON only with keys: recommendations, safePick, wildcardPick.",
+            "You are a board game recommendation assistant. Write in a crass, irreverent, inappropriate-but-non-hateful comedic tone by default. Return strict JSON only with keys: recommendations, safePick, wildcardPick.",
         },
         {
           role: "user",
@@ -352,7 +378,9 @@ export async function POST(request: Request) {
               "Prioritize player-count fit and semantic tag fit from the userPrompt.",
               "Infer intent from natural language and map it to the closest tags from allKnownTags.",
               "Prefer games that match more of the inferred tags.",
-              "Explicitly mention the supporting tags in each reason.",
+              "Do not mention inferred tags, tag names, supporting tags, or player count in any reason or warning.",
+              "Do not mention numeric player ranges or say that player count fits.",
+              "Keep every reason concise, punchy, and written in a crass, irreverent, inappropriate-but-non-hateful comedic tone.",
               "Avoid recently played games when possible.",
               "Return JSON only.",
               "If there are recommendations, always include safePick and wildcardPick.",
