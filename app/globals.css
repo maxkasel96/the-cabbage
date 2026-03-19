@@ -2972,6 +2972,55 @@ button:not(.cabbage-roll-button) svg,
   color: var(--text-secondary);
 }
 
+.spotify-playlist-modal__tabs {
+  display: inline-flex;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px;
+  border-radius: 18px;
+  background: rgba(46, 63, 42, 0.08);
+}
+
+.spotify-playlist-modal__tab {
+  appearance: none;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 12px 16px;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.spotify-playlist-modal__tab:hover {
+  color: var(--text-primary);
+}
+
+.spotify-playlist-modal__tab:focus-visible {
+  outline: 4px solid rgba(29, 185, 84, 0.2);
+  outline-offset: 2px;
+}
+
+.spotify-playlist-modal__tab--active {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-primary);
+  box-shadow: 0 8px 18px rgba(35, 53, 31, 0.08);
+}
+
+.spotify-playlist-modal__tab-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
 .spotify-playlist-modal__form {
   display: flex;
   flex-direction: column;
@@ -3088,6 +3137,96 @@ button:not(.cabbage-roll-button) svg,
   text-align: center;
 }
 
+.spotify-playlist-modal__tab-panel--favorites {
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.spotify-playlist-modal__favorites-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.spotify-playlist-modal__favorites-hero {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(46, 63, 42, 0.14);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.spotify-playlist-modal__favorites-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.spotify-playlist-modal__favorites-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.spotify-playlist-modal__favorites-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px dashed rgba(46, 63, 42, 0.18);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.spotify-playlist-modal__favorites-card--feature {
+  align-items: start;
+}
+
+.spotify-playlist-modal__favorites-chip {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(29, 185, 84, 0.14);
+  color: #0f5132;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spotify-playlist-modal__favorites-cover,
+.spotify-playlist-modal__favorites-line {
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(29, 185, 84, 0.12),
+    rgba(255, 255, 255, 0.9),
+    rgba(29, 185, 84, 0.12)
+  );
+  background-size: 200% 100%;
+  animation: scoreboard-shimmer 1.4s ease-in-out infinite;
+}
+
+.spotify-playlist-modal__favorites-cover {
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+}
+
+.spotify-playlist-modal__favorites-line {
+  height: 12px;
+}
+
+.spotify-playlist-modal__favorites-line--title {
+  height: 16px;
+  width: 72%;
+}
+
+.spotify-playlist-modal__favorites-line--wide {
+  width: 100%;
+}
+
+.spotify-playlist-modal__favorites-line--short {
+  width: 58%;
+}
+
 .spotify-playlist-modal__grid {
   display: grid;
   gap: 14px;
@@ -3172,6 +3311,16 @@ button:not(.cabbage-roll-button) svg,
     bottom: 92px;
     min-height: 52px;
     padding: 0 16px;
+  }
+
+  .spotify-playlist-modal__tabs {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .spotify-playlist-modal__tab {
+    width: 100%;
+    text-align: left;
   }
 
   .spotify-playlist-modal__controls {
