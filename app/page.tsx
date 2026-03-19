@@ -1336,17 +1336,13 @@ export default function Home() {
         }
 
         .activeFilterChip {
-          border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border-strong) 55%);
-          background: color-mix(in srgb, var(--surface-alt) 78%, #f5f9ed 22%);
-          color: var(--text-primary);
-          border-radius: 999px;
-          padding: 4px 10px;
+          color: inherit;
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 12px;
-          font-weight: 700;
-          line-height: 1;
+          font-size: inherit;
+          font-weight: inherit;
+          line-height: inherit;
         }
 
         .activeFilterRemove {
