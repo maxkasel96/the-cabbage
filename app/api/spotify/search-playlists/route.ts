@@ -29,7 +29,7 @@ type SpotifyPlaylistItem = {
 
 type SpotifySearchResponse = {
   playlists?: {
-    items?: SpotifyPlaylistItem[]
+    items?: Array<SpotifyPlaylistItem | null>
   }
 }
 
@@ -202,7 +202,11 @@ async function getSpotifyAccessToken() {
   return data.access_token
 }
 
-function normalizePlaylist(playlist: SpotifyPlaylistItem): NormalizedPlaylist | null {
+function normalizePlaylist(playlist: SpotifyPlaylistItem | null | undefined): NormalizedPlaylist | null {
+  if (!playlist) {
+    return null
+  }
+
   const id = typeof playlist.id === 'string' ? playlist.id : ''
   const name = typeof playlist.name === 'string' ? playlist.name : ''
   const spotifyUrl = typeof playlist.external_urls?.spotify === 'string' ? playlist.external_urls.spotify : ''
