@@ -2933,9 +2933,11 @@ button:not(.cabbage-roll-button) svg,
 
 .spotify-playlist-modal__content {
   width: min(720px, calc(100vw - 32px));
+  max-height: min(85vh, 760px);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: hidden;
 }
 
 .spotify-playlist-modal__header {
@@ -3036,7 +3038,28 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .spotify-playlist-modal__results {
-  min-height: 220px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
+
+.spotify-playlist-modal__results::-webkit-scrollbar {
+  width: 10px;
+}
+
+.spotify-playlist-modal__results::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(46, 63, 42, 0.08);
+}
+
+.spotify-playlist-modal__results::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(46, 63, 42, 0.28);
 }
 
 .spotify-playlist-modal__footer {
@@ -3146,6 +3169,10 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__controls {
     flex-direction: column;
+  }
+
+  .spotify-playlist-modal__content {
+    max-height: min(100vh - 32px, 760px);
   }
 
   .spotify-playlist-modal__search-button {
