@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdminRole } from '@/lib/auth/roles'
 import { authCookieName } from '@/lib/auth/token'
 
 const getToken = (req: NextRequest) => {
@@ -45,7 +46,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (role !== 'admin') {
+  if (!isAdminRole(role)) {
     if (isApiAdminRoute) {
       return NextResponse.json({ error: 'Admin access required.' }, { status: 403 })
     }

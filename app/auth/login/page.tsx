@@ -100,8 +100,8 @@ function LoginContent() {
       <h1 style={{ margin: 0, marginBottom: 8 }}>Sign in</h1>
       <p style={{ marginTop: 0, marginBottom: 20, color: 'var(--text-secondary)' }}>
         {isProduction
-          ? 'Use Google to authenticate with Supabase OAuth.'
-          : 'Use email/password (dev/preview) or Google OAuth to sign in.'}
+          ? 'Use Google to authenticate with Supabase OAuth. Your first sign-in will provision a profile automatically.'
+          : 'Use email/password (dev/preview) or Google OAuth to sign in. Your first sign-in will provision a profile automatically.'}
       </p>
 
       {canUsePasswordAuth ? (

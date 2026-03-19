@@ -1,4 +1,5 @@
 import { getAccessTokenFromRequest } from '@/lib/auth/token'
+import { isAdminRole } from '@/lib/auth/roles'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function requireAdmin(req: Request) {
@@ -14,9 +15,7 @@ export async function requireAdmin(req: Request) {
     return { ok: false, status: 401, message: 'Invalid authorization token.' }
   }
 
-  const role = data.user.app_metadata?.role ?? data.user.user_metadata?.role
-
-  if (role !== 'admin') {
+  if (!isAdminRole(data.user.app_metadata?.role ?? data.user.user_metadata?.role)) {
     return { ok: false, status: 403, message: 'Admin access required.' }
   }
 

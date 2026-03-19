@@ -2,7 +2,7 @@
 
 This app now supports Google sign-in through Supabase, and enforces two roles:
 
-- `member`
+- `standard`
 - `admin`
 
 Only `admin` can access `/admin/*` pages and `/api/admin/*` routes.
@@ -35,7 +35,9 @@ Role is read from `user.app_metadata.role` (fallback `user.user_metadata.role`).
 Expected values:
 
 - `admin`
-- `member`
+- `standard`
+
+Legacy `member` metadata is still normalized to `standard` in the app.
 
 If missing/invalid, app behavior treats users as non-admin.
 
@@ -43,7 +45,7 @@ If missing/invalid, app behavior treats users as non-admin.
 
 - Sign in with Google.
 - Visit `/admin/users` as an admin.
-- Change user role between `member` and `admin`.
+- Change user role between `standard` and `admin`.
 
 Under the hood, this uses Supabase Admin API (`auth.admin.updateUserById`) to write:
 
@@ -66,9 +68,9 @@ You need one initial admin account. Two options:
 1. Use Supabase Dashboard user editor and set `app_metadata.role = "admin"`.
 2. Use SQL editor with service tooling (or edge function) to update user metadata.
 
-After first admin exists, manage all roles from `/admin/users`.
+After first admin exists, manage all roles from `/admin/users`. Standard users can manage their own profile at `/account/profile`.
 
-## 7) Optional public user profile table (recommended)
+## 7) Public user profile framework
 
 If you want a queryable `public` table for app-side user metadata (instead of reading only from
 `auth.users` metadata), apply migration:
@@ -80,7 +82,9 @@ This creates `public.user_profiles` keyed by `auth.users.id`, with:
 - `user_id` (PK/FK to `auth.users`)
 - `email`
 - `display_name`
-- `role` (`member`/`admin`)
+- `role` (`standard`/`admin`)
+- `player_id` (nullable future link to `public.players`)
+- `profile_data` (generic JSON for future profile customizations)
 - `is_active`
 - `created_at`, `updated_at`, `last_sign_in_at`
 
@@ -88,10 +92,10 @@ It also adds:
 
 - Trigger-based sync from `auth.users` on insert/update.
 - Backfill for existing auth users.
-- RLS policies so users can view their own row and admins can view/update all rows.
+- A framework page at `/account/profile` for authenticated users.
+- Admin visibility of profile records from `/admin/users`.
 
-This table is optional for your current role-assignment flow, but useful for admin dashboards,
-auditing, and future profile features.
+This gives you the framework for future profile customization without locking you into specific user-editable fields yet.
 
 ## 8) Preview/local password sign-in
 
