@@ -3069,6 +3069,14 @@ button:not(.cabbage-roll-button) svg,
   color: var(--text-secondary);
 }
 
+.spotify-playlist-modal__footer {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
 .spotify-playlist-modal__empty-state {
   display: grid;
   place-items: center;

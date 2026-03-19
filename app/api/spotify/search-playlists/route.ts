@@ -41,6 +41,9 @@ type NormalizedPlaylist = {
 const SPOTIFY_SEARCH_LIMIT = '6'
 const MAX_QUERY_LENGTH = 100
 
+const SPOTIFY_SEARCH_LIMIT = '6'
+const MAX_QUERY_LENGTH = 100
+
 class SpotifyApiError extends Error {
   constructor(
     message: string,
