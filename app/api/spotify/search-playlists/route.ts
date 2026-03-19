@@ -67,10 +67,20 @@ type SpotifyRequestPreview = {
   }
 }
 
+type SpotifyErrorDiagnostics = {
+  kind: 'token' | 'search'
+  reason: 'missing_credentials' | 'upstream_failure' | 'invalid_response'
+  hasClientId: boolean
+  hasClientSecret: boolean
+  upstreamStatus: number | null
+}
+
 class SpotifyApiError extends Error {
   constructor(
     readonly kind: 'token' | 'search',
-    message: string
+    readonly reason: 'missing_credentials' | 'upstream_failure' | 'invalid_response',
+    message: string,
+    readonly upstreamStatus: number | null = null
   ) {
     super(message)
     this.name = 'SpotifyApiError'
@@ -113,12 +123,28 @@ function buildSpotifyRequestPreview(query: string): SpotifyRequestPreview {
   }
 }
 
+function getSpotifyCredentialPresence() {
+  return {
+    hasClientId: Boolean(process.env.SPOTIFY_CLIENT_ID?.trim()),
+    hasClientSecret: Boolean(process.env.SPOTIFY_CLIENT_SECRET?.trim()),
+  }
+}
+
+function buildSpotifyErrorDiagnostics(error: SpotifyApiError): SpotifyErrorDiagnostics {
+  return {
+    kind: error.kind,
+    reason: error.reason,
+    upstreamStatus: error.upstreamStatus,
+    ...getSpotifyCredentialPresence(),
+  }
+}
+
 function getSpotifyCredentials() {
   const clientId = process.env.SPOTIFY_CLIENT_ID?.trim()
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
-    throw new SpotifyApiError('token', 'Missing Spotify client credentials.')
+    throw new SpotifyApiError('token', 'missing_credentials', 'Missing Spotify client credentials.')
   }
 
   return { clientId, clientSecret }
@@ -144,14 +170,20 @@ async function getSpotifyAccessToken() {
     const errorBody = await response.text().catch(() => '')
     throw new SpotifyApiError(
       'token',
-      `Spotify token request failed with ${response.status}: ${errorBody}`
+      'upstream_failure',
+      `Spotify token request failed with ${response.status}: ${errorBody}`,
+      response.status
     )
   }
 
   const data = (await response.json()) as SpotifyAccessTokenResponse
 
   if (!data.access_token) {
-    throw new SpotifyApiError('token', 'Spotify token response did not include an access token.')
+    throw new SpotifyApiError(
+      'token',
+      'invalid_response',
+      'Spotify token response did not include an access token.'
+    )
   }
 
   return data.access_token
@@ -198,7 +230,9 @@ async function searchSpotifyPlaylists(query: string) {
     const errorBody = await response.text().catch(() => '')
     throw new SpotifyApiError(
       'search',
-      `Spotify search request failed with ${response.status}: ${errorBody}`
+      'upstream_failure',
+      `Spotify search request failed with ${response.status}: ${errorBody}`,
+      response.status
     )
   }
 
@@ -206,6 +240,32 @@ async function searchSpotifyPlaylists(query: string) {
   const items = Array.isArray(data.playlists?.items) ? data.playlists.items : []
 
   return items.map(normalizePlaylist).filter((playlist): playlist is NormalizedPlaylist => playlist !== null)
+}
+
+function getSpotifyErrorResponse(error: SpotifyApiError) {
+  const diagnostics = buildSpotifyErrorDiagnostics(error)
+  const baseErrorMessage =
+    error.kind === 'token'
+      ? 'Failed to fetch Spotify access token.'
+      : 'Failed to search Spotify playlists.'
+
+  if (error.reason === 'missing_credentials') {
+    return NextResponse.json(
+      {
+        error: 'Spotify search is not configured on this deployment.',
+        diagnostics,
+      },
+      { status: 503 }
+    )
+  }
+
+  return NextResponse.json(
+    {
+      error: baseErrorMessage,
+      diagnostics,
+    },
+    { status: 502 }
+  )
 }
 
 export async function POST(request: Request) {
@@ -239,15 +299,7 @@ export async function POST(request: Request) {
     console.error('Spotify playlist search failed.', error)
 
     if (error instanceof SpotifyApiError) {
-      return NextResponse.json(
-        {
-          error:
-            error.kind === 'token'
-              ? 'Failed to fetch Spotify access token.'
-              : 'Failed to search Spotify playlists.',
-        },
-        { status: 500 }
-      )
+      return getSpotifyErrorResponse(error)
     }
 
     return NextResponse.json({ error: 'Failed to search Spotify playlists.' }, { status: 500 })

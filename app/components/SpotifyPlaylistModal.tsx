@@ -40,10 +40,19 @@ type SpotifyRequestPreview = {
   }
 }
 
+type SpotifyPlaylistDiagnostics = {
+  kind: 'token' | 'search'
+  reason: 'missing_credentials' | 'upstream_failure' | 'invalid_response'
+  hasClientId: boolean
+  hasClientSecret: boolean
+  upstreamStatus: number | null
+}
+
 type SpotifyPlaylistResponse = {
   playlists?: PlaylistSuggestion[]
   error?: string
   test?: SpotifyRequestPreview
+  diagnostics?: SpotifyPlaylistDiagnostics
 }
 
 export default function SpotifyPlaylistModal() {
@@ -120,7 +129,24 @@ export default function SpotifyPlaylistModal() {
       const data = (await response.json().catch(() => ({}))) as SpotifyPlaylistResponse
 
       if (!response.ok) {
-        throw new Error(data.error || 'Unable to search Spotify playlists right now.')
+        const diagnostics = data.diagnostics
+        const diagnosticSummary = diagnostics
+          ? [
+              `kind=${diagnostics.kind}`,
+              `reason=${diagnostics.reason}`,
+              `hasClientId=${diagnostics.hasClientId ? 'yes' : 'no'}`,
+              `hasClientSecret=${diagnostics.hasClientSecret ? 'yes' : 'no'}`,
+              diagnostics.upstreamStatus !== null ? `upstreamStatus=${diagnostics.upstreamStatus}` : null,
+            ]
+              .filter(Boolean)
+              .join(', ')
+          : ''
+
+        throw new Error(
+          diagnosticSummary
+            ? `${data.error || 'Unable to search Spotify playlists right now.'} (${diagnosticSummary})`
+            : data.error || 'Unable to search Spotify playlists right now.'
+        )
       }
 
       setRequestPreview(data.test ?? null)
