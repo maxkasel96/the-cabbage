@@ -2,6 +2,8 @@ import 'server-only'
 
 import { NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+
 type SearchPlaylistsRequestBody = {
   query?: unknown
   testMode?: unknown
@@ -132,21 +134,43 @@ function getSpotifyCredentials() {
   return { clientId, clientSecret }
 }
 
+async function parseSpotifyJson<T>(response: Response, context: string): Promise<T> {
+  try {
+    return (await response.json()) as T
+  } catch (error) {
+    throw new SpotifyApiError(
+      `${context} returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+      502,
+      'Received an invalid response from Spotify. Please try again in a moment.'
+    )
+  }
+}
+
 async function getSpotifyAccessToken() {
   const { clientId, clientSecret } = getSpotifyCredentials()
   const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${basicAuth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-    }).toString(),
-    cache: 'no-store',
-  })
+  let response: Response
+
+  try {
+    response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+      }).toString(),
+      cache: 'no-store',
+    })
+  } catch (error) {
+    throw new SpotifyApiError(
+      `Spotify token request could not be completed: ${error instanceof Error ? error.message : String(error)}`,
+      502,
+      'Unable to reach Spotify right now. Please try again in a moment.'
+    )
+  }
 
   if (response.status === 429) {
     throw new SpotifyApiError(
@@ -165,7 +189,7 @@ async function getSpotifyAccessToken() {
     )
   }
 
-  const data = (await response.json()) as SpotifyAccessTokenResponse
+  const data = await parseSpotifyJson<SpotifyAccessTokenResponse>(response, 'Spotify token request')
 
   if (!data.access_token) {
     throw new SpotifyApiError(
@@ -207,13 +231,23 @@ async function searchSpotifyPlaylists(query: string) {
   searchUrl.searchParams.set('type', 'playlist')
   searchUrl.searchParams.set('limit', SPOTIFY_SEARCH_LIMIT)
 
-  const response = await fetch(searchUrl.toString(), {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    cache: 'no-store',
-  })
+  let response: Response
+
+  try {
+    response = await fetch(searchUrl.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: 'no-store',
+    })
+  } catch (error) {
+    throw new SpotifyApiError(
+      `Spotify search request could not be completed: ${error instanceof Error ? error.message : String(error)}`,
+      502,
+      'Unable to reach Spotify right now. Please try again in a moment.'
+    )
+  }
 
   if (response.status === 429) {
     throw new SpotifyApiError(
@@ -232,7 +266,7 @@ async function searchSpotifyPlaylists(query: string) {
     )
   }
 
-  const data = (await response.json()) as SpotifySearchResponse
+  const data = await parseSpotifyJson<SpotifySearchResponse>(response, 'Spotify playlist search')
   const items = Array.isArray(data.playlists?.items) ? data.playlists.items : []
 
   return items.map(normalizePlaylist).filter((playlist): playlist is NormalizedPlaylist => playlist !== null)
