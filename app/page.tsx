@@ -1368,6 +1368,12 @@ export default function Home() {
           color: #a61d24;
         }
 
+        .activeFilterRemove:focus-visible {
+          outline: 2px solid rgba(198, 40, 40, 0.35);
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
+
         .filtersCount {
           font-size: 12px;
           padding: 6px 10px;
@@ -1796,7 +1802,7 @@ export default function Home() {
                           <span>{tag.label}</span>
                           <button
                             type="button"
-                            className="activeFilterRemove"
+                            className="activeFilterRemove filter-chip-button"
                             onClick={() => toggleTag(tag.slug)}
                             aria-label={`Remove ${tag.label} filter`}
                             title={`Remove ${tag.label}`}
