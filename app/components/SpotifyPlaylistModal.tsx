@@ -176,7 +176,6 @@ export default function SpotifyPlaylistModal() {
                 </button>
 
                 <div className="spotify-playlist-modal__header">
-                  <p className="spotify-playlist-modal__eyebrow">Spotify playlist utility</p>
                   <h2 id="spotify-playlist-modal-title" className="spotify-playlist-modal__title">
                     Find a playlist for the table vibe
                   </h2>
