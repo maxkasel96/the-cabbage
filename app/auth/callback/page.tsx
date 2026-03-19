@@ -51,6 +51,28 @@ function AuthCallbackContent() {
         expiresAt = sessionData.session.expires_at
       }
 
+      const authorizationRes = await fetch('/api/auth/complete-player-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      })
+
+      if (!authorizationRes.ok) {
+        const authorizationBody = await authorizationRes.json().catch(() => ({}))
+        await supabase.auth.signOut()
+
+        if (isMounted) {
+          setStatus(
+            typeof authorizationBody.error === 'string'
+              ? authorizationBody.error
+              : 'This Google account is not authorized for this app.'
+          )
+        }
+
+        router.replace('/auth/unauthorized?reason=player')
+        return
+      }
+
       const sessionRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
