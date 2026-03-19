@@ -176,7 +176,7 @@ async function getSpotifyAccessToken() {
     throw new SpotifyApiError(
       'Spotify rate limited the token request.',
       429,
-      'Spotify is rate limiting requests right now. Please wait a moment and try again.'
+      'Spotify is receiving a lot of traffic right now. Please wait a moment and try again.'
     )
   }
 
@@ -253,7 +253,7 @@ async function searchSpotifyPlaylists(query: string) {
     throw new SpotifyApiError(
       'Spotify rate limited the playlist search request.',
       429,
-      'Spotify is rate limiting playlist searches right now. Please wait a moment and try again.'
+      'Spotify is receiving a lot of traffic right now. Please wait a moment and try again.'
     )
   }
 
@@ -282,7 +282,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const query = typeof body.query === 'string' ? body.query.trim() : ''
+  if (typeof body.query !== 'string') {
+    return NextResponse.json({ error: 'Enter a valid search term to find Spotify playlists.' }, { status: 400 })
+  }
+
+  const query = body.query.trim()
   const testMode = body.testMode === true
 
   if (!query) {

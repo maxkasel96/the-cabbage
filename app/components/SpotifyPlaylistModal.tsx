@@ -47,8 +47,8 @@ type SpotifyPlaylistResponse = {
 }
 
 const MAX_QUERY_LENGTH = 100
-const GENERIC_SEARCH_ERROR = 'We could not search Spotify right now. Please try again in a moment.'
-const RATE_LIMIT_ERROR = 'Spotify is a little busy right now. Please wait a moment and try again.'
+const GENERIC_SEARCH_ERROR = 'Something went wrong while searching Spotify. Please try again in a moment.'
+const RATE_LIMIT_ERROR = 'Spotify is receiving a lot of traffic right now. Please wait a moment and try again.'
 
 export default function SpotifyPlaylistModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -61,12 +61,12 @@ export default function SpotifyPlaylistModal() {
   const [activeAction, setActiveAction] = useState<'search' | 'preview' | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const [lastSubmittedSearchQuery, setLastSubmittedSearchQuery] = useState('')
-  const [hasEditedSinceLastSearch, setHasEditedSinceLastSearch] = useState(true)
 
   useBodyScrollLock(isOpen)
 
   const trimmedQuery = useMemo(() => query.trim(), [query])
-  const isSearchDisabled = loading || !trimmedQuery
+  const isDuplicateSearch = trimmedQuery.length > 0 && trimmedQuery === lastSubmittedSearchQuery
+  const isSearchDisabled = loading || !trimmedQuery || isDuplicateSearch
   const isPreviewDisabled = loading || !trimmedQuery
 
   useEffect(() => {
@@ -101,7 +101,6 @@ export default function SpotifyPlaylistModal() {
     setHasSearched(false)
     setActiveAction(null)
     setLastSubmittedSearchQuery('')
-    setHasEditedSinceLastSearch(true)
   }
 
   function openModal() {
@@ -129,7 +128,7 @@ export default function SpotifyPlaylistModal() {
       return
     }
 
-    if (mode === 'search' && nextQuery === lastSubmittedSearchQuery && !hasEditedSinceLastSearch) {
+    if (mode === 'search' && nextQuery === lastSubmittedSearchQuery) {
       return
     }
 
@@ -142,7 +141,6 @@ export default function SpotifyPlaylistModal() {
     if (mode === 'search') {
       setHasSearched(true)
       setLastSubmittedSearchQuery(nextQuery)
-      setHasEditedSinceLastSearch(false)
     }
 
     try {
@@ -245,7 +243,6 @@ export default function SpotifyPlaylistModal() {
                       value={query}
                       onChange={(event) => {
                         setQuery(event.target.value.slice(0, MAX_QUERY_LENGTH))
-                        setHasEditedSinceLastSearch(true)
                         if (error) {
                           setError('')
                         }
@@ -277,6 +274,7 @@ export default function SpotifyPlaylistModal() {
                   </div>
                   <p className="spotify-playlist-modal__helper">
                     Up to {MAX_QUERY_LENGTH} characters. Searches only when you press Search.
+                    {isDuplicateSearch ? ' Update the search text to run another search.' : ''}
                   </p>
                 </form>
 
@@ -308,7 +306,7 @@ export default function SpotifyPlaylistModal() {
                   {!hasSearched && !loading && !requestPreview ? (
                     <div className="spotify-playlist-modal__empty-state">
                       <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
-                        Start with a mood, artist era, or genre.
+                        Search Spotify for a mood, artist era, or genre.
                       </p>
                       <p className="spotify-playlist-modal__message">
                         Try something like “cozy acoustic”, “synthwave”, or “family game night”.
@@ -330,7 +328,7 @@ export default function SpotifyPlaylistModal() {
                   {!loading && hasSearched && !error && !requestPreview && results.length === 0 ? (
                     <div className="spotify-playlist-modal__empty-state">
                       <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
-                        No playlists matched that search.
+                        No playlists matched that search yet.
                       </p>
                       <p className="spotify-playlist-modal__message">
                         Try a broader mood, a simpler genre, or a different activity-based phrase.
@@ -346,9 +344,10 @@ export default function SpotifyPlaylistModal() {
                             key={playlist.id}
                             href={playlist.spotifyUrl}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             className="spotify-playlist-card"
                             aria-label={`Open ${playlist.name} in Spotify (opens in a new tab)`}
+                            title={`Open ${playlist.name} in Spotify`}
                           >
                             {playlist.imageUrl ? (
                               <img
