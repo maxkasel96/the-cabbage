@@ -149,7 +149,7 @@ export async function PATCH(req: Request) {
 
   const updates: { email?: string; is_active?: boolean; auth_user_id?: null } = {}
 
-  if (email !== undefined) {
+  if (typeof email === 'string') {
     updates.email = email
   }
 
