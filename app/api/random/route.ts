@@ -110,18 +110,36 @@ export async function GET(request: Request) {
   }
 
   // 5) Tags selected (OR semantics)
-  let q = (supabaseServer as any)
-    .from('games')
+  const matchingGameTags = await (supabaseServer as any)
+    .from('game_tags')
     .select(
       `
-      id, name, min_players, max_players, playtime_minutes, notes,
-      game_tags!inner(
-        tags!inner(slug)
-      )
+      game_id,
+      tags!inner(slug)
       `
     )
+    .in('tags.slug' as any, tagSlugs)
+
+  if (matchingGameTags.error) {
+    return NextResponse.json({ error: matchingGameTags.error.message }, { status: 500 })
+  }
+
+  const matchingGameIds = Array.from(
+    new Set((matchingGameTags.data ?? []).map((entry: any) => entry.game_id).filter(Boolean))
+  )
+
+  if (matchingGameIds.length === 0) {
+    return NextResponse.json(
+      { message: `No unplayed games found for tags: ${tagSlugs.join(', ')}` },
+      { status: 404 }
+    )
+  }
+
+  let q = supabaseServer
+    .from('games')
+    .select('id, name, min_players, max_players, playtime_minutes, notes')
     .eq('is_active', true)
-    .in('game_tags.tags.slug' as any, tagSlugs) // nested path typing workaround
+    .in('id', matchingGameIds)
 
   q = excludePlayed(q)
 
@@ -137,7 +155,7 @@ export async function GET(request: Request) {
 
   const filtered =
     shouldFilterByMaxPlayers
-      ? data.filter((game: any) => game.max_players === null || game.max_players >= maxPlayers)
+      ? data.filter((game) => game.max_players === null || game.max_players >= maxPlayers)
       : data
 
   if (filtered.length === 0) {

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { getRoleLabel } from '@/lib/auth/roles'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
@@ -21,7 +22,7 @@ export default function AuthControls() {
       if (!user) return
       setAuth({
         isAuthenticated: true,
-        role: user.app_metadata?.role ?? user.user_metadata?.role ?? null,
+        role: getRoleLabel(user.app_metadata?.role ?? user.user_metadata?.role ?? null),
       })
     })
 
@@ -35,7 +36,7 @@ export default function AuthControls() {
 
       setAuth({
         isAuthenticated: true,
-        role: session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null,
+        role: getRoleLabel(session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null),
       })
     })
 
@@ -64,11 +65,15 @@ export default function AuthControls() {
         gap: 10,
       }}
     >
+      <Link href="/account/profile">My profile</Link>
       {auth.role === 'admin' ? <Link href="/admin/games">Admin</Link> : null}
-      <Link href="/auth/logout" onClick={(event) => {
-        event.preventDefault()
-        void signOutAndRedirect()
-      }}>
+      <Link
+        href="/auth/logout"
+        onClick={(event) => {
+          event.preventDefault()
+          void signOutAndRedirect()
+        }}
+      >
         Sign out
       </Link>
     </div>

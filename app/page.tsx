@@ -648,12 +648,13 @@ export default function Home() {
     resetRecommendation()
   }
 
+  const selectedTags = tags.filter((tag) => selectedTagSlugs.has(tag.slug))
+
   const selectedLabels =
-    selectedTagSlugs.size === 0
+    selectedTags.length === 0
       ? 'None'
-      : tags
-          .filter((t) => selectedTagSlugs.has(t.slug))
-          .map((t) => t.label)
+      : selectedTags
+          .map((tag) => tag.label)
           .join(', ')
 
   const selectedWinnersLabel =
@@ -1317,6 +1318,56 @@ export default function Home() {
           border: 2px solid color-mix(in srgb, var(--primary) 32%, var(--divider-soft) 68%);
           font-size: 13px;
           color: var(--text-primary);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .filtersSummaryLabel {
+          font-weight: 700;
+        }
+
+        .activeFilterList {
+          display: inline-flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .activeFilterChip {
+          color: inherit;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: inherit;
+          font-weight: inherit;
+          line-height: inherit;
+        }
+
+        .activeFilterRemove {
+          appearance: none;
+          border: none;
+          background: none;
+          box-shadow: none;
+          color: #c62828;
+          cursor: pointer;
+          margin: 0;
+          padding: 0;
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1;
+          display: inline;
+        }
+
+        .activeFilterRemove:hover {
+          color: #a61d24;
+        }
+
+        .activeFilterRemove:focus-visible {
+          outline: 2px solid rgba(198, 40, 40, 0.35);
+          outline-offset: 2px;
+          border-radius: 2px;
         }
 
         .filtersCount {
@@ -1737,7 +1788,27 @@ export default function Home() {
               <div className="filtersMeta">
                 <div className="filtersCount">Active filters: {selectedTagSlugs.size}</div>
                 <div className="filtersSummary">
-                  <strong>Filters:</strong> {selectedLabels}
+                  <strong className="filtersSummaryLabel">Filters:</strong>
+                  {selectedTags.length === 0 ? (
+                    <span>{selectedLabels}</span>
+                  ) : (
+                    <div className="activeFilterList">
+                      {selectedTags.map((tag) => (
+                        <span key={tag.id} className="activeFilterChip">
+                          <span>{tag.label}</span>
+                          <button
+                            type="button"
+                            className="activeFilterRemove filter-chip-button"
+                            onClick={() => toggleTag(tag.slug)}
+                            aria-label={`Remove ${tag.label} filter`}
+                            title={`Remove ${tag.label}`}
+                          >
+                            x
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
