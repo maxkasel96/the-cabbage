@@ -213,7 +213,7 @@ export const defaultNavConfig: NavConfig = {
               id: '9aa7fba4-c0b9-49de-b8b5-a062ac0b0f04',
               href: '/admin/users',
               title: 'Users',
-              description: 'Manage admin and member role assignments.',
+              description: 'Manage admin and standard role assignments.',
               icon: 'users',
               tone: 'mint',
               sortOrder: 2,

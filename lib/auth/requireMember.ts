@@ -1,11 +1,14 @@
+import type { User } from '@supabase/supabase-js'
 import { getAccessTokenFromRequest } from '@/lib/auth/token'
+import { getRoleFromUser } from '@/lib/auth/roles'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 type AuthenticatedMember = {
   ok: true
   token: string
   userId: string
-  role: string | null
+  role: 'admin' | 'standard'
+  user: User
 }
 
 type UnauthorizedMember = {
@@ -27,17 +30,11 @@ export async function requireMember(req: Request): Promise<AuthenticatedMember |
     return { ok: false, status: 401, message: 'Invalid authorization token.' }
   }
 
-  const role = data.user.app_metadata?.role ?? data.user.user_metadata?.role ?? null
-
-  if (role !== 'admin' && role !== 'member') {
-    return { ok: false, status: 403, message: 'Member access required.' }
-  }
-
   return {
     ok: true,
     token,
     userId: data.user.id,
-    role,
+    role: getRoleFromUser(data.user),
+    user: data.user,
   }
 }
-

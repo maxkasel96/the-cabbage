@@ -5,13 +5,32 @@ import AdminSubNav from '@/app/components/AdminSubNav'
 import Nav from '@/app/components/Nav'
 import PageTitle from '@/app/components/PageTitle'
 
-type UserRole = 'admin' | 'member'
+type UserRole = 'admin' | 'standard'
 
 type AdminUser = {
   id: string
   email: string | null
   role: UserRole
   created_at: string
+  profile: {
+    display_name: string | null
+    player_id: string | null
+    linked_player_name: string | null
+    updated_at: string
+  } | null
+}
+
+const formatDate = (value: string) => {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Unknown'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
 }
 
 export default function AdminUsersPage() {
@@ -82,7 +101,10 @@ export default function AdminUsersPage() {
           <AdminSubNav />
           <div className="admin-content">
             <PageTitle>Admin: Users</PageTitle>
-            <p>Assign one of the two supported roles: member or admin.</p>
+            <p>
+              Assign one of the two supported roles: standard or admin. Each authenticated account also now has a
+              profile record that can later be linked to a player.
+            </p>
 
             {status ? <p>{status}</p> : null}
 
@@ -94,6 +116,9 @@ export default function AdminUsersPage() {
                   <tr>
                     <th style={{ textAlign: 'left', padding: '8px 6px' }}>Email</th>
                     <th style={{ textAlign: 'left', padding: '8px 6px' }}>Current role</th>
+                    <th style={{ textAlign: 'left', padding: '8px 6px' }}>Display name</th>
+                    <th style={{ textAlign: 'left', padding: '8px 6px' }}>Linked player</th>
+                    <th style={{ textAlign: 'left', padding: '8px 6px' }}>Profile updated</th>
                     <th style={{ textAlign: 'left', padding: '8px 6px' }}>Set role</th>
                   </tr>
                 </thead>
@@ -107,6 +132,15 @@ export default function AdminUsersPage() {
                         {user.role}
                       </td>
                       <td style={{ padding: '8px 6px', borderTop: '1px solid var(--border-subtle)' }}>
+                        {user.profile?.display_name ?? 'Not set'}
+                      </td>
+                      <td style={{ padding: '8px 6px', borderTop: '1px solid var(--border-subtle)' }}>
+                        {user.profile?.linked_player_name ?? (user.profile?.player_id ? user.profile.player_id : 'Not linked')}
+                      </td>
+                      <td style={{ padding: '8px 6px', borderTop: '1px solid var(--border-subtle)' }}>
+                        {user.profile?.updated_at ? formatDate(user.profile.updated_at) : 'Not created'}
+                      </td>
+                      <td style={{ padding: '8px 6px', borderTop: '1px solid var(--border-subtle)' }}>
                         <select
                           disabled={savingUserId === user.id}
                           value={user.role}
@@ -114,7 +148,7 @@ export default function AdminUsersPage() {
                             void updateRole(user.id, event.target.value as UserRole)
                           }}
                         >
-                          <option value="member">member</option>
+                          <option value="standard">standard</option>
                           <option value="admin">admin</option>
                         </select>
                       </td>

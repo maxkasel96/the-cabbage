@@ -10,6 +10,7 @@ import type {
 } from 'react'
 import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
+import { getRoleLabel } from '@/lib/auth/roles'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
@@ -175,7 +176,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       setAuth({
         isAuthenticated: true,
         isAuthorized: true,
-        role: user.app_metadata?.role ?? user.user_metadata?.role ?? null,
+        role: getRoleLabel(user.app_metadata?.role ?? user.user_metadata?.role ?? null),
       })
     })
 
@@ -192,7 +193,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       setAuth({
         isAuthenticated: true,
         isAuthorized: true,
-        role: session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null,
+        role: getRoleLabel(session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null),
       })
     })
 
@@ -495,7 +496,10 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       return [{ href: '/auth/login', label: 'Sign in' }]
     }
 
-    return [{ href: '/auth/logout', label: 'Sign out' }]
+    return [
+      { href: '/account/profile', label: 'My profile' },
+      { href: '/auth/logout', label: 'Sign out' },
+    ]
   }, [auth.isAuthenticated, auth.isAuthorized])
 
   return (

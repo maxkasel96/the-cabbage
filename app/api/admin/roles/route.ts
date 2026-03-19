@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { normalizeAppRole, type AppRole } from '@/lib/auth/roles'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
+import { listUserProfiles } from '@/lib/userProfiles'
 
-type Role = 'admin' | 'member'
-
-const parseRole = (value: unknown): Role | null => {
-  if (value === 'admin' || value === 'member') {
-    return value
+const parseRole = (value: unknown): AppRole | null => {
+  if (value === 'admin' || value === 'standard' || value === 'member') {
+    return normalizeAppRole(value)
   }
 
   return null
@@ -20,20 +20,41 @@ export async function GET(req: Request) {
   }
 
   const supabase = getSupabaseServiceRole()
-  const { data, error } = await supabase.auth.admin.listUsers()
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  try {
+    const [{ data, error }, profiles] = await Promise.all([supabase.auth.admin.listUsers(), listUserProfiles()])
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    const profileMap = new Map(profiles.map((profile) => [profile.user_id, profile]))
+    const users = data.users.map((user) => {
+      const profile = profileMap.get(user.id)
+
+      return {
+        id: user.id,
+        email: user.email,
+        role: parseRole(user.app_metadata?.role) ?? 'standard',
+        created_at: user.created_at,
+        profile: profile
+          ? {
+              display_name: profile.display_name,
+              player_id: profile.player_id,
+              linked_player_name: profile.linked_player?.display_name ?? null,
+              updated_at: profile.updated_at,
+            }
+          : null,
+      }
+    })
+
+    return NextResponse.json({ users })
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to load user profiles.' },
+      { status: 500 }
+    )
   }
-
-  const users = data.users.map((user) => ({
-    id: user.id,
-    email: user.email,
-    role: parseRole(user.app_metadata?.role) ?? 'member',
-    created_at: user.created_at,
-  }))
-
-  return NextResponse.json({ users })
 }
 
 export async function PATCH(req: Request) {
@@ -52,8 +73,20 @@ export async function PATCH(req: Request) {
   }
 
   const supabase = getSupabaseServiceRole()
+  const { data: existingUser, error: existingUserError } = await supabase.auth.admin.getUserById(userId)
+
+  if (existingUserError || !existingUser.user) {
+    return NextResponse.json(
+      { error: existingUserError?.message ?? 'Failed to load the selected user.' },
+      { status: 500 }
+    )
+  }
+
   const { data, error } = await supabase.auth.admin.updateUserById(userId, {
-    app_metadata: { role },
+    app_metadata: {
+      ...(existingUser.user.app_metadata ?? {}),
+      role,
+    },
   })
 
   if (error || !data.user) {
@@ -64,7 +97,7 @@ export async function PATCH(req: Request) {
     user: {
       id: data.user.id,
       email: data.user.email,
-      role: parseRole(data.user.app_metadata?.role) ?? 'member',
+      role: parseRole(data.user.app_metadata?.role) ?? 'standard',
     },
   })
 }

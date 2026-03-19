@@ -6,8 +6,7 @@ export default function UnauthorizedPage() {
       <div style={{ maxWidth: 520, textAlign: 'center' }}>
         <h1>Admin access required</h1>
         <p>
-          Your account is signed in but does not have an admin role. Contact an existing admin to
-          grant your role.
+          Your account is signed in but does not have an admin role. Contact an existing admin if you need elevated access.
         </p>
         <Link href="/">Return home</Link>
       </div>
