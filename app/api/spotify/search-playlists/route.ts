@@ -6,7 +6,6 @@ export const runtime = 'nodejs'
 
 type SearchPlaylistsRequestBody = {
   query?: unknown
-  testMode?: unknown
 }
 
 type SpotifyAccessTokenResponse = {
@@ -41,34 +40,6 @@ type NormalizedPlaylist = {
   spotifyUrl: string
 }
 
-type SpotifyRequestPreview = {
-  mode: 'test'
-  query: string
-  hasClientId: boolean
-  hasClientSecret: boolean
-  tokenRequest: {
-    url: string
-    method: 'POST'
-    headers: {
-      authorization: 'Basic <base64(client_id:client_secret)>'
-      contentType: 'application/x-www-form-urlencoded'
-    }
-    body: 'grant_type=client_credentials'
-  }
-  searchRequest: {
-    url: string
-    method: 'GET'
-    headers: {
-      authorization: 'Bearer <spotify_access_token>'
-    }
-    queryParams: {
-      q: string
-      type: 'playlist'
-      limit: '6'
-    }
-  }
-}
-
 const SPOTIFY_SEARCH_LIMIT = '6'
 const MAX_QUERY_LENGTH = 100
 
@@ -80,42 +51,6 @@ class SpotifyApiError extends Error {
   ) {
     super(message)
     this.name = 'SpotifyApiError'
-  }
-}
-
-function buildSpotifyRequestPreview(query: string): SpotifyRequestPreview {
-  const searchUrl = new URL('https://api.spotify.com/v1/search')
-
-  searchUrl.searchParams.set('q', query)
-  searchUrl.searchParams.set('type', 'playlist')
-  searchUrl.searchParams.set('limit', SPOTIFY_SEARCH_LIMIT)
-
-  return {
-    mode: 'test',
-    query,
-    hasClientId: Boolean(process.env.SPOTIFY_CLIENT_ID?.trim()),
-    hasClientSecret: Boolean(process.env.SPOTIFY_CLIENT_SECRET?.trim()),
-    tokenRequest: {
-      url: 'https://accounts.spotify.com/api/token',
-      method: 'POST',
-      headers: {
-        authorization: 'Basic <base64(client_id:client_secret)>',
-        contentType: 'application/x-www-form-urlencoded',
-      },
-      body: 'grant_type=client_credentials',
-    },
-    searchRequest: {
-      url: searchUrl.toString(),
-      method: 'GET',
-      headers: {
-        authorization: 'Bearer <spotify_access_token>',
-      },
-      queryParams: {
-        q: query,
-        type: 'playlist',
-        limit: SPOTIFY_SEARCH_LIMIT,
-      },
-    },
   }
 }
 
@@ -291,8 +226,6 @@ export async function POST(request: Request) {
   }
 
   const query = body.query.trim()
-  const testMode = body.testMode === true
-
   if (!query) {
     return NextResponse.json({ error: 'Enter a search term to find Spotify playlists.' }, { status: 400 })
   }
@@ -302,13 +235,6 @@ export async function POST(request: Request) {
       { error: `Search terms must be ${MAX_QUERY_LENGTH} characters or fewer.` },
       { status: 400 }
     )
-  }
-
-  if (testMode) {
-    return NextResponse.json({
-      playlists: [],
-      test: buildSpotifyRequestPreview(query),
-    })
   }
 
   try {

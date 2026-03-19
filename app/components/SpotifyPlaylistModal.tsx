@@ -12,38 +12,9 @@ export type PlaylistSuggestion = {
   spotifyUrl: string
 }
 
-type SpotifyRequestPreview = {
-  mode: 'test'
-  query: string
-  hasClientId: boolean
-  hasClientSecret: boolean
-  tokenRequest: {
-    url: string
-    method: 'POST'
-    headers: {
-      authorization: string
-      contentType: string
-    }
-    body: string
-  }
-  searchRequest: {
-    url: string
-    method: 'GET'
-    headers: {
-      authorization: string
-    }
-    queryParams: {
-      q: string
-      type: 'playlist'
-      limit: '6'
-    }
-  }
-}
-
 type SpotifyPlaylistResponse = {
   playlists?: PlaylistSuggestion[]
   error?: string
-  test?: SpotifyRequestPreview
 }
 
 const MAX_QUERY_LENGTH = 100
@@ -56,9 +27,7 @@ export default function SpotifyPlaylistModal() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [results, setResults] = useState<PlaylistSuggestion[]>([])
-  const [requestPreview, setRequestPreview] = useState<SpotifyRequestPreview | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
-  const [activeAction, setActiveAction] = useState<'search' | 'preview' | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const [lastSubmittedSearchQuery, setLastSubmittedSearchQuery] = useState('')
 
@@ -67,7 +36,6 @@ export default function SpotifyPlaylistModal() {
   const trimmedQuery = useMemo(() => query.trim(), [query])
   const isDuplicateSearch = trimmedQuery.length > 0 && trimmedQuery === lastSubmittedSearchQuery
   const isSearchDisabled = loading || !trimmedQuery || isDuplicateSearch
-  const isPreviewDisabled = loading || !trimmedQuery
 
   useEffect(() => {
     setIsMounted(true)
@@ -97,9 +65,7 @@ export default function SpotifyPlaylistModal() {
     setLoading(false)
     setError('')
     setResults([])
-    setRequestPreview(null)
     setHasSearched(false)
-    setActiveAction(null)
     setLastSubmittedSearchQuery('')
   }
 
@@ -113,7 +79,7 @@ export default function SpotifyPlaylistModal() {
     resetSearchSession()
   }
 
-  async function submitRequest(mode: 'search' | 'preview') {
+  async function submitSearch() {
     if (loading) {
       return
     }
@@ -123,25 +89,19 @@ export default function SpotifyPlaylistModal() {
     if (!nextQuery) {
       setError('Enter a vibe, genre, or mood to search Spotify playlists.')
       setResults([])
-      setRequestPreview(null)
       setHasSearched(false)
       return
     }
 
-    if (mode === 'search' && nextQuery === lastSubmittedSearchQuery) {
+    if (nextQuery === lastSubmittedSearchQuery) {
       return
     }
 
     setQuery(nextQuery)
     setLoading(true)
-    setActiveAction(mode)
     setError('')
-    setRequestPreview(null)
-
-    if (mode === 'search') {
-      setHasSearched(true)
-      setLastSubmittedSearchQuery(nextQuery)
-    }
+    setHasSearched(true)
+    setLastSubmittedSearchQuery(nextQuery)
 
     try {
       const response = await fetch('/api/spotify/search-playlists', {
@@ -151,7 +111,6 @@ export default function SpotifyPlaylistModal() {
         },
         body: JSON.stringify({
           query: nextQuery,
-          testMode: mode === 'preview',
         }),
       })
 
@@ -165,22 +124,13 @@ export default function SpotifyPlaylistModal() {
         throw new Error(data.error || GENERIC_SEARCH_ERROR)
       }
 
-      setRequestPreview(data.test ?? null)
-      setResults(mode === 'search' && Array.isArray(data.playlists) ? data.playlists : [])
+      setResults(Array.isArray(data.playlists) ? data.playlists : [])
     } catch (requestError) {
       console.error('Spotify playlist request failed.', requestError)
       setResults([])
-      setRequestPreview(null)
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : mode === 'search'
-            ? GENERIC_SEARCH_ERROR
-            : 'We could not prepare the Spotify request preview right now. Please try again.'
-      )
+      setError(requestError instanceof Error ? requestError.message : GENERIC_SEARCH_ERROR)
     } finally {
       setLoading(false)
-      setActiveAction(null)
     }
   }
 
@@ -230,7 +180,7 @@ export default function SpotifyPlaylistModal() {
                   className="spotify-playlist-modal__form"
                   onSubmit={(event) => {
                     event.preventDefault()
-                    void submitRequest('search')
+                    void submitSearch()
                   }}
                 >
                   <label className="spotify-playlist-modal__label" htmlFor="spotify-playlist-query">
@@ -252,25 +202,14 @@ export default function SpotifyPlaylistModal() {
                       autoComplete="off"
                       maxLength={MAX_QUERY_LENGTH}
                     />
-                    <div className="spotify-playlist-modal__actions">
-                      <button
-                        type="submit"
-                        className="spotify-playlist-modal__search-button"
-                        disabled={isSearchDisabled}
-                        aria-disabled={isSearchDisabled}
-                      >
-                        {loading && activeAction === 'search' ? 'Searching Spotify...' : 'Search'}
-                      </button>
-                      <button
-                        type="button"
-                        className="spotify-playlist-modal__preview-button"
-                        onClick={() => void submitRequest('preview')}
-                        disabled={isPreviewDisabled}
-                        aria-disabled={isPreviewDisabled}
-                      >
-                        {loading && activeAction === 'preview' ? 'Preparing…' : 'Preview request'}
-                      </button>
-                    </div>
+                    <button
+                      type="submit"
+                      className="spotify-playlist-modal__search-button"
+                      disabled={isSearchDisabled}
+                      aria-disabled={isSearchDisabled}
+                    >
+                      {loading ? 'Searching Spotify...' : 'Search'}
+                    </button>
                   </div>
                   <p className="spotify-playlist-modal__helper">
                     Up to {MAX_QUERY_LENGTH} characters. Searches only when you press Search.
@@ -284,26 +223,8 @@ export default function SpotifyPlaylistModal() {
                   </p>
                 ) : null}
 
-                {requestPreview ? (
-                  <div className="spotify-playlist-preview" aria-live="polite">
-                    <div className="spotify-playlist-preview__header">
-                      <p className="spotify-playlist-preview__title">Spotify request preview</p>
-                      <p className="spotify-playlist-preview__subtitle">
-                        Safe debug output showing what this app is prepared to send to Spotify.
-                      </p>
-                    </div>
-                    <div className="spotify-playlist-preview__meta">
-                      <span>Client ID present: {requestPreview.hasClientId ? 'Yes' : 'No'}</span>
-                      <span>Client secret present: {requestPreview.hasClientSecret ? 'Yes' : 'No'}</span>
-                    </div>
-                    <pre className="spotify-playlist-preview__code">
-{JSON.stringify(requestPreview, null, 2)}
-                    </pre>
-                  </div>
-                ) : null}
-
                 <div className="spotify-playlist-modal__results" aria-live="polite">
-                  {!hasSearched && !loading && !requestPreview ? (
+                  {!hasSearched && !loading ? (
                     <div className="spotify-playlist-modal__empty-state">
                       <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
                         Search Spotify for a mood, artist era, or genre.
@@ -314,7 +235,7 @@ export default function SpotifyPlaylistModal() {
                     </div>
                   ) : null}
 
-                  {loading && activeAction === 'search' ? (
+                  {loading ? (
                     <div className="spotify-playlist-modal__empty-state">
                       <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
                         Searching Spotify...
@@ -325,7 +246,7 @@ export default function SpotifyPlaylistModal() {
                     </div>
                   ) : null}
 
-                  {!loading && hasSearched && !error && !requestPreview && results.length === 0 ? (
+                  {!loading && hasSearched && !error && results.length === 0 ? (
                     <div className="spotify-playlist-modal__empty-state">
                       <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
                         No playlists matched that search yet.
