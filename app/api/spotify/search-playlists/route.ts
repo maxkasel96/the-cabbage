@@ -67,10 +67,14 @@ type SpotifyRequestPreview = {
   }
 }
 
+const SPOTIFY_SEARCH_LIMIT = '6'
+const MAX_QUERY_LENGTH = 100
+
 class SpotifyApiError extends Error {
   constructor(
-    readonly kind: 'token' | 'search',
-    message: string
+    message: string,
+    readonly status: number = 502,
+    readonly publicMessage: string = 'Unable to search Spotify playlists right now.'
   ) {
     super(message)
     this.name = 'SpotifyApiError'
@@ -82,7 +86,7 @@ function buildSpotifyRequestPreview(query: string): SpotifyRequestPreview {
 
   searchUrl.searchParams.set('q', query)
   searchUrl.searchParams.set('type', 'playlist')
-  searchUrl.searchParams.set('limit', '6')
+  searchUrl.searchParams.set('limit', SPOTIFY_SEARCH_LIMIT)
 
   return {
     mode: 'test',
@@ -107,7 +111,7 @@ function buildSpotifyRequestPreview(query: string): SpotifyRequestPreview {
       queryParams: {
         q: query,
         type: 'playlist',
-        limit: '6',
+        limit: SPOTIFY_SEARCH_LIMIT,
       },
     },
   }
@@ -118,7 +122,11 @@ function getSpotifyCredentials() {
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
-    throw new SpotifyApiError('token', 'Missing Spotify client credentials.')
+    throw new SpotifyApiError(
+      'Missing Spotify client credentials.',
+      503,
+      'Spotify playlist search is not configured right now.'
+    )
   }
 
   return { clientId, clientSecret }
@@ -140,18 +148,31 @@ async function getSpotifyAccessToken() {
     cache: 'no-store',
   })
 
+  if (response.status === 429) {
+    throw new SpotifyApiError(
+      'Spotify rate limited the token request.',
+      429,
+      'Spotify is rate limiting requests right now. Please wait a moment and try again.'
+    )
+  }
+
   if (!response.ok) {
     const errorBody = await response.text().catch(() => '')
     throw new SpotifyApiError(
-      'token',
-      `Spotify token request failed with ${response.status}: ${errorBody}`
+      `Spotify token request failed with ${response.status}: ${errorBody}`,
+      502,
+      'Unable to connect to Spotify right now. Please try again in a moment.'
     )
   }
 
   const data = (await response.json()) as SpotifyAccessTokenResponse
 
   if (!data.access_token) {
-    throw new SpotifyApiError('token', 'Spotify token response did not include an access token.')
+    throw new SpotifyApiError(
+      'Spotify token response did not include an access token.',
+      502,
+      'Unable to connect to Spotify right now. Please try again in a moment.'
+    )
   }
 
   return data.access_token
@@ -184,7 +205,7 @@ async function searchSpotifyPlaylists(query: string) {
 
   searchUrl.searchParams.set('q', query)
   searchUrl.searchParams.set('type', 'playlist')
-  searchUrl.searchParams.set('limit', '6')
+  searchUrl.searchParams.set('limit', SPOTIFY_SEARCH_LIMIT)
 
   const response = await fetch(searchUrl.toString(), {
     method: 'GET',
@@ -194,11 +215,20 @@ async function searchSpotifyPlaylists(query: string) {
     cache: 'no-store',
   })
 
+  if (response.status === 429) {
+    throw new SpotifyApiError(
+      'Spotify rate limited the playlist search request.',
+      429,
+      'Spotify is rate limiting playlist searches right now. Please wait a moment and try again.'
+    )
+  }
+
   if (!response.ok) {
     const errorBody = await response.text().catch(() => '')
     throw new SpotifyApiError(
-      'search',
-      `Spotify search request failed with ${response.status}: ${errorBody}`
+      `Spotify search request failed with ${response.status}: ${errorBody}`,
+      502,
+      'Unable to search Spotify right now. Please try again in a moment.'
     )
   }
 
@@ -222,7 +252,14 @@ export async function POST(request: Request) {
   const testMode = body.testMode === true
 
   if (!query) {
-    return NextResponse.json({ error: 'query must be a non-empty string.' }, { status: 400 })
+    return NextResponse.json({ error: 'Enter a search term to find Spotify playlists.' }, { status: 400 })
+  }
+
+  if (query.length > MAX_QUERY_LENGTH) {
+    return NextResponse.json(
+      { error: `Search terms must be ${MAX_QUERY_LENGTH} characters or fewer.` },
+      { status: 400 }
+    )
   }
 
   if (testMode) {
@@ -236,20 +273,18 @@ export async function POST(request: Request) {
     const playlists = await searchSpotifyPlaylists(query)
     return NextResponse.json({ playlists })
   } catch (error) {
-    console.error('Spotify playlist search failed.', error)
-
     if (error instanceof SpotifyApiError) {
-      return NextResponse.json(
-        {
-          error:
-            error.kind === 'token'
-              ? 'Failed to fetch Spotify access token.'
-              : 'Failed to search Spotify playlists.',
-        },
-        { status: 500 }
-      )
+      if (error.status >= 500) {
+        console.error('Spotify playlist search failed.', error)
+      }
+
+      return NextResponse.json({ error: error.publicMessage }, { status: error.status })
     }
 
-    return NextResponse.json({ error: 'Failed to search Spotify playlists.' }, { status: 500 })
+    console.error('Spotify playlist search failed.', error)
+    return NextResponse.json(
+      { error: 'Unable to search Spotify playlists right now. Please try again later.' },
+      { status: 500 }
+    )
   }
 }

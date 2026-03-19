@@ -2976,6 +2976,12 @@ button:not(.cabbage-roll-button) svg,
   color: var(--text-primary);
 }
 
+.spotify-playlist-modal__helper {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
 .spotify-playlist-modal__controls {
   display: flex;
   gap: 12px;
@@ -3019,6 +3025,11 @@ button:not(.cabbage-roll-button) svg,
   color: var(--text-secondary);
 }
 
+.spotify-playlist-modal__message--strong {
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
 .spotify-playlist-modal__message--error {
   color: #9f1d35;
   font-weight: 700;
@@ -3026,6 +3037,14 @@ button:not(.cabbage-roll-button) svg,
 
 .spotify-playlist-modal__results {
   min-height: 220px;
+}
+
+.spotify-playlist-modal__footer {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-secondary);
 }
 
 .spotify-playlist-modal__empty-state {
@@ -3109,6 +3128,9 @@ button:not(.cabbage-roll-button) svg,
 
 .spotify-playlist-card__cta {
   margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.9rem;
   font-weight: 800;
   color: #0f5132;
