@@ -137,10 +137,12 @@ export default function AdminAppConfigurationsPage() {
       return
     }
 
-    if (data.playlist) {
+    const nextPlaylist = data.playlist
+
+    if (nextPlaylist) {
       setPlaylists((prev) => {
-        const withoutExisting = prev.filter((playlist) => playlist.id !== data.playlist?.id)
-        return [...withoutExisting, data.playlist]
+        const withoutExisting = prev.filter((playlist) => playlist.id !== nextPlaylist.id)
+        return [...withoutExisting, nextPlaylist]
       })
     }
 
@@ -178,8 +180,10 @@ export default function AdminAppConfigurationsPage() {
       return
     }
 
-    if (data.playlist) {
-      setPlaylists((prev) => prev.map((playlist) => (playlist.id === playlistId ? data.playlist! : playlist)))
+    const updatedPlaylist = data.playlist
+
+    if (updatedPlaylist) {
+      setPlaylists((prev) => prev.map((playlist) => (playlist.id === playlistId ? updatedPlaylist : playlist)))
     }
 
     setStatus('Playlist order updated.')
