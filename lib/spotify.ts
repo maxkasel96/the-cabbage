@@ -29,6 +29,7 @@ type SpotifySearchResponse = {
 }
 
 const SPOTIFY_PLAYLIST_ID_PATTERN = /^[A-Za-z0-9]{22}$/
+const SPOTIFY_PLAYLIST_SEARCH_LIMIT = '10'
 
 export class SpotifyApiError extends Error {
   constructor(
@@ -183,7 +184,7 @@ export async function searchSpotifyPlaylists(query: string) {
   const searchUrl = new URL('https://api.spotify.com/v1/search')
   searchUrl.searchParams.set('q', query)
   searchUrl.searchParams.set('type', 'playlist')
-  searchUrl.searchParams.set('limit', '12')
+  searchUrl.searchParams.set('limit', SPOTIFY_PLAYLIST_SEARCH_LIMIT)
   searchUrl.searchParams.set('market', 'US')
 
   let response: Response
