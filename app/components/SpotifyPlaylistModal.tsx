@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 
@@ -12,39 +12,14 @@ export type PlaylistSuggestion = {
   spotifyUrl: string
 }
 
-type SpotifyRequestPreview = {
-  mode: 'test'
-  query: string
-  hasClientId: boolean
-  hasClientSecret: boolean
-  tokenRequest: {
-    url: string
-    method: 'POST'
-    headers: {
-      authorization: string
-      contentType: string
-    }
-    body: string
-  }
-  searchRequest: {
-    url: string
-    method: 'GET'
-    headers: {
-      authorization: string
-    }
-    queryParams: {
-      q: string
-      type: 'playlist'
-      limit: '6'
-    }
-  }
-}
-
 type SpotifyPlaylistResponse = {
   playlists?: PlaylistSuggestion[]
   error?: string
-  test?: SpotifyRequestPreview
 }
+
+const MAX_QUERY_LENGTH = 100
+const GENERIC_SEARCH_ERROR = 'We could not search Spotify right now. Please try again in a moment.'
+const RATE_LIMIT_ERROR = 'Spotify is a little busy right now. Please wait a moment and try again.'
 
 export default function SpotifyPlaylistModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -52,12 +27,15 @@ export default function SpotifyPlaylistModal() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [results, setResults] = useState<PlaylistSuggestion[]>([])
-  const [requestPreview, setRequestPreview] = useState<SpotifyRequestPreview | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
-  const [activeAction, setActiveAction] = useState<'search' | 'preview' | null>(null)
   const [isMounted, setIsMounted] = useState(false)
+  const [lastSubmittedSearchQuery, setLastSubmittedSearchQuery] = useState('')
+  const [hasEditedSinceLastSearch, setHasEditedSinceLastSearch] = useState(true)
 
   useBodyScrollLock(isOpen)
+
+  const trimmedQuery = useMemo(() => query.trim(), [query])
+  const isSearchDisabled = loading || !trimmedQuery
 
   useEffect(() => {
     setIsMounted(true)
@@ -71,6 +49,7 @@ export default function SpotifyPlaylistModal() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false)
+        resetSearchSession()
       }
     }
 
@@ -81,29 +60,50 @@ export default function SpotifyPlaylistModal() {
     }
   }, [isOpen])
 
+  function resetSearchSession() {
+    setQuery('')
+    setLoading(false)
+    setError('')
+    setResults([])
+    setHasSearched(false)
+    setLastSubmittedSearchQuery('')
+    setHasEditedSinceLastSearch(true)
+  }
+
   function openModal() {
+    resetSearchSession()
     setIsOpen(true)
   }
 
   function closeModal() {
     setIsOpen(false)
+    resetSearchSession()
   }
 
-  async function submitRequest(mode: 'search' | 'preview') {
-    const trimmedQuery = query.trim()
+  async function submitSearch() {
+    if (loading) {
+      return
+    }
 
-    if (!trimmedQuery) {
+    const nextQuery = trimmedQuery
+
+    if (!nextQuery) {
       setError('Enter a vibe, genre, or mood to search Spotify playlists.')
       setResults([])
-      setRequestPreview(null)
       setHasSearched(false)
       return
     }
 
+    if (nextQuery === lastSubmittedSearchQuery && !hasEditedSinceLastSearch) {
+      return
+    }
+
+    setQuery(nextQuery)
     setLoading(true)
-    setActiveAction(mode)
     setError('')
-    setHasSearched(mode === 'search')
+    setHasSearched(true)
+    setLastSubmittedSearchQuery(nextQuery)
+    setHasEditedSinceLastSearch(false)
 
     try {
       const response = await fetch('/api/spotify/search-playlists', {
@@ -112,31 +112,27 @@ export default function SpotifyPlaylistModal() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: trimmedQuery,
-          testMode: mode === 'preview',
+          query: nextQuery,
         }),
       })
 
       const data = (await response.json().catch(() => ({}))) as SpotifyPlaylistResponse
 
       if (!response.ok) {
-        throw new Error(data.error || 'Unable to search Spotify playlists right now.')
+        if (response.status === 429) {
+          throw new Error(data.error || RATE_LIMIT_ERROR)
+        }
+
+        throw new Error(data.error || GENERIC_SEARCH_ERROR)
       }
 
-      setRequestPreview(data.test ?? null)
-      setResults(mode === 'search' && Array.isArray(data.playlists) ? data.playlists : [])
+      setResults(Array.isArray(data.playlists) ? data.playlists : [])
     } catch (requestError) {
       console.error('Spotify playlist request failed.', requestError)
       setResults([])
-      setRequestPreview(null)
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Unable to search Spotify playlists right now.'
-      )
+      setError(requestError instanceof Error ? requestError.message : GENERIC_SEARCH_ERROR)
     } finally {
       setLoading(false)
-      setActiveAction(null)
     }
   }
 
@@ -178,7 +174,7 @@ export default function SpotifyPlaylistModal() {
                     Find a playlist for the table vibe
                   </h2>
                   <p className="spotify-playlist-modal__subtitle">
-                    Search for a vibe, genre, or mood, or preview the exact Spotify request payload.
+                    Search by vibe, genre, or mood and open the best match directly in Spotify.
                   </p>
                 </div>
 
@@ -186,7 +182,7 @@ export default function SpotifyPlaylistModal() {
                   className="spotify-playlist-modal__form"
                   onSubmit={(event) => {
                     event.preventDefault()
-                    void submitRequest('search')
+                    void submitSearch()
                   }}
                 >
                   <label className="spotify-playlist-modal__label" htmlFor="spotify-playlist-query">
@@ -198,7 +194,8 @@ export default function SpotifyPlaylistModal() {
                       type="text"
                       value={query}
                       onChange={(event) => {
-                        setQuery(event.target.value)
+                        setQuery(event.target.value.slice(0, MAX_QUERY_LENGTH))
+                        setHasEditedSinceLastSearch(true)
                         if (error) {
                           setError('')
                         }
@@ -206,25 +203,20 @@ export default function SpotifyPlaylistModal() {
                       placeholder="80s rock"
                       className="spotify-playlist-modal__input"
                       autoComplete="off"
+                      maxLength={MAX_QUERY_LENGTH}
                     />
-                    <div className="spotify-playlist-modal__actions">
-                      <button
-                        type="submit"
-                        className="spotify-playlist-modal__search-button"
-                        disabled={loading}
-                      >
-                        {loading && activeAction === 'search' ? 'Searching…' : 'Search'}
-                      </button>
-                      <button
-                        type="button"
-                        className="spotify-playlist-modal__preview-button"
-                        onClick={() => void submitRequest('preview')}
-                        disabled={loading}
-                      >
-                        {loading && activeAction === 'preview' ? 'Preparing…' : 'Preview request'}
-                      </button>
-                    </div>
+                    <button
+                      type="submit"
+                      className="spotify-playlist-modal__search-button"
+                      disabled={isSearchDisabled}
+                      aria-disabled={isSearchDisabled}
+                    >
+                      {loading ? 'Searching Spotify...' : 'Search'}
+                    </button>
                   </div>
+                  <p className="spotify-playlist-modal__helper">
+                    Up to {MAX_QUERY_LENGTH} characters. Searches only when you press Search.
+                  </p>
                 </form>
 
                 {error ? (
@@ -233,78 +225,77 @@ export default function SpotifyPlaylistModal() {
                   </p>
                 ) : null}
 
-                {requestPreview ? (
-                  <div className="spotify-playlist-preview" aria-live="polite">
-                    <div className="spotify-playlist-preview__header">
-                      <p className="spotify-playlist-preview__title">Spotify request preview</p>
-                      <p className="spotify-playlist-preview__subtitle">
-                        Safe debug output showing what this app is prepared to send to Spotify.
-                      </p>
-                    </div>
-                    <div className="spotify-playlist-preview__meta">
-                      <span>Client ID present: {requestPreview.hasClientId ? 'Yes' : 'No'}</span>
-                      <span>Client secret present: {requestPreview.hasClientSecret ? 'Yes' : 'No'}</span>
-                    </div>
-                    <pre className="spotify-playlist-preview__code">
-{JSON.stringify(requestPreview, null, 2)}
-                    </pre>
-                  </div>
-                ) : null}
-
                 <div className="spotify-playlist-modal__results" aria-live="polite">
-                  {!hasSearched && !loading && !requestPreview ? (
+                  {!hasSearched && !loading ? (
                     <div className="spotify-playlist-modal__empty-state">
+                      <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
+                        Start with a mood, artist era, or genre.
+                      </p>
                       <p className="spotify-playlist-modal__message">
-                        Search for a vibe, genre, or mood.
+                        Try something like “cozy acoustic”, “synthwave”, or “family game night”.
                       </p>
                     </div>
                   ) : null}
 
-                  {loading && activeAction === 'search' ? (
+                  {loading ? (
                     <div className="spotify-playlist-modal__empty-state">
-                      <p className="spotify-playlist-modal__message">Looking for playlists…</p>
+                      <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
+                        Searching Spotify...
+                      </p>
+                      <p className="spotify-playlist-modal__message">
+                        Looking for playlists that match your table vibe.
+                      </p>
                     </div>
                   ) : null}
 
-                  {!loading && hasSearched && !error && !requestPreview && results.length === 0 ? (
+                  {!loading && hasSearched && !error && results.length === 0 ? (
                     <div className="spotify-playlist-modal__empty-state">
+                      <p className="spotify-playlist-modal__message spotify-playlist-modal__message--strong">
+                        No playlists matched that search.
+                      </p>
                       <p className="spotify-playlist-modal__message">
-                        No playlists matched that search. Try a broader vibe or genre.
+                        Try a broader mood, a simpler genre, or a different activity-based phrase.
                       </p>
                     </div>
                   ) : null}
 
                   {!loading && results.length > 0 ? (
-                    <div className="spotify-playlist-modal__grid">
-                      {results.map((playlist) => (
-                        <a
-                          key={playlist.id}
-                          href={playlist.spotifyUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="spotify-playlist-card"
-                        >
-                          {playlist.imageUrl ? (
-                            <img
-                              src={playlist.imageUrl}
-                              alt=""
-                              className="spotify-playlist-card__image"
-                            />
-                          ) : (
-                            <div className="spotify-playlist-card__image spotify-playlist-card__image--placeholder" aria-hidden="true">
-                              ♫
+                    <>
+                      <div className="spotify-playlist-modal__grid">
+                        {results.map((playlist) => (
+                          <a
+                            key={playlist.id}
+                            href={playlist.spotifyUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="spotify-playlist-card"
+                            aria-label={`Open ${playlist.name} in Spotify (opens in a new tab)`}
+                          >
+                            {playlist.imageUrl ? (
+                              <img
+                                src={playlist.imageUrl}
+                                alt=""
+                                className="spotify-playlist-card__image"
+                              />
+                            ) : (
+                              <div className="spotify-playlist-card__image spotify-playlist-card__image--placeholder" aria-hidden="true">
+                                ♫
+                              </div>
+                            )}
+                            <div className="spotify-playlist-card__body">
+                              <p className="spotify-playlist-card__name">{playlist.name}</p>
+                              <p className="spotify-playlist-card__owner">
+                                {playlist.ownerName ? `By ${playlist.ownerName}` : 'Spotify playlist'}
+                              </p>
+                              <span className="spotify-playlist-card__cta">Open in Spotify ↗</span>
                             </div>
-                          )}
-                          <div className="spotify-playlist-card__body">
-                            <p className="spotify-playlist-card__name">{playlist.name}</p>
-                            <p className="spotify-playlist-card__owner">
-                              {playlist.ownerName ? `By ${playlist.ownerName}` : 'Spotify playlist'}
-                            </p>
-                            <span className="spotify-playlist-card__cta">Open in Spotify ↗</span>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
+                          </a>
+                        ))}
+                      </div>
+                      <p className="spotify-playlist-modal__footer">
+                        Powered by Spotify. Playlist links open in a new tab.
+                      </p>
+                    </>
                   ) : null}
                 </div>
               </div>
