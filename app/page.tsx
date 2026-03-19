@@ -1343,27 +1343,29 @@ export default function Home() {
           padding: 4px 10px;
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 4px;
           font-size: 12px;
           font-weight: 700;
           line-height: 1;
         }
 
         .activeFilterRemove {
+          appearance: none;
           border: none;
-          background: transparent;
-          color: inherit;
+          background: none;
+          box-shadow: none;
+          color: #c62828;
           cursor: pointer;
+          margin: 0;
           padding: 0;
-          font-size: 14px;
+          font-size: 12px;
+          font-weight: 700;
           line-height: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+          display: inline;
         }
 
         .activeFilterRemove:hover {
-          transform: scale(1.08);
+          color: #a61d24;
         }
 
         .filtersCount {
@@ -1799,7 +1801,7 @@ export default function Home() {
                             aria-label={`Remove ${tag.label} filter`}
                             title={`Remove ${tag.label}`}
                           >
-                            ×
+                            x
                           </button>
                         </span>
                       ))}
