@@ -3313,18 +3313,104 @@ button:not(.cabbage-roll-button) svg,
     padding: 0 16px;
   }
 
+  .spotify-playlist-modal {
+    padding: 12px 8px 8px;
+  }
+
+  .spotify-playlist-modal__content {
+    width: min(720px, calc(100vw - 16px));
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px 14px;
+    gap: 14px;
+  }
+
+  .spotify-playlist-modal__header {
+    gap: 4px;
+  }
+
+  .spotify-playlist-modal__eyebrow {
+    font-size: 0.68rem;
+  }
+
+  .spotify-playlist-modal__title {
+    font-size: clamp(1.45rem, 7vw, 1.9rem);
+  }
+
+  .spotify-playlist-modal__subtitle {
+    font-size: 0.92rem;
+  }
+
   .spotify-playlist-modal__tabs {
     width: 100%;
-    flex-direction: column;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .spotify-playlist-modal__tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .spotify-playlist-modal__tab {
-    width: 100%;
-    text-align: left;
+    flex: 1 0 auto;
+    min-width: max-content;
+    padding: 10px 14px;
+    text-align: center;
+  }
+
+  .spotify-playlist-modal__tab-panel {
+    gap: 12px;
+  }
+
+  .spotify-playlist-modal__form {
+    gap: 8px;
   }
 
   .spotify-playlist-modal__controls {
     flex-direction: column;
+    gap: 10px;
+  }
+
+  .spotify-playlist-modal__helper {
+    font-size: 0.78rem;
+  }
+
+  .spotify-playlist-modal__results,
+  .spotify-playlist-modal__tab-panel--favorites {
+    padding-right: 0;
+  }
+
+  .spotify-playlist-modal__empty-state {
+    min-height: 180px;
+    padding: 20px 16px;
+  }
+
+  .spotify-playlist-modal__grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .spotify-playlist-card {
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  .spotify-playlist-card__image {
+    width: 108px;
+    min-width: 108px;
+    aspect-ratio: 1 / 1;
+    height: auto;
+  }
+
+  .spotify-playlist-card__body {
+    padding: 14px;
+    text-align: left;
+  }
+
+  .spotify-playlist-card__name {
+    font-size: 0.95rem;
   }
 
   .spotify-playlist-modal__search-button {
