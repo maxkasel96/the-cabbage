@@ -6,7 +6,6 @@ export const runtime = 'nodejs'
 
 type SearchPlaylistsRequestBody = {
   query?: unknown
-  testMode?: unknown
 }
 
 type SpotifyAccessTokenResponse = {
@@ -29,7 +28,7 @@ type SpotifyPlaylistItem = {
 
 type SpotifySearchResponse = {
   playlists?: {
-    items?: SpotifyPlaylistItem[]
+    items?: Array<SpotifyPlaylistItem | null>
   }
 }
 
@@ -39,34 +38,6 @@ type NormalizedPlaylist = {
   ownerName: string | null
   imageUrl: string | null
   spotifyUrl: string
-}
-
-type SpotifyRequestPreview = {
-  mode: 'test'
-  query: string
-  hasClientId: boolean
-  hasClientSecret: boolean
-  tokenRequest: {
-    url: string
-    method: 'POST'
-    headers: {
-      authorization: 'Basic <base64(client_id:client_secret)>'
-      contentType: 'application/x-www-form-urlencoded'
-    }
-    body: 'grant_type=client_credentials'
-  }
-  searchRequest: {
-    url: string
-    method: 'GET'
-    headers: {
-      authorization: 'Bearer <spotify_access_token>'
-    }
-    queryParams: {
-      q: string
-      type: 'playlist'
-      limit: '6'
-    }
-  }
 }
 
 const SPOTIFY_SEARCH_LIMIT = '6'
@@ -80,42 +51,6 @@ class SpotifyApiError extends Error {
   ) {
     super(message)
     this.name = 'SpotifyApiError'
-  }
-}
-
-function buildSpotifyRequestPreview(query: string): SpotifyRequestPreview {
-  const searchUrl = new URL('https://api.spotify.com/v1/search')
-
-  searchUrl.searchParams.set('q', query)
-  searchUrl.searchParams.set('type', 'playlist')
-  searchUrl.searchParams.set('limit', SPOTIFY_SEARCH_LIMIT)
-
-  return {
-    mode: 'test',
-    query,
-    hasClientId: Boolean(process.env.SPOTIFY_CLIENT_ID?.trim()),
-    hasClientSecret: Boolean(process.env.SPOTIFY_CLIENT_SECRET?.trim()),
-    tokenRequest: {
-      url: 'https://accounts.spotify.com/api/token',
-      method: 'POST',
-      headers: {
-        authorization: 'Basic <base64(client_id:client_secret)>',
-        contentType: 'application/x-www-form-urlencoded',
-      },
-      body: 'grant_type=client_credentials',
-    },
-    searchRequest: {
-      url: searchUrl.toString(),
-      method: 'GET',
-      headers: {
-        authorization: 'Bearer <spotify_access_token>',
-      },
-      queryParams: {
-        q: query,
-        type: 'playlist',
-        limit: SPOTIFY_SEARCH_LIMIT,
-      },
-    },
   }
 }
 
@@ -176,7 +111,7 @@ async function getSpotifyAccessToken() {
     throw new SpotifyApiError(
       'Spotify rate limited the token request.',
       429,
-      'Spotify is rate limiting requests right now. Please wait a moment and try again.'
+      'Spotify is receiving a lot of traffic right now. Please wait a moment and try again.'
     )
   }
 
@@ -202,7 +137,11 @@ async function getSpotifyAccessToken() {
   return data.access_token
 }
 
-function normalizePlaylist(playlist: SpotifyPlaylistItem): NormalizedPlaylist | null {
+function normalizePlaylist(playlist: SpotifyPlaylistItem | null | undefined): NormalizedPlaylist | null {
+  if (!playlist) {
+    return null
+  }
+
   const id = typeof playlist.id === 'string' ? playlist.id : ''
   const name = typeof playlist.name === 'string' ? playlist.name : ''
   const spotifyUrl = typeof playlist.external_urls?.spotify === 'string' ? playlist.external_urls.spotify : ''
@@ -253,7 +192,7 @@ async function searchSpotifyPlaylists(query: string) {
     throw new SpotifyApiError(
       'Spotify rate limited the playlist search request.',
       429,
-      'Spotify is rate limiting playlist searches right now. Please wait a moment and try again.'
+      'Spotify is receiving a lot of traffic right now. Please wait a moment and try again.'
     )
   }
 
@@ -282,9 +221,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const query = typeof body.query === 'string' ? body.query.trim() : ''
-  const testMode = body.testMode === true
+  if (typeof body.query !== 'string') {
+    return NextResponse.json({ error: 'Enter a valid search term to find Spotify playlists.' }, { status: 400 })
+  }
 
+  const query = body.query.trim()
   if (!query) {
     return NextResponse.json({ error: 'Enter a search term to find Spotify playlists.' }, { status: 400 })
   }
@@ -294,13 +235,6 @@ export async function POST(request: Request) {
       { error: `Search terms must be ${MAX_QUERY_LENGTH} characters or fewer.` },
       { status: 400 }
     )
-  }
-
-  if (testMode) {
-    return NextResponse.json({
-      playlists: [],
-      test: buildSpotifyRequestPreview(query),
-    })
   }
 
   try {
