@@ -3078,6 +3078,8 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .utility-fab-menu__trigger {
+    right: auto;
+    bottom: auto;
     width: var(--utility-fab-trigger-size);
     height: var(--utility-fab-trigger-size);
   }
