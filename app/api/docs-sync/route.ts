@@ -1,18 +1,25 @@
-import type { DocsSyncPayload } from '@/lib/docs-sync/types'
+import { buildDocsSyncPayload } from '@/lib/docs-sync/buildPayload'
 
 export async function POST() {
-  try {
-    const payload: DocsSyncPayload = {
-      source: 'nextjs-app',
-      eventType: 'feature-update',
-      timestamp: new Date().toISOString(),
-      feature: 'docs-sync',
-      data: {
-        message: 'Test from Next.js',
-      },
-    }
+  const webhookUrl = process.env.CONFLUENCE_DOCS_WEBHOOK_URL
 
-    const response = await fetch(process.env.CONFLUENCE_DOCS_WEBHOOK_URL!, {
+  if (!webhookUrl) {
+    return Response.json(
+      { ok: false, error: 'Missing CONFLUENCE_DOCS_WEBHOOK_URL' },
+      { status: 500 }
+    )
+  }
+
+  const payload = buildDocsSyncPayload({
+    eventType: 'feature-update',
+    feature: 'docs-sync-test',
+    data: {
+      message: 'Test from Next.js',
+    },
+  })
+
+  try {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,16 +27,51 @@ export async function POST() {
       body: JSON.stringify(payload),
     })
 
-    const data = await response.json()
+    const forgeResponse = await parseForgeResponse(response)
+
+    if (!response.ok) {
+      return Response.json(
+        {
+          ok: false,
+          error: 'Forge webhook request failed',
+          status: response.status,
+          forgeResponse,
+        },
+        { status: response.status }
+      )
+    }
 
     return Response.json({
       ok: true,
-      forgeResponse: data,
+      status: response.status,
+      forgeResponse,
     })
   } catch (error) {
     return Response.json(
-      { ok: false, error: String(error) },
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Failed to reach Forge webhook',
+      },
       { status: 500 }
     )
   }
+}
+
+async function parseForgeResponse(response: Response) {
+  const contentType = response.headers.get('content-type')
+  const responseText = await response.text()
+
+  if (responseText.length === 0) {
+    return null
+  }
+
+  if (contentType?.includes('application/json')) {
+    try {
+      return JSON.parse(responseText)
+    } catch {
+      return { raw: responseText }
+    }
+  }
+
+  return { raw: responseText }
 }
