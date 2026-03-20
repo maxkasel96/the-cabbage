@@ -10,6 +10,7 @@ export type DocsSyncPayload = {
   timestamp: string
   feature: string
   summary: string
+  message: string
   data: {
     message?: string
     pageId?: string

@@ -4,6 +4,7 @@ type BuildDocsSyncPayloadOptions = {
   eventType: DocsSyncEventType
   feature: string
   summary: string
+  message: string
   data?: DocsSyncPayload['data']
 }
 
@@ -11,6 +12,7 @@ export function buildDocsSyncPayload({
   eventType,
   feature,
   summary,
+  message,
   data = {},
 }: BuildDocsSyncPayloadOptions): DocsSyncPayload {
   return {
@@ -19,6 +21,7 @@ export function buildDocsSyncPayload({
     timestamp: new Date().toISOString(),
     feature,
     summary,
+    message,
     data,
   }
 }

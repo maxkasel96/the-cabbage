@@ -14,9 +14,7 @@ export async function POST() {
     eventType: 'feature-update',
     feature: 'docs-sync-test',
     summary: 'Test sync from Next.js route',
-    data: {
-      message: 'Test from Next.js',
-    },
+    message: 'Test from Next.js',
   })
 
   try {
