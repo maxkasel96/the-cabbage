@@ -1,18 +1,23 @@
+import type { DocsSyncPayload } from '@/lib/docs-sync/types'
+
 export async function POST() {
   try {
+    const payload: DocsSyncPayload = {
+      source: 'nextjs-app',
+      eventType: 'feature-update',
+      timestamp: new Date().toISOString(),
+      feature: 'docs-sync',
+      data: {
+        message: 'Test from Next.js',
+      },
+    }
+
     const response = await fetch(process.env.CONFLUENCE_DOCS_WEBHOOK_URL!, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        source: 'nextjs-app',
-        eventType: 'feature-update',
-        timestamp: new Date().toISOString(),
-        data: {
-          message: 'Test from Next.js',
-        },
-      }),
+      body: JSON.stringify(payload),
     })
 
     const data = await response.json()
