@@ -66,6 +66,28 @@ function LoginContent() {
       return
     }
 
+    const authorizationRes = await fetch('/api/auth/complete-player-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accessToken: data.session.access_token,
+        provider: 'email',
+      }),
+    })
+
+    if (!authorizationRes.ok) {
+      const authorizationBody = await authorizationRes.json().catch(() => ({}))
+      await supabase.auth.signOut()
+      setStatus('')
+      setErrorMessage(
+        typeof authorizationBody.error === 'string'
+          ? authorizationBody.error
+          : 'Your email is not authorized for this app.'
+      )
+      setIsSubmittingPassword(false)
+      return
+    }
+
     const sessionRes = await fetch('/api/auth/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

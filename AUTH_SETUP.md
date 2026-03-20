@@ -108,6 +108,16 @@ Environment gating:
 - Preview: `NEXT_PUBLIC_VERCEL_ENV=preview` enables password sign-in.
 - Production: password sign-in is hidden; Google OAuth remains available.
 
+Both auth paths now run the same approved-player claim flow before the app persists
+its server session:
+
+- Google OAuth prefers an exact `provider = google` + email match.
+- Email/password sign-in can fall back to a unique approved email match when only one
+  active player-login identity exists for that email.
+
+This means admins can approve a player login from the app UI without needing to
+manually set `user_profiles.player_id` in SQL after a user signs in.
+
 
 ## 9) Preview troubleshooting (RLS / DB-environment mismatch)
 

@@ -5,6 +5,8 @@ import { supabaseServer } from '@/lib/supabaseServer'
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   const accessToken = body?.accessToken as string | undefined
+  const providerHint =
+    typeof body?.provider === 'string' && body.provider.trim() ? body.provider.trim().toLowerCase() : null
 
   if (!accessToken) {
     return NextResponse.json({ error: 'accessToken is required.' }, { status: 400 })
@@ -17,7 +19,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await authorizePlayerLogin(data.user)
+    const result = await authorizePlayerLogin(data.user, { providerHint })
 
     if (!result.ok) {
       return NextResponse.json({ error: result.reason }, { status: 403 })
