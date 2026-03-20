@@ -217,10 +217,14 @@ row, apply migration:
 
 That migration adds:
 
+- `public.user_profiles.player_id` when it does not already exist, because that is the durable link from an auth user profile to a player row.
 - `public.player_login_tokens` for one-time or limited-use login-link tokens.
 - `public.player_login_token_redemptions` for an audit trail of who redeemed each token.
 - `public.issue_player_login_token(...)` to generate a token for an existing player-login identity.
 - `public.redeem_player_login_token(...)` to link the authenticated user to the identity and set `user_profiles.player_id`.
+
+This means your existing `public.user_profiles` table absolutely factors into this workflow: the token tables handle issuance/redemption, and `user_profiles.player_id` is where the user-to-player association is persisted after redemption.
+The migration also detects whether your `user_profiles.role` check constraint uses `member` or `standard`, so the redemption function stays compatible with either role model.
 
 ### Issue a token for an existing player login identity
 

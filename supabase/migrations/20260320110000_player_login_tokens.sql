@@ -1,3 +1,9 @@
+alter table public.user_profiles
+  add column if not exists player_id uuid references public.players (id) on delete set null;
+
+create index if not exists user_profiles_player_id_idx
+  on public.user_profiles (player_id);
+
 create table if not exists public.player_login_tokens (
   id uuid primary key default gen_random_uuid(),
   player_login_identity_id uuid not null references public.player_login_identities (id) on delete cascade,
@@ -57,6 +63,31 @@ before update on public.player_login_tokens
 for each row
 execute function public.set_player_login_tokens_updated_at();
 
+create or replace function public.user_profiles_member_role()
+returns text
+language plpgsql
+stable
+as $$
+declare
+  role_check text;
+begin
+  select pg_get_constraintdef(c.oid)
+  into role_check
+  from pg_constraint c
+  join pg_class t on t.oid = c.conrelid
+  join pg_namespace n on n.oid = t.relnamespace
+  where n.nspname = 'public'
+    and t.relname = 'user_profiles'
+    and c.conname = 'user_profiles_role_check';
+
+  if role_check ilike '%standard%' then
+    return 'standard';
+  end if;
+
+  return 'member';
+end;
+$$;
+
 create or replace function public.issue_player_login_token(
   p_player_login_identity_id uuid,
   p_expires_at timestamptz default now() + interval '14 days',
@@ -83,7 +114,7 @@ declare
   raw_token text;
 begin
   if auth.role() <> 'service_role'
-    and coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', 'standard') <> 'admin' then
+    and coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', public.user_profiles_member_role()) <> 'admin' then
     raise exception 'Only admins can issue player login tokens.';
   end if;
 
@@ -181,20 +212,17 @@ begin
     plt.id,
     plt.player_login_identity_id,
     pli.player_id,
-    pli.email,
     pli.auth_user_id as linked_auth_user_id,
     pli.is_active as identity_is_active,
     plt.max_redemptions,
     plt.redemption_count,
-    plt.revoked_at,
-    plt.expires_at,
     p.display_name as player_name,
     p.is_active as player_is_active,
     u.email as auth_email,
     coalesce(u.raw_user_meta_data ->> 'display_name', u.raw_user_meta_data ->> 'name') as auth_display_name,
     case
-      when coalesce(u.raw_app_meta_data ->> 'role', u.raw_user_meta_data ->> 'role', 'standard') = 'admin' then 'admin'
-      else 'standard'
+      when coalesce(u.raw_app_meta_data ->> 'role', u.raw_user_meta_data ->> 'role', public.user_profiles_member_role()) = 'admin' then 'admin'
+      else public.user_profiles_member_role()
     end as profile_role,
     u.last_sign_in_at
   into token_row
@@ -237,7 +265,6 @@ begin
     role,
     is_active,
     player_id,
-    profile_data,
     created_at,
     updated_at,
     last_sign_in_at
@@ -249,7 +276,6 @@ begin
     role_value,
     true,
     token_row.player_id,
-    '{}'::jsonb,
     now_value,
     now_value,
     token_row.last_sign_in_at
@@ -258,7 +284,7 @@ begin
   do update set
     email = coalesce(excluded.email, public.user_profiles.email),
     display_name = coalesce(public.user_profiles.display_name, excluded.display_name),
-    role = excluded.role,
+    role = case when public.user_profiles.role = 'admin' then public.user_profiles.role else excluded.role end,
     is_active = public.user_profiles.is_active,
     player_id = excluded.player_id,
     updated_at = now_value,
@@ -313,14 +339,14 @@ drop policy if exists "admins can view player login tokens" on public.player_log
 create policy "admins can view player login tokens"
 on public.player_login_tokens
 for select
-using (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', 'standard') = 'admin');
+using (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', public.user_profiles_member_role()) = 'admin');
 
 drop policy if exists "admins can manage player login tokens" on public.player_login_tokens;
 create policy "admins can manage player login tokens"
 on public.player_login_tokens
 for all
-using (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', 'standard') = 'admin')
-with check (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', 'standard') = 'admin');
+using (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', public.user_profiles_member_role()) = 'admin')
+with check (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', public.user_profiles_member_role()) = 'admin');
 
 drop policy if exists "service role can manage player login tokens" on public.player_login_tokens;
 create policy "service role can manage player login tokens"
@@ -333,7 +359,7 @@ drop policy if exists "admins can view player login token redemptions" on public
 create policy "admins can view player login token redemptions"
 on public.player_login_token_redemptions
 for select
-using (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', 'standard') = 'admin');
+using (coalesce(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role', public.user_profiles_member_role()) = 'admin');
 
 drop policy if exists "users can view their own token redemptions" on public.player_login_token_redemptions;
 create policy "users can view their own token redemptions"
