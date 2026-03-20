@@ -28,7 +28,7 @@ const modalTabs: Array<{ id: SpotifyModalTab; label: string }> = [
 ]
 
 const SPOTIFY_BUTTON_IMAGE_URL =
-  'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Music.png'
+  'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Music%20(1).png'
 
 type SpotifyPlaylistModalProps = {
   className?: string
