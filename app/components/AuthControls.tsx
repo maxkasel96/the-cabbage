@@ -2,7 +2,10 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { getRoleLabel } from '@/lib/auth/roles'
+import { persistServerSession } from '@/lib/auth/persistServerSession'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
@@ -12,6 +15,7 @@ type AuthState = {
 }
 
 export default function AuthControls() {
+  const router = useRouter()
   const [auth, setAuth] = useState<AuthState>({ isAuthenticated: false, role: null })
 
   useEffect(() => {
@@ -45,6 +49,23 @@ export default function AuthControls() {
     }
   }, [])
 
+  const handleAdminNavigation = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    await persistServerSession()
+    router.push('/admin/games')
+  }
+
   if (!auth.isAuthenticated) {
     return (
       <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 60 }}>
@@ -66,7 +87,11 @@ export default function AuthControls() {
       }}
     >
       <Link href="/account/profile">My profile</Link>
-      {auth.role === 'admin' ? <Link href="/admin/games">Admin</Link> : null}
+      {auth.role === 'admin' ? (
+        <Link href="/admin/games" prefetch={false} onClick={handleAdminNavigation}>
+          Admin
+        </Link>
+      ) : null}
       <Link
         href="/auth/logout"
         onClick={(event) => {

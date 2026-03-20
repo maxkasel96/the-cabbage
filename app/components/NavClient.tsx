@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   FocusEvent,
@@ -11,6 +11,7 @@ import type {
 import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 import { getRoleLabel } from '@/lib/auth/roles'
+import { persistServerSession } from '@/lib/auth/persistServerSession'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { signOutAndRedirect } from '@/lib/auth/clientSignOut'
 
@@ -95,14 +96,15 @@ const Icon = ({ name }: IconProps) => (
 
 type MegaMenuItemProps = {
   item: MegaMenuItem
-  onNavigate?: () => void
+  onNavigate?: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void | Promise<void>
 }
 
 const MegaMenuItemCard = ({ item, onNavigate }: MegaMenuItemProps) => (
   <Link
     href={item.href}
+    prefetch={!item.href.startsWith('/admin')}
     className="mega-menu__item"
-    onClick={onNavigate}
+    onClick={(event) => onNavigate?.(event, item.href)}
     role="menuitem"
   >
     <span className={`mega-menu__icon mega-menu__icon--${item.tone}`}>
@@ -117,6 +119,7 @@ const MegaMenuItemCard = ({ item, onNavigate }: MegaMenuItemProps) => (
 
 export default function NavClient({ showAdminMenu = true }: NavProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileAuthButtonRef = useRef<HTMLButtonElement>(null)
   const mobileAuthMenuRef = useRef<HTMLDivElement>(null)
@@ -144,25 +147,6 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
 
   useEffect(() => {
     const supabase = supabaseBrowser()
-
-    const persistServerSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      const session = data.session
-
-      if (!session) {
-        return
-      }
-
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accessToken: session.access_token,
-          expiresIn: session.expires_in,
-          expiresAt: session.expires_at,
-        }),
-      })
-    }
 
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user
@@ -201,6 +185,27 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       subscription.unsubscribe()
     }
   }, [])
+
+  const shouldBypassClientNavigation = (event: ReactMouseEvent<HTMLAnchorElement>) =>
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+
+  const navigateWithFreshServerSession =
+    (href: string, onDone?: () => void) => async (event: ReactMouseEvent<HTMLAnchorElement>) => {
+      if (!href.startsWith('/admin') || shouldBypassClientNavigation(event) || pathname === href) {
+        onDone?.()
+        return
+      }
+
+      event.preventDefault()
+      onDone?.()
+      await persistServerSession()
+      router.push(href)
+    }
 
   const primaryLinks: NavLink[] = useMemo(() => {
     return navConfig.primaryLinks
@@ -447,6 +452,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     <Link
       key={href}
       href={href}
+      prefetch={!href.startsWith('/admin')}
       className="main-nav__sheet-link"
       data-active={pathname === href}
       onClick={handleUtilityLinkClick(handleMobileClose)}
@@ -482,7 +488,12 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     async (event: ReactMouseEvent<HTMLAnchorElement>) => {
       const link = event.currentTarget.getAttribute('href')
       if (link !== '/auth/logout') {
-        onDone?.()
+        if (!link) {
+          onDone?.()
+          return
+        }
+
+        await navigateWithFreshServerSession(link, onDone)(event)
         return
       }
 
@@ -560,6 +571,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
                 href={link.href}
                 className="main-nav__mobile-auth-link"
                 role="menuitem"
+                prefetch={!link.href.startsWith('/admin')}
                 onClick={handleUtilityLinkClick(handleMobileAuthClose)}
               >
                 {link.label}
@@ -582,9 +594,11 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
                     key={link.href}
                     href={link.href}
                     className="main-nav__desktop-link"
+                    prefetch={!link.href.startsWith('/admin')}
                     data-active={pathname === link.href}
                     role="menuitem"
                     onMouseEnter={() => setActiveMenu(null)}
+                    onClick={navigateWithFreshServerSession(link.href)}
                   >
                     {link.label}
                   </Link>
@@ -625,7 +639,10 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
                               <MegaMenuItemCard
                                 key={item.title}
                                 item={item}
-                                onNavigate={handleDesktopNavigate}
+                                onNavigate={async (event, href) => {
+                                  handleDesktopNavigate()
+                                  await navigateWithFreshServerSession(href)(event)
+                                }}
                               />
                             ))}
                           </div>
@@ -668,6 +685,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
                     href={link.href}
                     className="main-nav__mobile-auth-link"
                     role="menuitem"
+                    prefetch={!link.href.startsWith('/admin')}
                     onClick={handleUtilityLinkClick(handleMobileAuthClose)}
                   >
                     {link.label}
