@@ -1429,6 +1429,7 @@ button:not(.cabbage-roll-button) svg,
 .utility-fab-menu {
   --utility-fab-trigger-size: 78px;
   --utility-fab-gap: 14px;
+  --utility-fab-preview-offset: 10px;
   position: fixed;
   right: 24px;
   bottom: 24px;
@@ -1462,15 +1463,14 @@ button:not(.cabbage-roll-button) svg,
   left: 50%;
   right: auto;
   width: var(--utility-fab-trigger-size);
-  margin-left: calc(var(--utility-fab-trigger-size) / -2);
   justify-content: center;
-  transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px)) scale(0.92);
+  transform: translate3d(-50%, calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + var(--utility-fab-preview-offset)), 0) scale(0.92);
   transform-origin: center bottom;
   transition-delay: 0ms;
 }
 
 .utility-fab-menu__action--utility {
-  transform: translate3d(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px), 0, 0)
+  transform: translate3d(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + var(--utility-fab-preview-offset)), 0, 0)
     scale(0.92);
   transition-delay: 24ms;
 }
@@ -1489,7 +1489,7 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .utility-fab-menu.utility-fab-menu--open .utility-fab-menu__action--spotify {
-  transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap))) scale(1);
+  transform: translate3d(-50%, calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap)), 0) scale(1);
 }
 
 .utility-fab-menu--open .utility-fab-menu__action--utility {
@@ -3070,7 +3070,8 @@ button:not(.cabbage-roll-button) svg,
 
   .utility-fab-menu {
     --utility-fab-trigger-size: 70px;
-    --utility-fab-gap: 14px;
+    --utility-fab-gap: 20px;
+    --utility-fab-preview-offset: 12px;
     right: 16px;
     bottom: 16px;
   }
