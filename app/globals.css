@@ -3543,13 +3543,19 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .spotify-playlist-modal__tabs {
+    position: sticky;
+    top: max(0px, env(safe-area-inset-top));
+    z-index: 6;
     width: 100%;
     gap: 4px;
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: visible;
     scrollbar-width: none;
-    padding-top: 2px;
+    margin-top: -2px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+    background: linear-gradient(180deg, rgba(248, 247, 240, 0.99), rgba(248, 247, 240, 0.95));
   }
 
   .spotify-playlist-modal__tabs::-webkit-scrollbar {
