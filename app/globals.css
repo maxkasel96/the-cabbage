@@ -3153,6 +3153,9 @@ button:not(.cabbage-roll-button) svg,
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  padding-inline: 56px;
+  box-sizing: border-box;
   text-align: center;
 }
 
@@ -3165,8 +3168,14 @@ button:not(.cabbage-roll-button) svg,
 
 .spotify-playlist-modal__subtitle {
   margin: 0;
+  max-width: 100%;
   color: var(--text-secondary);
   text-align: center;
+}
+
+.spotify-playlist-modal__content .modal-close {
+  top: 12px;
+  right: 12px;
 }
 
 .spotify-playlist-modal__tabs {
@@ -3532,6 +3541,7 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__header {
     gap: 4px;
+    padding-inline: 44px;
   }
 
   .spotify-playlist-modal__title {
