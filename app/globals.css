@@ -1362,7 +1362,7 @@ button:not(.cabbage-roll-button) svg,
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
-  background: #3f5a32c7;
+  background: #dededec7;
   box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
   cursor: pointer;
   display: inline-flex;
