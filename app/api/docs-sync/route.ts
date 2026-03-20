@@ -11,10 +11,11 @@ export async function POST() {
   }
 
   const payload = buildDocsSyncPayload({
+    // The deployed Forge validation currently only accepts `feature-update`.
     eventType: 'feature-update',
-    feature: 'docs-sync-test',
-    summary: 'Test sync from Next.js route',
-    message: 'Test from Next.js',
+    feature: 'docs-sync',
+    summary: 'Testing Next.js to Forge to Confluence sync',
+    message: 'This is a test sync sent from the Next.js API route.',
   })
 
   try {

@@ -5,7 +5,7 @@ type BuildDocsSyncPayloadOptions = {
   feature: string
   summary: string
   message: string
-  data?: DocsSyncPayload['data']
+  data?: Record<string, unknown>
 }
 
 export function buildDocsSyncPayload({
@@ -17,11 +17,21 @@ export function buildDocsSyncPayload({
 }: BuildDocsSyncPayloadOptions): DocsSyncPayload {
   return {
     source: 'nextjs-app',
-    eventType,
+    eventType: requireNonEmptyString('eventType', eventType),
     timestamp: new Date().toISOString(),
-    feature,
-    summary,
-    message,
+    feature: requireNonEmptyString('feature', feature),
+    summary: requireNonEmptyString('summary', summary),
+    message: requireNonEmptyString('message', message),
     data,
   }
+}
+
+function requireNonEmptyString(fieldName: string, value: string): string {
+  const trimmedValue = value.trim()
+
+  if (trimmedValue.length === 0) {
+    throw new Error(`Missing required docs sync field: ${fieldName}`)
+  }
+
+  return trimmedValue
 }

@@ -1,8 +1,8 @@
 export type DocsSyncEventType =
+  | 'docs-sync-test'
+  | 'feature-create'
   | 'feature-update'
-  | 'page-update'
-  | 'deployment-update'
-  | 'manual-sync'
+  | 'feature-delete'
 
 export type DocsSyncPayload = {
   source: string
@@ -11,11 +11,5 @@ export type DocsSyncPayload = {
   feature: string
   summary: string
   message: string
-  data: {
-    message?: string
-    pageId?: string
-    title?: string
-    content?: string
-    [key: string]: unknown
-  }
+  data?: Record<string, unknown>
 }
