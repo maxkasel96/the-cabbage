@@ -3152,6 +3152,7 @@ button:not(.cabbage-roll-button) svg,
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-shrink: 0;
   gap: 8px;
   width: 100%;
   text-align: center;
@@ -3185,10 +3186,11 @@ button:not(.cabbage-roll-button) svg,
   isolation: isolate;
   display: flex;
   align-items: flex-end;
+  flex-shrink: 0;
   gap: 4px;
   width: 100%;
   max-width: 100%;
-  padding: 0;
+  padding: 2px 0 0;
   border-bottom: 1px solid rgba(46, 63, 42, 0.18);
   background: linear-gradient(180deg, rgba(248, 247, 240, 0.98), rgba(248, 247, 240, 0.92));
 }
@@ -3240,6 +3242,7 @@ button:not(.cabbage-roll-button) svg,
 .spotify-playlist-modal__form {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 10px;
 }
 
@@ -3536,8 +3539,6 @@ button:not(.cabbage-roll-button) svg,
   .spotify-playlist-modal__content {
     width: min(720px, calc(100vw - 16px));
     max-height: calc(100dvh - 20px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
     padding: 18px 14px 14px;
     gap: 14px;
   }
@@ -3556,19 +3557,16 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .spotify-playlist-modal__tabs {
-    position: sticky;
-    top: 0;
-    z-index: 6;
+    z-index: 3;
     width: 100%;
     gap: 4px;
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: visible;
     scrollbar-width: none;
-    margin-top: 0;
     padding-top: 2px;
-    padding-bottom: 2px;
-    background: linear-gradient(180deg, rgba(248, 247, 240, 1), rgba(248, 247, 240, 0.96));
+    padding-bottom: 0;
+    background: linear-gradient(180deg, rgba(248, 247, 240, 0.99), rgba(248, 247, 240, 0.94));
   }
 
   .spotify-playlist-modal__tabs::-webkit-scrollbar {
@@ -3584,7 +3582,6 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__tab-panel {
     gap: 12px;
-    overflow: visible;
   }
 
   .spotify-playlist-modal__form {
@@ -3602,7 +3599,6 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__results,
   .spotify-playlist-modal__tab-panel--favorites {
-    overflow: visible;
     padding-right: 0;
   }
 
