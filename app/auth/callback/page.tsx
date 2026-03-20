@@ -54,7 +54,7 @@ function AuthCallbackContent() {
       const authorizationRes = await fetch('/api/auth/complete-player-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken }),
+        body: JSON.stringify({ accessToken, provider: 'google' }),
       })
 
       if (!authorizationRes.ok) {

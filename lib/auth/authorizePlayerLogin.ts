@@ -1,5 +1,4 @@
 import type { User } from '@supabase/supabase-js'
-import { ensureUserProfile } from '@/lib/userProfiles'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 
 export type AuthorizedPlayerLogin = {
@@ -15,23 +14,13 @@ export type UnauthorizedPlayerLogin = {
 
 export type PlayerLoginAuthorizationResult = AuthorizedPlayerLogin | UnauthorizedPlayerLogin
 
-type PlayerLoginIdentityRow = {
-  id: string
+type ClaimPlayerLoginIdentityRow = {
+  player_login_identity_id: string
   player_id: string
-  auth_user_id: string | null
-  is_active: boolean
-  players:
-    | {
-        id: string
-        display_name: string
-        is_active: boolean
-      }
-    | {
-        id: string
-        display_name: string
-        is_active: boolean
-      }[]
-    | null
+  auth_user_id: string
+  player_name: string
+  matched_provider: string
+  match_strategy: string
 }
 
 const normalizeEmail = (email: string | null | undefined) => {
@@ -43,70 +32,48 @@ const normalizeEmail = (email: string | null | undefined) => {
   return normalized || null
 }
 
-export async function authorizePlayerLogin(user: User): Promise<PlayerLoginAuthorizationResult> {
+export async function authorizePlayerLogin(
+  user: User,
+  options?: { providerHint?: string | null }
+): Promise<PlayerLoginAuthorizationResult> {
   const email = normalizeEmail(user.email)
 
   if (!email) {
-    return { ok: false, reason: 'No email was returned from your Google account.' }
+    return { ok: false, reason: 'No email was returned from your account.' }
   }
+
+  const providerHint =
+    typeof options?.providerHint === 'string' && options.providerHint.trim()
+      ? options.providerHint.trim().toLowerCase()
+      : null
+  const provider =
+    providerHint ??
+    (typeof user.app_metadata?.provider === 'string'
+      ? user.app_metadata.provider
+      : Array.isArray(user.app_metadata?.providers) && typeof user.app_metadata.providers[0] === 'string'
+        ? user.app_metadata.providers[0]
+        : null)
 
   const supabase = getSupabaseServiceRole()
-  const { data, error } = await supabase
-    .from('player_login_identities')
-    .select('id, player_id, auth_user_id, is_active, players:player_id ( id, display_name, is_active )')
-    .eq('provider', 'google')
-    .eq('email', email)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('claim_player_login_identity', {
+    p_auth_user_id: user.id,
+    p_email: email,
+    p_provider: provider,
+  })
 
   if (error) {
-    throw new Error(error.message)
+    return { ok: false, reason: error.message }
   }
 
-  const identity = data as PlayerLoginIdentityRow | null
+  const claim = Array.isArray(data) ? (data[0] as ClaimPlayerLoginIdentityRow | undefined) : undefined
 
-  if (!identity || !identity.is_active) {
-    return { ok: false, reason: 'This Google account is not authorized for this app.' }
-  }
-
-  const player = Array.isArray(identity.players) ? identity.players[0] ?? null : identity.players
-
-  if (!player) {
-    return { ok: false, reason: 'The approved player linked to this login could not be found.' }
-  }
-
-  if (!player.is_active) {
-    return { ok: false, reason: 'Your linked player profile is inactive. Contact an admin for help.' }
-  }
-
-  if (identity.auth_user_id && identity.auth_user_id !== user.id) {
-    return { ok: false, reason: 'This player login is already linked to another account.' }
-  }
-
-  if (!identity.auth_user_id) {
-    const { error: linkError } = await supabase
-      .from('player_login_identities')
-      .update({ auth_user_id: user.id })
-      .eq('id', identity.id)
-
-    if (linkError) {
-      throw new Error(linkError.message)
-    }
-  }
-
-  await ensureUserProfile(user)
-
-  const { error: profileError } = await supabase
-    .from('user_profiles')
-    .update({ player_id: identity.player_id })
-    .eq('user_id', user.id)
-
-  if (profileError) {
-    throw new Error(profileError.message)
+  if (!claim) {
+    return { ok: false, reason: 'Failed to claim the approved player login.' }
   }
 
   return {
     ok: true,
-    playerId: identity.player_id,
-    playerName: player.display_name,
+    playerId: claim.player_id,
+    playerName: claim.player_name,
   }
 }
