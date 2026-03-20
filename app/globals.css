@@ -1405,6 +1405,10 @@ button:not(.cabbage-roll-button) svg,
   outline-offset: 4px;
 }
 
+.spotify-playlist-button__image {
+  padding: 10px;
+}
+
 
 .utility-fab-menu__backdrop {
   position: fixed;
