@@ -1359,6 +1359,7 @@ button:not(.cabbage-roll-button) svg,
   z-index: 60;
   width: 78px;
   height: 78px;
+  box-sizing: border-box;
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
@@ -3086,6 +3087,7 @@ button:not(.cabbage-roll-button) svg,
 .spotify-playlist-button {
   width: 78px;
   height: 78px;
+  box-sizing: border-box;
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
