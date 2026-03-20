@@ -199,7 +199,7 @@ export default function SpotifyPlaylistModal({ className, tabIndex }: SpotifyPla
         <img
           src={SPOTIFY_BUTTON_IMAGE_URL}
           alt=""
-          className="spotify-playlist-button__image"
+          className="floating-utility-button__image"
           aria-hidden="true"
         />
       </button>

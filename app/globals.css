@@ -1357,8 +1357,8 @@ button:not(.cabbage-roll-button) svg,
   right: 24px;
   bottom: 24px;
   z-index: 60;
-  width: 72px;
-  height: 72px;
+  width: 78px;
+  height: 78px;
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
@@ -1552,8 +1552,8 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .floating-utility-button--menu-child {
-  width: 64px;
-  height: 64px;
+  width: 78px;
+  height: 78px;
   box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
 }
 
@@ -1567,8 +1567,8 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .spotify-playlist-button--menu-child {
-  width: 64px;
-  height: 64px;
+  width: 78px;
+  height: 78px;
   box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
 }
 
@@ -1677,8 +1677,8 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .player-bio__avatar-image {
-  width: 72px;
-  height: 72px;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -3057,8 +3057,8 @@ button:not(.cabbage-roll-button) svg,
   .floating-utility-button {
     right: 16px;
     bottom: 16px;
-    width: 64px;
-    height: 64px;
+    width: 70px;
+    height: 70px;
   }
 
   .utility-fab-menu {
@@ -3074,19 +3074,19 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .spotify-playlist-button--menu-child {
-    width: 58px;
-    height: 58px;
+    width: 70px;
+    height: 70px;
   }
 
   .floating-utility-button--menu-child {
-    width: 58px;
-    height: 58px;
+    width: 70px;
+    height: 70px;
   }
 }
 
 .spotify-playlist-button {
-  width: 72px;
-  height: 72px;
+  width: 78px;
+  height: 78px;
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
@@ -3129,15 +3129,6 @@ button:not(.cabbage-roll-button) svg,
   outline-offset: 4px;
 }
 
-.spotify-playlist-button__image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border-radius: inherit;
-  box-sizing: border-box;
-  padding: 6px;
-  object-fit: contain;
-}
 
 .spotify-playlist-modal {
   padding: 40px 16px 24px;
