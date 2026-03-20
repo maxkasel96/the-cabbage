@@ -1394,7 +1394,9 @@ button:not(.cabbage-roll-button) svg,
   height: 100%;
   display: block;
   border-radius: inherit;
-  object-fit: cover;
+  box-sizing: border-box;
+  padding: 6px;
+  object-fit: contain;
   opacity: 0.82;
 }
 
