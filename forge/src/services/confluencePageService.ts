@@ -5,14 +5,11 @@ import type {
   AppendEntryResult,
   ConfluencePage,
   ConfluencePageUpdatePayload,
-  RoutePageAppendInput,
-  RoutePageAppendResult,
 } from '../types/confluence';
 
 export interface ConfluencePageServiceContract {
   getPageDetails(pageId: string): Promise<ConfluencePage>;
   appendEntry(input: AppendEntryInput): Promise<AppendEntryResult>;
-  appendEntryToRoutedPage(input: RoutePageAppendInput): Promise<RoutePageAppendResult>;
 }
 
 export class ConfluencePageService implements ConfluencePageServiceContract {
@@ -33,65 +30,6 @@ export class ConfluencePageService implements ConfluencePageServiceContract {
       pageTitle: updatedPage.title,
       newVersion: updatedPage.version.number,
     };
-  }
-
-  async appendEntryToRoutedPage(input: RoutePageAppendInput): Promise<RoutePageAppendResult> {
-    const fallbackPage = await this.getPageDetails(input.fallbackPageId);
-
-    try {
-      const existingPage = await this.client.findPageByTitle(fallbackPage.spaceId, input.pageTitle);
-
-      console.log('[docs-sync] page lookup result', {
-        pageTitle: input.pageTitle,
-        existingPageId: existingPage?.id ?? null,
-        existingPageFound: Boolean(existingPage),
-      });
-
-      if (existingPage) {
-        const updatedPage = await this.appendEntry({
-          pageId: existingPage.id,
-          entryStorageValue: input.entryStorageValue,
-        });
-
-        return {
-          ...updatedPage,
-          existingPageFound: true,
-          fallbackUsed: false,
-        };
-      }
-
-      const createdPage = await this.client.createPage({
-        spaceId: fallbackPage.spaceId,
-        title: input.pageTitle,
-        bodyValue: input.entryStorageValue,
-      });
-
-      return {
-        pageId: createdPage.id,
-        pageTitle: createdPage.title,
-        newVersion: createdPage.version.number,
-        existingPageFound: false,
-        fallbackUsed: false,
-      };
-    } catch (error) {
-      // Explicit fallback: only use the legacy default page if routed lookup or page creation fails.
-      console.warn('[docs-sync] routed page resolution failed; falling back to legacy default page', {
-        pageTitle: input.pageTitle,
-        fallbackPageId: input.fallbackPageId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-
-      const fallbackResult = await this.appendEntry({
-        pageId: input.fallbackPageId,
-        entryStorageValue: input.entryStorageValue,
-      });
-
-      return {
-        ...fallbackResult,
-        existingPageFound: false,
-        fallbackUsed: true,
-      };
-    }
   }
 
   private buildUpdatePayload(

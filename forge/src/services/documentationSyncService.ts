@@ -1,6 +1,5 @@
 import { buildDocumentationEntryStorageValue } from '../builders/confluenceEntryBuilder';
 import { DEFAULT_TARGET_PAGE_ID } from '../config/constants';
-import { routeDocumentationPage } from '../routing/documentationPageRouting';
 import type { AppendEntryResult } from '../types/confluence';
 import type { ValidatedDocumentationWebhookPayload } from '../types/webhook';
 import {
@@ -18,36 +17,19 @@ export class DocumentationSyncService {
   ) {}
 
   async sync(payload: ValidatedDocumentationWebhookPayload): Promise<DocumentationSyncResult> {
-    console.log('[docs-sync] incoming payload', {
-      feature: payload.feature,
-      eventType: payload.eventType,
-    });
-
-    const routingResult = routeDocumentationPage(payload);
-
-    console.log('[docs-sync] routing result', routingResult);
-
     const entryStorageValue = buildDocumentationEntryStorageValue({
       payload,
       receivedAt: new Date().toISOString(),
     });
 
-    const result = await this.pageService.appendEntryToRoutedPage({
-      pageTitle: routingResult.pageTitle,
+    const result = await this.pageService.appendEntry({
+      pageId: DEFAULT_TARGET_PAGE_ID,
       entryStorageValue,
-      fallbackPageId: DEFAULT_TARGET_PAGE_ID,
-    });
-
-    console.log('[docs-sync] final page selection', {
-      pageTitle: result.pageTitle,
-      pageId: result.pageId,
-      existingPageFound: result.existingPageFound,
-      fallbackUsed: result.fallbackUsed,
     });
 
     return {
       ...result,
-      targetPageId: result.pageId,
+      targetPageId: DEFAULT_TARGET_PAGE_ID,
     };
   }
 }
