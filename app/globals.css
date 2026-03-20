@@ -3085,10 +3085,6 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .spotify-playlist-button {
-  position: fixed;
-  right: 24px;
-  bottom: 112px;
-  z-index: 60;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -3103,6 +3099,13 @@ button:not(.cabbage-roll-button) svg,
     transform 140ms ease,
     box-shadow 140ms ease,
     filter 140ms ease;
+}
+
+.spotify-playlist-button:not(.spotify-playlist-button--menu-child) {
+  position: fixed;
+  right: 24px;
+  bottom: 112px;
+  z-index: 60;
 }
 
 .spotify-playlist-button:not(.spotify-playlist-button--menu-child):hover {
