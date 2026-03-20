@@ -207,3 +207,48 @@ Double-check Vercel preview env vars:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 A common issue is preview envs pointing to a different (empty) Supabase project than local.
+
+## 10) Manual player-login tokens
+
+If you need to manually link an authenticated Supabase user to an existing `player_login_identities`
+row, apply migration:
+
+- `supabase/migrations/20260320110000_player_login_tokens.sql`
+
+That migration adds:
+
+- `public.player_login_tokens` for one-time or limited-use login-link tokens.
+- `public.player_login_token_redemptions` for an audit trail of who redeemed each token.
+- `public.issue_player_login_token(...)` to generate a token for an existing player-login identity.
+- `public.redeem_player_login_token(...)` to link the authenticated user to the identity and set `user_profiles.player_id`.
+
+### Issue a token for an existing player login identity
+
+```sql
+select *
+from public.issue_player_login_token(
+  p_player_login_identity_id := '1ae49478-7ae1-4be2-b3fd-1ddf4ebff6ee',
+  p_expires_at := now() + interval '7 days',
+  p_note := 'Manual invite for Claire',
+  p_max_redemptions := 1
+);
+```
+
+Save the returned `token` value immediately. Only the hash is stored in the database.
+
+### Redeem a token after the user is authenticated
+
+```sql
+select *
+from public.redeem_player_login_token(
+  p_token := '<paste-token-here>',
+  p_auth_user_id := '<auth.users.id>'
+);
+```
+
+On success, the function:
+
+1. Links `player_login_identities.auth_user_id` to the provided auth user.
+2. Upserts `public.user_profiles` for that auth user.
+3. Sets `user_profiles.player_id` to the linked player.
+4. Records the redemption in `public.player_login_token_redemptions`.
