@@ -29,6 +29,12 @@ export default function AdminSubNav() {
         Players
         </Link>
         <Link
+          href="/admin/player-logins"
+          className={`admin-side-nav__link${pathname === '/admin/player-logins' ? ' is-active' : ''}`}
+        >
+        Player logins
+        </Link>
+        <Link
           href="/admin/tournaments"
           className={`admin-side-nav__link${pathname === '/admin/tournaments' ? ' is-active' : ''}`}
         >

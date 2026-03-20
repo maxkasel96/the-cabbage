@@ -191,6 +191,16 @@ export const defaultNavConfig: NavConfig = {
               sortOrder: 1,
               isVisible: true,
             },
+            {
+              id: '2a47f777-f7f2-4eab-b10d-2cd5b80e05e0',
+              href: '/admin/player-logins',
+              title: 'Player logins',
+              description: 'Map Google emails to players before first sign-in.',
+              icon: 'users',
+              tone: 'sage',
+              sortOrder: 2,
+              isVisible: true,
+            },
           ],
         },
         {
