@@ -13,6 +13,7 @@ export async function POST() {
   const payload = buildDocsSyncPayload({
     eventType: 'feature-update',
     feature: 'docs-sync-test',
+    summary: 'Test sync from Next.js route',
     data: {
       message: 'Test from Next.js',
     },
