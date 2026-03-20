@@ -1458,11 +1458,14 @@ button:not(.cabbage-roll-button) svg,
     visibility 0s linear 200ms;
 }
 
-.utility-fab-menu__action--spotify {
+.utility-fab-menu .utility-fab-menu__action--spotify {
   left: 50%;
   right: auto;
+  width: var(--utility-fab-trigger-size);
+  margin-left: calc(var(--utility-fab-trigger-size) / -2);
   justify-content: center;
-  transform: translate(-50%, calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px)) scale(0.92);
+  transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px)) scale(0.92);
+  transform-origin: center bottom;
   transition-delay: 0ms;
 }
 
@@ -1485,8 +1488,8 @@ button:not(.cabbage-roll-button) svg,
     visibility 0s linear 0s;
 }
 
-.utility-fab-menu--open .utility-fab-menu__action--spotify {
-  transform: translate(-50%, calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap))) scale(1);
+.utility-fab-menu.utility-fab-menu--open .utility-fab-menu__action--spotify {
+  transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap))) scale(1);
 }
 
 .utility-fab-menu--open .utility-fab-menu__action--utility {
@@ -1556,11 +1559,15 @@ button:not(.cabbage-roll-button) svg,
   z-index: auto;
 }
 
-.floating-utility-button--menu-child {
-  width: 78px;
-  height: 78px;
+.utility-fab-menu .floating-utility-button.floating-utility-button--menu-child,
+.utility-fab-menu .spotify-playlist-button.spotify-playlist-button--menu-child {
+  width: var(--utility-fab-trigger-size);
+  height: var(--utility-fab-trigger-size);
+  min-width: var(--utility-fab-trigger-size);
+  min-height: var(--utility-fab-trigger-size);
   box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
 }
+
 
 .floating-utility-button--menu-child:hover {
   transform: translateY(-2px) scale(1.01);
@@ -1571,11 +1578,6 @@ button:not(.cabbage-roll-button) svg,
   transform: translateY(1px) scale(0.98);
 }
 
-.spotify-playlist-button--menu-child {
-  width: 78px;
-  height: 78px;
-  box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
-}
 
 .spotify-playlist-button--menu-child:hover {
   transform: translateY(-2px) scale(1.01);
@@ -3078,32 +3080,6 @@ button:not(.cabbage-roll-button) svg,
     height: var(--utility-fab-trigger-size);
   }
 
-  .utility-fab-menu .spotify-playlist-button.spotify-playlist-button--menu-child {
-    width: var(--utility-fab-trigger-size);
-    height: var(--utility-fab-trigger-size);
-    min-width: var(--utility-fab-trigger-size);
-    min-height: var(--utility-fab-trigger-size);
-    border-radius: 999px;
-  }
-
-  .utility-fab-menu .utility-fab-menu__action--spotify {
-    left: 50%;
-    right: auto;
-    width: var(--utility-fab-trigger-size);
-    margin-left: calc(var(--utility-fab-trigger-size) / -2);
-    justify-content: center;
-    transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px)) scale(0.92);
-    transform-origin: center bottom;
-  }
-
-  .utility-fab-menu.utility-fab-menu--open .utility-fab-menu__action--spotify {
-    transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap))) scale(1);
-  }
-
-  .utility-fab-menu .floating-utility-button.floating-utility-button--menu-child {
-    width: var(--utility-fab-trigger-size);
-    height: var(--utility-fab-trigger-size);
-  }
 }
 
 .spotify-playlist-button {
