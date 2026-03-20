@@ -27,7 +27,15 @@ const modalTabs: Array<{ id: SpotifyModalTab; label: string }> = [
   { id: 'search-our-favorites', label: 'Search Our Favorites' },
 ]
 
-export default function SpotifyPlaylistModal() {
+const SPOTIFY_BUTTON_IMAGE_URL =
+  'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Music%20(1).png'
+
+type SpotifyPlaylistModalProps = {
+  className?: string
+  tabIndex?: number
+}
+
+export default function SpotifyPlaylistModal({ className, tabIndex }: SpotifyPlaylistModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<SpotifyModalTab>('search-spotify')
   const [query, setQuery] = useState('')
@@ -183,14 +191,17 @@ export default function SpotifyPlaylistModal() {
     <>
       <button
         type="button"
-        className="spotify-playlist-button"
+        className={['spotify-playlist-button', className].filter(Boolean).join(' ')}
         onClick={openModal}
         aria-label="Open Spotify playlist search"
+        tabIndex={tabIndex}
       >
-        <span className="spotify-playlist-button__icon" aria-hidden="true">
-          ♫
-        </span>
-        <span className="spotify-playlist-button__label">Spotify</span>
+        <img
+          src={SPOTIFY_BUTTON_IMAGE_URL}
+          alt=""
+          className="floating-utility-button__image spotify-playlist-button__image"
+          aria-hidden="true"
+        />
       </button>
 
       {isOpen && isMounted

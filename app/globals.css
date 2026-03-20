@@ -153,7 +153,7 @@ textarea {
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__desktop-trigger):not(
     .main-nav__menu-button
-  ):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-modal__tab),
+  ):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab),
 .btn {
   /* Type */
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -189,7 +189,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__de
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-modal__tab):hover,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):hover,
 .btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
@@ -198,7 +198,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-modal__tab):active,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):active,
 .btn:active {
   transform: translateY(6px);
   box-shadow: 0 4px 0 rgba(46, 63, 42, 0.35);
@@ -207,7 +207,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-modal__tab):focus-visible,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):focus-visible,
 .btn:focus-visible {
   outline: 4px solid rgba(110, 127, 74, 0.55);
   outline-offset: 3px;
@@ -215,10 +215,10 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
 
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-modal__tab):disabled,
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):disabled,
 button:not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
-  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-modal__tab)[aria-disabled="true"],
+  ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab)[aria-disabled="true"],
 .btn:disabled,
 .btn[aria-disabled="true"] {
   cursor: not-allowed;
@@ -1357,12 +1357,12 @@ button:not(.cabbage-roll-button) svg,
   right: 24px;
   bottom: 24px;
   z-index: 60;
-  width: 72px;
-  height: 72px;
+  width: 78px;
+  height: 78px;
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
-  background: rgba(46, 63, 42, 0.12);
+  background: #dededec7;
   box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
   cursor: pointer;
   display: inline-flex;
@@ -1377,13 +1377,13 @@ button:not(.cabbage-roll-button) svg,
     filter 140ms ease;
 }
 
-.floating-utility-button:hover {
+.floating-utility-button:not(.floating-utility-button--menu-child):hover {
   background: rgba(46, 63, 42, 0.18);
   transform: translateY(-2px);
   filter: brightness(1.02);
 }
 
-.floating-utility-button:active {
+.floating-utility-button:not(.floating-utility-button--menu-child):active {
   transform: translateY(4px);
   box-shadow: 0 6px 0 rgba(46, 63, 42, 0.35);
   filter: brightness(0.98);
@@ -1393,14 +1393,199 @@ button:not(.cabbage-roll-button) svg,
   width: 100%;
   height: 100%;
   display: block;
-  border-radius: inherit;
-  object-fit: cover;
+  box-sizing: border-box;
+  padding: 6px;
+  object-fit: contain;
   opacity: 0.82;
 }
 
 .floating-utility-button:focus-visible {
   outline: 3px solid rgba(46, 63, 42, 0.6);
   outline-offset: 4px;
+}
+
+.spotify-playlist-button__image {
+  padding: 10px;
+}
+
+
+.utility-fab-menu__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(28, 37, 24, 0.24);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-in;
+}
+
+.utility-fab-menu__backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transition-timing-function: ease-out;
+}
+
+.utility-fab-menu {
+  --utility-fab-trigger-size: 78px;
+  --utility-fab-gap: 14px;
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  width: var(--utility-fab-trigger-size);
+  height: var(--utility-fab-trigger-size);
+}
+
+.utility-fab-menu__actions {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.utility-fab-menu__action {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: bottom right;
+  transition:
+    transform 200ms ease-in,
+    opacity 200ms ease-in,
+    visibility 0s linear 200ms;
+}
+
+.utility-fab-menu .utility-fab-menu__action--spotify {
+  left: 50%;
+  right: auto;
+  width: var(--utility-fab-trigger-size);
+  margin-left: calc(var(--utility-fab-trigger-size) / -2);
+  justify-content: center;
+  transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px)) scale(0.92);
+  transform-origin: center bottom;
+  transition-delay: 0ms;
+}
+
+.utility-fab-menu__action--utility {
+  transform: translate3d(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap) + 10px), 0, 0)
+    scale(0.92);
+  transition-delay: 24ms;
+}
+
+.utility-fab-menu--open .utility-fab-menu__actions {
+  pointer-events: auto;
+}
+
+.utility-fab-menu--open .utility-fab-menu__action {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out,
+    visibility 0s linear 0s;
+}
+
+.utility-fab-menu.utility-fab-menu--open .utility-fab-menu__action--spotify {
+  transform: translateY(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap))) scale(1);
+}
+
+.utility-fab-menu--open .utility-fab-menu__action--utility {
+  transform: translate3d(calc((-1 * var(--utility-fab-trigger-size)) - var(--utility-fab-gap)), 0, 0) scale(1);
+}
+
+.utility-fab-menu__trigger {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: var(--utility-fab-trigger-size);
+  height: var(--utility-fab-trigger-size);
+  background: linear-gradient(145deg, #f6f8ef, #d4dbc5);
+  box-shadow:
+    0 20px 40px rgba(28, 37, 24, 0.24),
+    0 6px 14px rgba(46, 63, 42, 0.18);
+  border-color: rgba(46, 63, 42, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.utility-fab-menu__trigger:hover {
+  background: linear-gradient(145deg, #ffffff, #dbe2cd);
+  box-shadow:
+    0 24px 46px rgba(28, 37, 24, 0.28),
+    0 8px 18px rgba(46, 63, 42, 0.2);
+}
+
+.utility-fab-menu__trigger:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow:
+    0 14px 28px rgba(28, 37, 24, 0.22),
+    0 4px 10px rgba(46, 63, 42, 0.18);
+}
+
+.utility-fab-menu__trigger-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 220ms ease-out;
+}
+
+.utility-fab-menu--open .utility-fab-menu__trigger-icon {
+  transform: rotate(135deg);
+}
+
+.utility-fab-menu__trigger-line {
+  position: absolute;
+  display: block;
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--nav-surface);
+}
+
+.utility-fab-menu__trigger-line--vertical {
+  transform: rotate(90deg);
+}
+
+.floating-utility-button--menu-child,
+.spotify-playlist-button--menu-child {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  z-index: auto;
+}
+
+.utility-fab-menu .floating-utility-button.floating-utility-button--menu-child,
+.utility-fab-menu .spotify-playlist-button.spotify-playlist-button--menu-child {
+  width: var(--utility-fab-trigger-size);
+  height: var(--utility-fab-trigger-size);
+  min-width: var(--utility-fab-trigger-size);
+  min-height: var(--utility-fab-trigger-size);
+  box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
+}
+
+
+.floating-utility-button--menu-child:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: rgba(46, 63, 42, 0.18);
+}
+
+.floating-utility-button--menu-child:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+
+.spotify-playlist-button--menu-child:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: rgba(46, 63, 42, 0.18);
+}
+
+.spotify-playlist-button--menu-child:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .floating-utility-modal__selected-player {
@@ -1499,8 +1684,8 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .player-bio__avatar-image {
-  width: 72px;
-  height: 72px;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -2879,57 +3064,69 @@ button:not(.cabbage-roll-button) svg,
   .floating-utility-button {
     right: 16px;
     bottom: 16px;
-    width: 64px;
-    height: 64px;
+    width: 70px;
+    height: 70px;
   }
+
+  .utility-fab-menu {
+    --utility-fab-trigger-size: 70px;
+    --utility-fab-gap: 14px;
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .utility-fab-menu__trigger {
+    width: var(--utility-fab-trigger-size);
+    height: var(--utility-fab-trigger-size);
+  }
+
 }
 
 .spotify-playlist-button {
+  width: 78px;
+  height: 78px;
+  border-radius: 999px;
+  border: 3px solid var(--nav-surface);
+  padding: 0;
+  background: #3f5a32c7;
+  box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transform: translateY(0);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease,
+    filter 140ms ease;
+}
+
+.spotify-playlist-button:not(.spotify-playlist-button--menu-child) {
   position: fixed;
   right: 24px;
   bottom: 112px;
   z-index: 60;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 0 18px;
-  border: 3px solid #0f5132;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #1db954, #14833b);
-  color: #f7fff9;
-  box-shadow: 0 12px 24px rgba(12, 38, 21, 0.28);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    filter 140ms ease;
 }
 
-.spotify-playlist-button:hover {
+.spotify-playlist-button:not(.spotify-playlist-button--menu-child):hover {
+  background: rgba(46, 63, 42, 0.18);
   transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(12, 38, 21, 0.34);
-  filter: brightness(1.03);
+  filter: brightness(1.02);
 }
 
-.spotify-playlist-button:active {
-  transform: translateY(2px);
+.spotify-playlist-button:not(.spotify-playlist-button--menu-child):active {
+  transform: translateY(4px);
+  box-shadow: 0 6px 0 rgba(46, 63, 42, 0.35);
+  filter: brightness(0.98);
 }
 
 .spotify-playlist-button:focus-visible {
-  outline: 4px solid rgba(29, 185, 84, 0.28);
+  outline: 3px solid rgba(46, 63, 42, 0.6);
   outline-offset: 4px;
 }
 
-.spotify-playlist-button__icon {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.spotify-playlist-button__label {
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
 
 .spotify-playlist-modal {
   padding: 40px 16px 24px;
@@ -3310,7 +3507,7 @@ button:not(.cabbage-roll-button) svg,
 }
 
 @media (max-width: 640px) {
-  .spotify-playlist-button {
+  .spotify-playlist-button:not(.spotify-playlist-button--menu-child) {
     right: 16px;
     bottom: 92px;
     min-height: 52px;
