@@ -1404,6 +1404,23 @@ button:not(.cabbage-roll-button) svg,
 }
 
 
+.utility-fab-menu__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(28, 37, 24, 0.24);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-in;
+}
+
+.utility-fab-menu__backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transition-timing-function: ease-out;
+}
+
 .utility-fab-menu {
   --utility-fab-trigger-size: 78px;
   --utility-fab-gap: 14px;
