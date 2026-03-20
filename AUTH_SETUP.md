@@ -118,6 +118,95 @@ its server session:
 This means admins can approve a player login from the app UI without needing to
 manually set `user_profiles.player_id` in SQL after a user signs in.
 
+### Supabase steps required for the automatic claim flow
+
+If you want the app to automatically associate approved player logins without
+manual SQL fixes per user, do these steps in the **same Supabase project** your
+app is using:
+
+1. Apply the profile/token migration if your project does not already have
+   `public.user_profiles.player_id` and the helper role-detection function:
+   - `supabase/migrations/20260320110000_player_login_tokens.sql`
+2. Apply the automatic claim migration:
+   - `supabase/migrations/20260320130000_claim_player_login_identity.sql`
+3. In **Authentication → Providers**, enable the providers you intend to use:
+   - Google for production OAuth.
+   - Email for local/preview password sign-in if you want to test that path.
+4. Verify that approved identities exist in `public.player_login_identities`
+   for the players you expect to sign in.
+5. Test one sign-in and confirm both of these are populated after success:
+   - `player_login_identities.auth_user_id`
+   - `user_profiles.player_id`
+
+### Verify the claim function exists
+
+```sql
+select
+  routine_schema,
+  routine_name,
+  data_type
+from information_schema.routines
+where routine_schema = 'public'
+  and routine_name = 'claim_player_login_identity';
+```
+
+### Verify approved player-login rows
+
+```sql
+select
+  id,
+  player_id,
+  provider,
+  email,
+  auth_user_id,
+  is_active,
+  created_at,
+  updated_at
+from public.player_login_identities
+order by created_at desc;
+```
+
+### Verify linked user profiles after a successful login
+
+```sql
+select
+  user_id,
+  email,
+  role,
+  is_active,
+  player_id,
+  last_sign_in_at,
+  updated_at
+from public.user_profiles
+order by updated_at desc;
+```
+
+### Find partially linked users that should be repaired
+
+These rows indicate the auth identity was linked, but the durable player link in
+`user_profiles.player_id` is still missing:
+
+```sql
+select
+  pli.id as player_login_identity_id,
+  pli.player_id,
+  pli.provider,
+  pli.email,
+  pli.auth_user_id,
+  up.player_id as user_profile_player_id,
+  up.updated_at as user_profile_updated_at
+from public.player_login_identities pli
+left join public.user_profiles up on up.user_id = pli.auth_user_id
+where pli.auth_user_id is not null
+  and (up.user_id is null or up.player_id is null)
+order by pli.updated_at desc;
+```
+
+If this query returns rows after you deploy the app changes and apply the claim
+migration, clear the stale `auth_user_id` from the affected
+`player_login_identities` row in the app admin UI, then have the user sign in
+again so the claim flow can re-link the account automatically.
+
 
 ## 9) Preview troubleshooting (RLS / DB-environment mismatch)
 
