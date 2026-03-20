@@ -1567,14 +1567,14 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .spotify-playlist-button--menu-child {
-  min-height: 58px;
-  padding: 0 18px;
-  box-shadow: 0 14px 28px rgba(12, 38, 21, 0.24);
+  width: 64px;
+  height: 64px;
+  box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
 }
 
 .spotify-playlist-button--menu-child:hover {
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 18px 32px rgba(12, 38, 21, 0.28);
+  background: rgba(46, 63, 42, 0.18);
 }
 
 .spotify-playlist-button--menu-child:active {
@@ -3074,8 +3074,8 @@ button:not(.cabbage-roll-button) svg,
   }
 
   .spotify-playlist-button--menu-child {
-    min-height: 54px;
-    padding: 0 16px;
+    width: 58px;
+    height: 58px;
   }
 
   .floating-utility-button--menu-child {
@@ -3085,19 +3085,23 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .spotify-playlist-button {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  border: 3px solid var(--nav-surface);
+  padding: 0;
+  background: rgba(46, 63, 42, 0.12);
+  box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 0 18px;
-  border: 3px solid #0f5132;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #1db954, #14833b);
-  color: #f7fff9;
-  box-shadow: 0 12px 24px rgba(12, 38, 21, 0.28);
+  justify-content: center;
+  user-select: none;
+  transform: translateY(0);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
+    background 140ms ease,
     filter 140ms ease;
 }
 
@@ -3109,29 +3113,29 @@ button:not(.cabbage-roll-button) svg,
 }
 
 .spotify-playlist-button:not(.spotify-playlist-button--menu-child):hover {
+  background: rgba(46, 63, 42, 0.18);
   transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(12, 38, 21, 0.34);
-  filter: brightness(1.03);
+  filter: brightness(1.02);
 }
 
 .spotify-playlist-button:not(.spotify-playlist-button--menu-child):active {
-  transform: translateY(2px);
+  transform: translateY(4px);
+  box-shadow: 0 6px 0 rgba(46, 63, 42, 0.35);
+  filter: brightness(0.98);
 }
 
 .spotify-playlist-button:focus-visible {
-  outline: 4px solid rgba(29, 185, 84, 0.28);
+  outline: 3px solid rgba(46, 63, 42, 0.6);
   outline-offset: 4px;
 }
 
-.spotify-playlist-button__icon {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.spotify-playlist-button__label {
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+.spotify-playlist-button__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  object-fit: cover;
+  opacity: 0.82;
 }
 
 .spotify-playlist-modal {

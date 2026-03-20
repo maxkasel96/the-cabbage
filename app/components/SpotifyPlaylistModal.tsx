@@ -27,6 +27,9 @@ const modalTabs: Array<{ id: SpotifyModalTab; label: string }> = [
   { id: 'search-our-favorites', label: 'Search Our Favorites' },
 ]
 
+const SPOTIFY_BUTTON_IMAGE_URL =
+  'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/Music.png'
+
 type SpotifyPlaylistModalProps = {
   className?: string
   tabIndex?: number
@@ -193,10 +196,12 @@ export default function SpotifyPlaylistModal({ className, tabIndex }: SpotifyPla
         aria-label="Open Spotify playlist search"
         tabIndex={tabIndex}
       >
-        <span className="spotify-playlist-button__icon" aria-hidden="true">
-          ♫
-        </span>
-        <span className="spotify-playlist-button__label">Spotify</span>
+        <img
+          src={SPOTIFY_BUTTON_IMAGE_URL}
+          alt=""
+          className="spotify-playlist-button__image"
+          aria-hidden="true"
+        />
       </button>
 
       {isOpen && isMounted
