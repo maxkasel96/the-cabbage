@@ -26,12 +26,12 @@ export function buildDocsSyncPayload({
   }
 }
 
-function requireNonEmptyString(fieldName: string, value: string): string {
+function requireNonEmptyString<T extends string>(fieldName: string, value: T): T {
   const trimmedValue = value.trim()
 
   if (trimmedValue.length === 0) {
     throw new Error(`Missing required docs sync field: ${fieldName}`)
   }
 
-  return trimmedValue
+  return trimmedValue as T
 }
