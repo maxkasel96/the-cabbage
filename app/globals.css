@@ -1362,7 +1362,7 @@ button:not(.cabbage-roll-button) svg,
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
-  background: rgba(46, 63, 42, 0.12);
+  background: #3f5a32c7;
   box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
   cursor: pointer;
   display: inline-flex;
@@ -1393,7 +1393,6 @@ button:not(.cabbage-roll-button) svg,
   width: 100%;
   height: 100%;
   display: block;
-  border-radius: inherit;
   box-sizing: border-box;
   padding: 6px;
   object-fit: contain;
@@ -3084,6 +3083,13 @@ button:not(.cabbage-roll-button) svg,
     height: 70px;
   }
 
+  .utility-fab-menu__action--spotify {
+    left: 50%;
+    right: auto;
+    justify-content: center;
+    transform-origin: center bottom;
+  }
+
   .floating-utility-button--menu-child {
     width: 70px;
     height: 70px;
@@ -3096,7 +3102,7 @@ button:not(.cabbage-roll-button) svg,
   border-radius: 999px;
   border: 3px solid var(--nav-surface);
   padding: 0;
-  background: rgba(46, 63, 42, 0.12);
+  background: #3f5a32c7;
   box-shadow: 0 12px 24px #0003, 0 0 18px #2e3f2a;
   cursor: pointer;
   display: inline-flex;
