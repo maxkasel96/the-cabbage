@@ -3535,6 +3535,8 @@ button:not(.cabbage-roll-button) svg,
   .spotify-playlist-modal__content {
     width: min(720px, calc(100vw - 16px));
     max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 18px 14px 14px;
     gap: 14px;
   }
@@ -3554,7 +3556,7 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__tabs {
     position: sticky;
-    top: max(0px, env(safe-area-inset-top));
+    top: 0;
     z-index: 6;
     width: 100%;
     gap: 4px;
@@ -3562,10 +3564,10 @@ button:not(.cabbage-roll-button) svg,
     overflow-x: auto;
     overflow-y: visible;
     scrollbar-width: none;
-    margin-top: -2px;
-    padding-top: 4px;
+    margin-top: 0;
+    padding-top: 2px;
     padding-bottom: 2px;
-    background: linear-gradient(180deg, rgba(248, 247, 240, 0.99), rgba(248, 247, 240, 0.95));
+    background: linear-gradient(180deg, rgba(248, 247, 240, 1), rgba(248, 247, 240, 0.96));
   }
 
   .spotify-playlist-modal__tabs::-webkit-scrollbar {
@@ -3581,6 +3583,7 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__tab-panel {
     gap: 12px;
+    overflow: visible;
   }
 
   .spotify-playlist-modal__form {
@@ -3598,6 +3601,7 @@ button:not(.cabbage-roll-button) svg,
 
   .spotify-playlist-modal__results,
   .spotify-playlist-modal__tab-panel--favorites {
+    overflow: visible;
     padding-right: 0;
   }
 
