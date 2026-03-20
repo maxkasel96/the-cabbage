@@ -3062,7 +3062,7 @@ button:not(.cabbage-roll-button) svg,
 }
 
 @media (max-width: 640px) {
-  .floating-utility-button {
+  .floating-utility-button:not(.floating-utility-button--menu-child):not(.utility-fab-menu__trigger) {
     right: 16px;
     bottom: 16px;
     width: 70px;
