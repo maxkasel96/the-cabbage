@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Geist, Geist_Mono } from "next/font/google";
-import FloatingUtilityButton from "./components/FloatingUtilityButton";
-import SpotifyPlaylistModal from "./components/SpotifyPlaylistModal";
+import UtilityFabMenu from "./components/UtilityFabMenu";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,8 +35,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased`}
       >
         {children}
-        <SpotifyPlaylistModal />
-        <FloatingUtilityButton />
+        <UtilityFabMenu />
       </body>
     </html>
   );

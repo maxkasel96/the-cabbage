@@ -27,7 +27,12 @@ const modalTabs: Array<{ id: SpotifyModalTab; label: string }> = [
   { id: 'search-our-favorites', label: 'Search Our Favorites' },
 ]
 
-export default function SpotifyPlaylistModal() {
+type SpotifyPlaylistModalProps = {
+  className?: string
+  tabIndex?: number
+}
+
+export default function SpotifyPlaylistModal({ className, tabIndex }: SpotifyPlaylistModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<SpotifyModalTab>('search-spotify')
   const [query, setQuery] = useState('')
@@ -183,9 +188,10 @@ export default function SpotifyPlaylistModal() {
     <>
       <button
         type="button"
-        className="spotify-playlist-button"
+        className={['spotify-playlist-button', className].filter(Boolean).join(' ')}
         onClick={openModal}
         aria-label="Open Spotify playlist search"
+        tabIndex={tabIndex}
       >
         <span className="spotify-playlist-button__icon" aria-hidden="true">
           ♫

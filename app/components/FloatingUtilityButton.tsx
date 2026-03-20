@@ -157,7 +157,12 @@ type Player = {
   display_name: string
 }
 
-export default function FloatingUtilityButton() {
+type FloatingUtilityButtonProps = {
+  className?: string
+  tabIndex?: number
+}
+
+export default function FloatingUtilityButton({ className, tabIndex }: FloatingUtilityButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [players, setPlayers] = useState<Player[]>([])
@@ -300,9 +305,10 @@ export default function FloatingUtilityButton() {
     <>
       <button
         type="button"
-        className="floating-utility-button"
+        className={['floating-utility-button', className].filter(Boolean).join(' ')}
         onClick={openModal}
         aria-label="Open utility modal"
+        tabIndex={tabIndex}
       >
         <img src={FLOATING_IMAGE_URL} alt="Utility" className="floating-utility-button__image" />
       </button>

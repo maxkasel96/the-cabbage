@@ -1377,13 +1377,13 @@ button:not(.cabbage-roll-button) svg,
     filter 140ms ease;
 }
 
-.floating-utility-button:hover {
+.floating-utility-button:not(.floating-utility-button--menu-child):hover {
   background: rgba(46, 63, 42, 0.18);
   transform: translateY(-2px);
   filter: brightness(1.02);
 }
 
-.floating-utility-button:active {
+.floating-utility-button:not(.floating-utility-button--menu-child):active {
   transform: translateY(4px);
   box-shadow: 0 6px 0 rgba(46, 63, 42, 0.35);
   filter: brightness(0.98);
@@ -1401,6 +1401,154 @@ button:not(.cabbage-roll-button) svg,
 .floating-utility-button:focus-visible {
   outline: 3px solid rgba(46, 63, 42, 0.6);
   outline-offset: 4px;
+}
+
+
+.utility-fab-menu {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.utility-fab-menu__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.utility-fab-menu__action {
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.92);
+  transform-origin: bottom right;
+  transition:
+    transform 200ms ease-in,
+    opacity 200ms ease-in,
+    visibility 0s linear 200ms;
+}
+
+.utility-fab-menu__action--spotify {
+  transition-delay: 0ms;
+}
+
+.utility-fab-menu__action--utility {
+  transition-delay: 24ms;
+}
+
+.utility-fab-menu--open .utility-fab-menu__actions {
+  pointer-events: auto;
+}
+
+.utility-fab-menu--open .utility-fab-menu__action {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out,
+    visibility 0s linear 0s;
+}
+
+.utility-fab-menu__trigger {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 78px;
+  height: 78px;
+  background: linear-gradient(145deg, #f6f8ef, #d4dbc5);
+  box-shadow:
+    0 20px 40px rgba(28, 37, 24, 0.24),
+    0 6px 14px rgba(46, 63, 42, 0.18);
+  border-color: rgba(46, 63, 42, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.utility-fab-menu__trigger:hover {
+  background: linear-gradient(145deg, #ffffff, #dbe2cd);
+  box-shadow:
+    0 24px 46px rgba(28, 37, 24, 0.28),
+    0 8px 18px rgba(46, 63, 42, 0.2);
+}
+
+.utility-fab-menu__trigger:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow:
+    0 14px 28px rgba(28, 37, 24, 0.22),
+    0 4px 10px rgba(46, 63, 42, 0.18);
+}
+
+.utility-fab-menu__trigger-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 220ms ease-out;
+}
+
+.utility-fab-menu--open .utility-fab-menu__trigger-icon {
+  transform: rotate(135deg);
+}
+
+.utility-fab-menu__trigger-line {
+  position: absolute;
+  display: block;
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--nav-surface);
+}
+
+.utility-fab-menu__trigger-line--vertical {
+  transform: rotate(90deg);
+}
+
+.floating-utility-button--menu-child,
+.spotify-playlist-button--menu-child {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  z-index: auto;
+}
+
+.floating-utility-button--menu-child {
+  width: 64px;
+  height: 64px;
+  box-shadow: 0 14px 28px rgba(28, 37, 24, 0.22), 0 6px 14px rgba(46, 63, 42, 0.16);
+}
+
+.floating-utility-button--menu-child:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: rgba(46, 63, 42, 0.18);
+}
+
+.floating-utility-button--menu-child:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.spotify-playlist-button--menu-child {
+  min-height: 58px;
+  padding: 0 18px;
+  box-shadow: 0 14px 28px rgba(12, 38, 21, 0.24);
+}
+
+.spotify-playlist-button--menu-child:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 18px 32px rgba(12, 38, 21, 0.28);
+}
+
+.spotify-playlist-button--menu-child:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .floating-utility-modal__selected-player {
@@ -2882,6 +3030,31 @@ button:not(.cabbage-roll-button) svg,
     width: 64px;
     height: 64px;
   }
+
+  .utility-fab-menu {
+    right: 16px;
+    bottom: 16px;
+    gap: 12px;
+  }
+
+  .utility-fab-menu__actions {
+    gap: 12px;
+  }
+
+  .utility-fab-menu__trigger {
+    width: 70px;
+    height: 70px;
+  }
+
+  .spotify-playlist-button--menu-child {
+    min-height: 54px;
+    padding: 0 16px;
+  }
+
+  .floating-utility-button--menu-child {
+    width: 58px;
+    height: 58px;
+  }
 }
 
 .spotify-playlist-button {
@@ -2905,13 +3078,13 @@ button:not(.cabbage-roll-button) svg,
     filter 140ms ease;
 }
 
-.spotify-playlist-button:hover {
+.spotify-playlist-button:not(.spotify-playlist-button--menu-child):hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 28px rgba(12, 38, 21, 0.34);
   filter: brightness(1.03);
 }
 
-.spotify-playlist-button:active {
+.spotify-playlist-button:not(.spotify-playlist-button--menu-child):active {
   transform: translateY(2px);
 }
 
@@ -3310,7 +3483,7 @@ button:not(.cabbage-roll-button) svg,
 }
 
 @media (max-width: 640px) {
-  .spotify-playlist-button {
+  .spotify-playlist-button:not(.spotify-playlist-button--menu-child) {
     right: 16px;
     bottom: 92px;
     min-height: 52px;
