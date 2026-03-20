@@ -4,7 +4,12 @@ import {
   CONFLUENCE_PAGE_BODY_FORMAT,
 } from '../config/constants';
 import { ConfluenceApiError } from '../errors/appError';
-import type { ConfluencePage, ConfluencePageUpdatePayload } from '../types/confluence';
+import type {
+  ConfluencePage,
+  ConfluencePageListResponse,
+  ConfluencePageUpdatePayload,
+  CreateConfluencePageInput,
+} from '../types/confluence';
 
 export class ConfluenceClient {
   async getPage(pageId: string): Promise<ConfluencePage> {
@@ -19,6 +24,46 @@ export class ConfluenceClient {
     );
 
     return parseJsonResponse<ConfluencePage>(response, 'Failed to fetch Confluence page.');
+  }
+
+  async findPageByTitle(spaceId: string, title: string): Promise<ConfluencePage | null> {
+    const response = await api.asApp().requestConfluence(
+      route`${CONFLUENCE_API_V2_BASE_PATH}/pages?space-id=${spaceId}&title=${title}&status=current&body-format=${CONFLUENCE_PAGE_BODY_FORMAT}&limit=1`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+    );
+
+    const data = await parseJsonResponse<ConfluencePageListResponse>(
+      response,
+      'Failed to look up Confluence page by title.',
+    );
+
+    return data.results[0] ?? null;
+  }
+
+  async createPage(input: CreateConfluencePageInput): Promise<ConfluencePage> {
+    const response = await api.asApp().requestConfluence(route`${CONFLUENCE_API_V2_BASE_PATH}/pages`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        spaceId: input.spaceId,
+        status: 'current',
+        title: input.title,
+        body: {
+          representation: 'storage',
+          value: input.bodyValue,
+        },
+      }),
+    });
+
+    return parseJsonResponse<ConfluencePage>(response, 'Failed to create Confluence page.');
   }
 
   async updatePage(pageId: string, payload: ConfluencePageUpdatePayload): Promise<ConfluencePage> {

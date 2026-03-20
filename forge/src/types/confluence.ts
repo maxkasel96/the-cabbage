@@ -25,6 +25,12 @@ export interface ConfluencePageUpdatePayload {
   version: ConfluencePageVersion;
 }
 
+export interface CreateConfluencePageInput {
+  spaceId: string;
+  title: string;
+  bodyValue: string;
+}
+
 export interface AppendEntryInput {
   pageId: string;
   entryStorageValue: string;
@@ -34,4 +40,19 @@ export interface AppendEntryResult {
   pageId: string;
   pageTitle: string;
   newVersion: number;
+}
+
+export interface RoutePageAppendInput {
+  pageTitle: string;
+  entryStorageValue: string;
+  fallbackPageId: string;
+}
+
+export interface RoutePageAppendResult extends AppendEntryResult {
+  existingPageFound: boolean;
+  fallbackUsed: boolean;
+}
+
+export interface ConfluencePageListResponse {
+  results: ConfluencePage[];
 }
