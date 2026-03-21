@@ -1,6 +1,35 @@
 import { buildDocsSyncPayload } from '@/lib/docs-sync/buildPayload'
 
-export async function POST() {
+type DocsSyncRequestField =
+  | 'source'
+  | 'eventType'
+  | 'timestamp'
+  | 'feature'
+  | 'system'
+  | 'integration'
+  | 'release'
+  | 'incidentId'
+  | 'summary'
+  | 'message'
+
+type DocsSyncRequestBody = Partial<Record<DocsSyncRequestField, string>>
+
+const FALLBACK_SUMMARY = 'Testing Next.js to Forge to Confluence sync'
+const FALLBACK_MESSAGE = 'This is a test sync sent from the Next.js API route.'
+const SUPPORTED_STRING_FIELDS: DocsSyncRequestField[] = [
+  'source',
+  'eventType',
+  'timestamp',
+  'feature',
+  'system',
+  'integration',
+  'release',
+  'incidentId',
+  'summary',
+  'message',
+]
+
+export async function POST(request: Request) {
   const webhookUrl = process.env.CONFLUENCE_DOCS_WEBHOOK_URL
 
   if (!webhookUrl) {
@@ -10,12 +39,18 @@ export async function POST() {
     )
   }
 
+  const requestBody = await parseDocsSyncRequestBody(request)
   const payload = buildDocsSyncPayload({
-    // The deployed Forge validation currently only accepts `feature-update`.
-    eventType: 'feature-update',
-    feature: 'docs-sync',
-    summary: 'Testing Next.js to Forge to Confluence sync',
-    message: 'This is a test sync sent from the Next.js API route.',
+    source: requestBody.source,
+    eventType: requestBody.eventType ?? 'feature-update',
+    timestamp: requestBody.timestamp,
+    feature: requestBody.feature,
+    system: requestBody.system,
+    integration: requestBody.integration,
+    release: requestBody.release,
+    incidentId: requestBody.incidentId,
+    summary: requestBody.summary ?? FALLBACK_SUMMARY,
+    message: requestBody.message ?? FALLBACK_MESSAGE,
   })
 
   try {
@@ -55,6 +90,47 @@ export async function POST() {
       { status: 500 }
     )
   }
+}
+
+async function parseDocsSyncRequestBody(request: Request): Promise<DocsSyncRequestBody> {
+  const rawBody = await request.text()
+
+  if (rawBody.trim().length === 0) {
+    return {}
+  }
+
+  try {
+    const parsedBody = JSON.parse(rawBody)
+
+    if (!isPlainObject(parsedBody)) {
+      return {}
+    }
+
+    return pickDefinedStrings(parsedBody, SUPPORTED_STRING_FIELDS)
+  } catch {
+    return {}
+  }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function pickDefinedStrings<T extends string>(
+  source: Record<string, unknown>,
+  fields: readonly T[]
+): Partial<Record<T, string>> {
+  const pickedFields: Partial<Record<T, string>> = {}
+
+  for (const field of fields) {
+    const value = source[field]
+
+    if (typeof value === 'string') {
+      pickedFields[field] = value
+    }
+  }
+
+  return pickedFields
 }
 
 async function parseForgeResponse(response: Response) {
