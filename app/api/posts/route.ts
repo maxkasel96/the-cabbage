@@ -4,8 +4,6 @@ import { supabaseServer, supabaseServerForToken } from '@/lib/supabaseServer'
 
 type PostPayload = {
   tournament_id?: string
-  author_id?: string
-  author_name?: string
   message?: string
   images?: string[]
 }
@@ -35,15 +33,15 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as PostPayload | null
 
   const tournament_id = body?.tournament_id?.trim() ?? ''
-  const author_id = body?.author_id?.trim() ?? ''
-  const author_name = body?.author_name?.trim() ?? ''
+  const author_id = auth.player.id
+  const author_name = auth.player.display_name
   const message = body?.message?.trim() ?? ''
   const images = Array.isArray(body?.images) ? body.images.filter((image) => typeof image === 'string') : []
   const invalidImages = images.filter((image) => !isSafeImageSource(image))
 
-  if (!tournament_id || !author_id || !author_name || (!message && images.length === 0)) {
+  if (!tournament_id || (!message && images.length === 0)) {
     return NextResponse.json(
-      { error: 'tournament_id, author_id, author_name, and message (or images) are required' },
+      { error: 'tournament_id and message (or images) are required' },
       { status: 400 }
     )
   }

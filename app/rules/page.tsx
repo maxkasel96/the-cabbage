@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
@@ -45,10 +46,30 @@ export default function RulesPage() {
   const [rules, setRules] = useState<RuleEntry[]>([])
   const [draftText, setDraftText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
+  const [accessNotice, setAccessNotice] = useState('Sign in with an approved player account to submit or manage rules.')
+  const [canManageRules, setCanManageRules] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingRuleIds, setDeletingRuleIds] = useState<string[]>([])
 
   useEffect(() => {
+    const loadRuleAccess = async () => {
+      const res = await fetch('/api/account/profile', { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setCanManageRules(false)
+        setAccessNotice(
+          res.status === 401
+            ? 'Sign in with an approved player account to submit or manage rules.'
+            : json.error || 'Sign in with an approved player account to submit or manage rules.'
+        )
+        return
+      }
+
+      setCanManageRules(true)
+      setAccessNotice('')
+    }
+
     const loadTournaments = async () => {
       const res = await fetch('/api/tournaments', { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
@@ -91,6 +112,7 @@ export default function RulesPage() {
       setRules(mapped)
     }
 
+    loadRuleAccess()
     loadTournaments()
     loadRules()
   }, [])
@@ -113,44 +135,57 @@ export default function RulesPage() {
     }
   }, [activeRules])
 
-  const updateRuleStatus = useCallback(async (ruleId: string, nextStatus: RuleEntry['status']) => {
-    setStatusMessage('')
-    const res = await fetch('/api/rules', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: ruleId, status: nextStatus }),
-    })
+  const updateRuleStatus = useCallback(
+    async (ruleId: string, nextStatus: RuleEntry['status']) => {
+      if (!canManageRules) {
+        setStatusMessage('Sign in with an approved player account to manage rules.')
+        return
+      }
 
-    const json = await res.json().catch(() => ({}))
+      setStatusMessage('')
+      const res = await fetch('/api/rules', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: ruleId, status: nextStatus }),
+      })
 
-    if (!res.ok) {
-      setStatusMessage(json.error || 'Failed to update rule status')
-      return
-    }
+      const json = await res.json().catch(() => ({}))
 
-    const updated: RuleRecord = json.rule
-    if (!updated) {
-      setStatusMessage('Rule update failed')
-      return
-    }
+      if (!res.ok) {
+        setStatusMessage(json.error || 'Failed to update rule status')
+        return
+      }
 
-    setRules((prev) =>
-      prev.map((rule) =>
-        rule.id === updated.id
-          ? {
-              id: updated.id,
-              tournamentId: updated.tournament_id,
-              content: updated.content,
-              status: updated.status,
-              createdAt: updated.created_at,
-              updatedAt: updated.updated_at,
-            }
-          : rule
+      const updated: RuleRecord = json.rule
+      if (!updated) {
+        setStatusMessage('Rule update failed')
+        return
+      }
+
+      setRules((prev) =>
+        prev.map((rule) =>
+          rule.id === updated.id
+            ? {
+                id: updated.id,
+                tournamentId: updated.tournament_id,
+                content: updated.content,
+                status: updated.status,
+                createdAt: updated.created_at,
+                updatedAt: updated.updated_at,
+              }
+            : rule
+        )
       )
-    )
-  }, [])
+    },
+    [canManageRules]
+  )
 
   const handleSubmit = async () => {
+    if (!canManageRules) {
+      setStatusMessage('Sign in with an approved player account to submit a rule.')
+      return
+    }
+
     if (!activeTournamentId) {
       setStatusMessage('No active tournament is available for this rule.')
       return
@@ -200,6 +235,11 @@ export default function RulesPage() {
   }
 
   const handleDelete = useCallback(async (ruleId: string) => {
+    if (!canManageRules) {
+      setStatusMessage('Sign in with an approved player account to manage rules.')
+      return
+    }
+
     const confirmDelete = window.confirm('Delete this rule? This cannot be undone.')
     if (!confirmDelete) return
 
@@ -222,7 +262,7 @@ export default function RulesPage() {
 
     setRules((prev) => prev.filter((rule) => rule.id !== ruleId))
     setDeletingRuleIds((prev) => prev.filter((id) => id !== ruleId))
-  }, [])
+  }, [canManageRules])
 
   const renderRuleCard = (rule: RuleEntry, accentClass?: string, timestampLabel?: string) => {
     const isDeleting = deletingRuleIds.includes(rule.id)
@@ -233,27 +273,29 @@ export default function RulesPage() {
           <span>
             {timestampLabel} {formatDateTime(rule.status === 'Proposed' ? rule.createdAt : rule.updatedAt)}
           </span>
-          <div className="rules__meta-actions">
-            <label className="rules__status-control">
-              Status
-              <select
-                value={rule.status}
-                onChange={(event) => updateRuleStatus(rule.id, event.target.value as RuleEntry['status'])}
+          {canManageRules ? (
+            <div className="rules__meta-actions">
+              <label className="rules__status-control">
+                Status
+                <select
+                  value={rule.status}
+                  onChange={(event) => updateRuleStatus(rule.id, event.target.value as RuleEntry['status'])}
+                >
+                  <option value="Proposed">Proposed</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                className="btn--secondary"
+                onClick={() => handleDelete(rule.id)}
+                disabled={isDeleting}
               >
-                <option value="Proposed">Proposed</option>
-                <option value="Accepted">Accepted</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            </label>
-            <button
-              type="button"
-              className="btn--secondary"
-              onClick={() => handleDelete(rule.id)}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
-          </div>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          ) : null}
         </div>
       </article>
     )
@@ -266,6 +308,7 @@ export default function RulesPage() {
           <Nav />
         </div>
         <PageTitle>Rules</PageTitle>
+        {!canManageRules && statusMessage ? <p className="rules__status">{statusMessage}</p> : null}
 
         <section className="rules__section">
           <header className="rules__header">
@@ -279,23 +322,33 @@ export default function RulesPage() {
             </div>
           </header>
 
-          <div className="rules__editor">
-            <p className="rules__editor-label">Propose a new rule</p>
-            <textarea
-              className="rules__editor-input"
-              placeholder="Write the rule details..."
-              aria-label="Rule details"
-              rows={6}
-              value={draftText}
-              onChange={(event) => setDraftText(event.target.value)}
-            />
-            <div className="rules__editor-actions">
-              <button type="button" className="rules__submit" onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Submit rule'}
-              </button>
-              {statusMessage ? <span className="rules__status">{statusMessage}</span> : null}
+          {canManageRules ? (
+            <div className="rules__editor">
+              <p className="rules__editor-label">Propose a new rule</p>
+              <textarea
+                className="rules__editor-input"
+                placeholder="Write the rule details..."
+                aria-label="Rule details"
+                rows={6}
+                value={draftText}
+                onChange={(event) => setDraftText(event.target.value)}
+              />
+              <div className="rules__editor-actions">
+                <button type="button" className="rules__submit" onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Submit rule'}
+                </button>
+                {statusMessage ? <span className="rules__status">{statusMessage}</span> : null}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="rules__editor">
+              <p className="rules__editor-label">Propose a new rule</p>
+              <p style={{ margin: 0 }}>{accessNotice}</p>
+              <div>
+                <Link href="/auth/login?next=%2Frules">Sign in to submit rules</Link>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="rules__section">
