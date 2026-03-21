@@ -2284,8 +2284,9 @@ button:not(.cabbage-roll-button) svg,
   border-radius: 0 24px 24px 0;
   box-shadow: 16px 0 30px rgba(30, 43, 24, 0.35);
   padding: 16px 16px 0;
+  height: 100vh;
   height: 100dvh;
-  min-height: 100vh;
+  max-height: 100dvh;
   overflow: hidden;
   z-index: 60;
   display: flex;
@@ -2309,6 +2310,7 @@ button:not(.cabbage-roll-button) svg,
 
 .main-nav__sheet-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(72px + env(safe-area-inset-bottom));
