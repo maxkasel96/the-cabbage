@@ -40,24 +40,18 @@ export async function POST(request: Request) {
   }
 
   const requestBody = await parseDocsSyncRequestBody(request)
-  const source = requestBody.source ?? 'nextjs-app'
-  const eventType = requestBody.eventType ?? 'feature-update'
-  const timestamp = requestBody.timestamp ?? new Date().toISOString()
-  const summary = requestBody.summary ?? FALLBACK_SUMMARY
-  const message = requestBody.message ?? FALLBACK_MESSAGE
-  const payloadData = pickDefinedStrings(requestBody, ['system', 'integration', 'release', 'incidentId'])
-
-  const payload = {
-    ...buildDocsSyncPayload({
-      eventType: eventType as Parameters<typeof buildDocsSyncPayload>[0]['eventType'],
-      feature: requestBody.feature ?? 'docs-sync',
-      summary,
-      message,
-      data: Object.keys(payloadData).length > 0 ? payloadData : undefined,
-    }),
-    source,
-    timestamp,
-  }
+  const payload = buildDocsSyncPayload({
+    source: requestBody.source,
+    eventType: requestBody.eventType ?? 'feature-update',
+    timestamp: requestBody.timestamp,
+    feature: requestBody.feature,
+    system: requestBody.system,
+    integration: requestBody.integration,
+    release: requestBody.release,
+    incidentId: requestBody.incidentId,
+    summary: requestBody.summary ?? FALLBACK_SUMMARY,
+    message: requestBody.message ?? FALLBACK_MESSAGE,
+  })
 
   try {
     const response = await fetch(webhookUrl, {
