@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 import Nav from '../components/Nav'
 import PageTitle from '../components/PageTitle'
@@ -13,9 +14,9 @@ type Tournament = {
   is_active: boolean
 }
 
-type Player = {
-  id: string
-  display_name: string
+type MemberProfile = {
+  display_name: string | null
+  player_id: string | null
 }
 
 type PostEntry = {
@@ -141,12 +142,13 @@ const getInitials = (name: string) =>
 export default function PostsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [selectedTournamentId, setSelectedTournamentId] = useState('')
-  const [players, setPlayers] = useState<Player[]>([])
   const [postsByTournament, setPostsByTournament] = useState<Record<string, PostEntry[]>>({})
   const [draftMessage, setDraftMessage] = useState('')
-  const [draftAuthorId, setDraftAuthorId] = useState('')
   const [attachedImages, setAttachedImages] = useState<string[]>([])
   const [status, setStatus] = useState('')
+  const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null)
+  const [canCreatePosts, setCanCreatePosts] = useState(false)
+  const [accessNotice, setAccessNotice] = useState('Sign in with an approved player account to create a post.')
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
@@ -157,6 +159,27 @@ export default function PostsPage() {
   const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
+    const loadMemberAccess = async () => {
+      const res = await fetch('/api/account/profile', { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setMemberProfile(null)
+        setCanCreatePosts(false)
+        setAccessNotice(
+          res.status === 401
+            ? 'Sign in with an approved player account to create a post.'
+            : json.error || 'Sign in with an approved player account to create a post.'
+        )
+        return
+      }
+
+      const profile = (json.profile ?? null) as MemberProfile | null
+      setMemberProfile(profile)
+      setCanCreatePosts(Boolean(profile?.player_id))
+      setAccessNotice('')
+    }
+
     const loadTournaments = async () => {
       const res = await fetch('/api/tournaments', { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
@@ -177,18 +200,6 @@ export default function PostsPage() {
           setSelectedTournamentId(list[0].id)
         }
       }
-    }
-
-    const loadPlayers = async () => {
-      const res = await fetch('/api/players', { cache: 'no-store' })
-      const json = await res.json().catch(() => ({}))
-
-      if (!res.ok) {
-        setStatus(json.error || 'Failed to load players')
-        return
-      }
-
-      setPlayers(json.players ?? [])
     }
 
     const loadPosts = async () => {
@@ -220,8 +231,8 @@ export default function PostsPage() {
       setPostsByTournament(grouped)
     }
 
+    loadMemberAccess()
     loadTournaments()
-    loadPlayers()
     loadPosts()
   }, [])
 
@@ -258,8 +269,8 @@ export default function PostsPage() {
       return
     }
 
-    if (!draftAuthorId) {
-      setStatus('Choose a player to post as.')
+    if (!canCreatePosts) {
+      setStatus('Sign in with an approved player account to create a post.')
       return
     }
 
@@ -268,8 +279,6 @@ export default function PostsPage() {
       return
     }
 
-    const author = players.find((player) => player.id === draftAuthorId)
-    const authorName = author?.display_name ?? 'Unknown player'
     setStatus('Posting...')
 
     const res = await fetch('/api/posts', {
@@ -279,8 +288,6 @@ export default function PostsPage() {
       },
       body: JSON.stringify({
         tournament_id: selectedTournamentId,
-        author_id: draftAuthorId,
-        author_name: authorName,
         message: sanitized,
         images,
       }),
@@ -417,74 +424,89 @@ export default function PostsPage() {
 
         {status && <div className="posts__status">{status}</div>}
 
-        <section className="posts__composer">
-          <div className="posts__composer-header">
-            <h3>Start a new post</h3>
-            <p>Share a thought, update, or celebratory roast with the rest of the bracket.</p>
-          </div>
-          <div className="posts__composer-body">
-            <label className="posts__control">
-              <span className="posts__control-label">Posting as</span>
-              <select
-                value={draftAuthorId}
-                onChange={(event) => setDraftAuthorId(event.target.value)}
+        {canCreatePosts ? (
+          <section className="posts__composer">
+            <div className="posts__composer-header">
+              <h3>Start a new post</h3>
+              <p>
+                Share a thought, update, or celebratory roast with the rest of the bracket as{' '}
+                {memberProfile?.display_name || 'your linked player'}.
+              </p>
+            </div>
+            <div className="posts__composer-body">
+              <label className="posts__control posts__control--full">
+                <span className="posts__control-label">Message</span>
+                <textarea
+                  className="posts__editor-input posts__editor-input--textarea"
+                  value={draftMessage}
+                  onChange={(event) => setDraftMessage(event.target.value)}
+                  placeholder="Drop your thoughts here..."
+                  rows={6}
+                />
+              </label>
+
+              <div className="posts__attachments">
+                <span className="posts__control-label">Post attachments</span>
+                <p className="posts__attachments-note">Upload images to include as thumbnails in your post.</p>
+                <button type="button" className="btn--secondary" onClick={triggerImagePicker}>
+                  Add images
+                </button>
+                {attachedImages.length > 0 && (
+                  <div className="posts__attachments-preview" aria-label="Attached images">
+                    {attachedImages.map((src, index) => (
+                      <img
+                        key={`attachment-${index}`}
+                        className="posts__attachments-thumbnail"
+                        src={src}
+                        alt={`Attachment ${index + 1}`}
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                )}
+                <input
+                  ref={imageInputRef}
+                  className="posts__editor-input-file"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleAddImages}
+                />
+              </div>
+
+              <div className="posts__composer-actions">
+                <button type="button" onClick={handleSubmit} className="posts__submit">
+                  Post comment
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="posts__composer">
+            <div className="posts__composer-header">
+              <h3>Start a new post</h3>
+              <p>Viewing stays public, but only signed-in members can publish new posts.</p>
+            </div>
+            <div className="posts__composer-body">
+              <div
+                style={{
+                  width: '100%',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: 12,
+                  padding: 16,
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  display: 'grid',
+                  gap: 10,
+                }}
               >
-                <option value="">Select a player</option>
-                {players.map((player) => (
-                  <option key={player.id} value={player.id}>
-                    {player.display_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="posts__control posts__control--full">
-              <span className="posts__control-label">Message</span>
-              <textarea
-                className="posts__editor-input posts__editor-input--textarea"
-                value={draftMessage}
-                onChange={(event) => setDraftMessage(event.target.value)}
-                placeholder="Drop your thoughts here..."
-                rows={6}
-              />
-            </label>
-
-            <div className="posts__attachments">
-              <span className="posts__control-label">Post attachments</span>
-              <p className="posts__attachments-note">Upload images to include as thumbnails in your post.</p>
-              <button type="button" className="btn--secondary" onClick={triggerImagePicker}>
-                Add images
-              </button>
-              {attachedImages.length > 0 && (
-                <div className="posts__attachments-preview" aria-label="Attached images">
-                  {attachedImages.map((src, index) => (
-                    <img
-                      key={`attachment-${index}`}
-                      className="posts__attachments-thumbnail"
-                      src={src}
-                      alt={`Attachment ${index + 1}`}
-                      loading="lazy"
-                    />
-                  ))}
+                <p style={{ margin: 0 }}>{accessNotice}</p>
+                <div>
+                  <Link href="/auth/login?next=%2Fposts">Sign in to post</Link>
                 </div>
-              )}
-              <input
-                ref={imageInputRef}
-                className="posts__editor-input-file"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleAddImages}
-              />
+              </div>
             </div>
-
-            <div className="posts__composer-actions">
-              <button type="button" onClick={handleSubmit} className="posts__submit">
-                Post comment
-              </button>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="posts__thread">
           {sortedPosts.length === 0 ? (
