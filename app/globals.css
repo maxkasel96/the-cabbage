@@ -2001,10 +2001,6 @@ button:not(.cabbage-roll-button) svg,
   top: calc(100% + 8px);
   right: 0;
   min-width: 120px;
-  max-width: min(280px, calc(100vw - 24px));
-  max-height: min(70dvh, 420px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   border-radius: 10px;
   background: #e7eadb;
   border: 1px solid rgba(198, 208, 182, 0.85);
@@ -2338,13 +2334,6 @@ button:not(.cabbage-roll-button) svg,
   margin-top: 12px;
 }
 
-.main-nav__sheet-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-}
-
 .main-nav__sheet-link {
   display: flex;
   align-items: center;
@@ -2379,36 +2368,6 @@ button:not(.cabbage-roll-button) svg,
   padding-inline: 12px;
 }
 
-.main-nav__sheet-section-toggle {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-}
-
-.main-nav__sheet-section-toggle:hover,
-.main-nav__sheet-section-toggle:active {
-  transform: none;
-}
-
-.main-nav__sheet-section-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: #5a4a2e;
-  font-size: 20px;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
 .main-nav__sheet-group {
   display: flex;
   flex-direction: column;
@@ -2425,9 +2384,6 @@ button:not(.cabbage-roll-button) svg,
   letter-spacing: 0.12em;
   color: #5a4a2e;
   font-weight: 700;
-}
-
-.main-nav__sheet-section--utility .main-nav__sheet-section-title {
   padding: 8px 0 0;
 }
 
