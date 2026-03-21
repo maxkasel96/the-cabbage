@@ -1,15 +1,22 @@
-import { ConfluenceClient } from '../clients/confluenceClient';
+import { ensureIndexEntryInStorageValue } from '../builders/confluenceEntryBuilder';
 import { DEFAULT_TARGET_PAGE_ID } from '../config/constants';
+import { ValidationError } from '../errors/appError';
+import { ConfluenceClient } from '../clients/confluenceClient';
 import type {
-  AppendEntryInput,
-  AppendEntryResult,
   ConfluencePage,
+  ConfluencePageCreatePayload,
   ConfluencePageUpdatePayload,
+  IndexLinkInput,
+  UpsertPageInput,
+  UpsertPageResult,
 } from '../types/confluence';
+import type { SupportedPageType } from '../types/webhook';
 
 export interface ConfluencePageServiceContract {
   getPageDetails(pageId: string): Promise<ConfluencePage>;
-  appendEntry(input: AppendEntryInput): Promise<AppendEntryResult>;
+  findPageByTitle(spaceId: string, title: string, parentId?: string): Promise<ConfluencePage | null>;
+  upsertPage(input: UpsertPageInput): Promise<UpsertPageResult>;
+  ensureIndexLink(input: IndexLinkInput & { pageType: SupportedPageType }): Promise<ConfluencePage>;
 }
 
 export class ConfluencePageService implements ConfluencePageServiceContract {
@@ -19,25 +26,87 @@ export class ConfluencePageService implements ConfluencePageServiceContract {
     return this.client.getPage(pageId);
   }
 
-  async appendEntry(input: AppendEntryInput): Promise<AppendEntryResult> {
-    const page = await this.getPageDetails(input.pageId);
-    // TODO: Add retry-safe version conflict handling for concurrent append operations.
-    const updatePayload = this.buildUpdatePayload(page, input.entryStorageValue);
-    const updatedPage = await this.client.updatePage(page.id, updatePayload);
+  async findPageByTitle(
+    spaceId: string,
+    title: string,
+    parentId?: string,
+  ): Promise<ConfluencePage | null> {
+    const matchingPages = await this.client.findPagesByTitle(spaceId, title);
+
+    return (
+      matchingPages.find((page) => page.title === title && (parentId === undefined || page.parentId === parentId)) ??
+      null
+    );
+  }
+
+  async upsertPage(input: UpsertPageInput): Promise<UpsertPageResult> {
+    const existingPage = await this.findPageByTitle(input.spaceId, input.title, input.parentId);
+
+    if (!existingPage) {
+      const createdPage = await this.client.createPage(this.buildCreatePayload(input));
+
+      return {
+        page: createdPage,
+        action: 'created',
+      };
+    }
+
+    const updatedPage = await this.client.updatePage(existingPage.id, {
+      id: existingPage.id,
+      status: 'current',
+      title: existingPage.title,
+      spaceId: existingPage.spaceId,
+      body: {
+        representation: 'storage',
+        value: input.bodyStorageValue,
+      },
+      version: {
+        number: existingPage.version.number + 1,
+      },
+    });
 
     return {
-      pageId: updatedPage.id,
-      pageTitle: updatedPage.title,
-      newVersion: updatedPage.version.number,
+      page: updatedPage,
+      action: 'updated',
     };
   }
 
-  private buildUpdatePayload(
-    page: ConfluencePage,
-    entryStorageValue: string,
-  ): ConfluencePageUpdatePayload {
-    const existingStorageValue = page.body.value ?? '';
-    const nextBodyValue = `${existingStorageValue}${entryStorageValue}`;
+  async ensureIndexLink(input: IndexLinkInput & { pageType: SupportedPageType }): Promise<ConfluencePage> {
+    const indexPage = await this.getPageDetails(input.indexPageId);
+    const existingStorageValue = getStorageValue(indexPage);
+    const nextStorageValue = ensureIndexEntryInStorageValue(
+      existingStorageValue,
+      input.pageType,
+      input.linkTitle,
+      input.linkPageId,
+    );
+
+    if (nextStorageValue === existingStorageValue) {
+      return indexPage;
+    }
+
+    return this.client.updatePage(indexPage.id, this.buildUpdatePayload(indexPage, nextStorageValue));
+  }
+
+  private buildCreatePayload(input: UpsertPageInput): ConfluencePageCreatePayload {
+    return {
+      spaceId: input.spaceId,
+      status: 'current',
+      title: input.title,
+      parentId: input.parentId,
+      body: {
+        representation: 'storage',
+        value: input.bodyStorageValue,
+      },
+    };
+  }
+
+  private buildUpdatePayload(page: ConfluencePage, storageValue: string): ConfluencePageUpdatePayload {
+    if (!page.spaceId) {
+      throw new ValidationError('Confluence page is missing a spaceId.', {
+        pageId: page.id,
+      });
+    }
 
     return {
       id: page.id,
@@ -46,11 +115,15 @@ export class ConfluencePageService implements ConfluencePageServiceContract {
       spaceId: page.spaceId,
       body: {
         representation: 'storage',
-        value: nextBodyValue,
+        value: storageValue,
       },
       version: {
         number: page.version.number + 1,
       },
     };
   }
+}
+
+export function getStorageValue(page: ConfluencePage): string {
+  return page.body.storage?.value ?? page.body.value ?? '';
 }

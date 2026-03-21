@@ -1,4 +1,9 @@
-import type { DocsSyncEventType, DocsSyncPayload } from '@/lib/docs-sync/types'
+import type {
+  DocsSyncEventType,
+  DocsSyncPageType,
+  DocsSyncPayload,
+  DocsSyncPayloadData,
+} from '@/lib/docs-sync/types'
 
 type BuildDocsSyncPayloadOptions = {
   source?: string
@@ -9,9 +14,10 @@ type BuildDocsSyncPayloadOptions = {
   integration?: string
   release?: string
   incidentId?: string
+  pageType?: DocsSyncPageType
   summary: string
   message: string
-  data?: Record<string, unknown>
+  data?: DocsSyncPayloadData
 }
 
 export function buildDocsSyncPayload({
@@ -23,10 +29,14 @@ export function buildDocsSyncPayload({
   integration,
   release,
   incidentId,
+  pageType,
   summary,
   message,
   data,
 }: BuildDocsSyncPayloadOptions): DocsSyncPayload {
+  const normalizedPageType = getOptionalString(pageType)
+  const normalizedData = normalizePayloadData(data, normalizedPageType as DocsSyncPageType | undefined)
+
   return {
     source: getOptionalString(source) ?? 'nextjs-app',
     timestamp: getOptionalString(timestamp) ?? new Date().toISOString(),
@@ -38,7 +48,8 @@ export function buildDocsSyncPayload({
     ...getOptionalField('integration', integration),
     ...getOptionalField('release', release),
     ...getOptionalField('incidentId', incidentId),
-    ...(data === undefined ? {} : { data }),
+    ...(normalizedPageType === undefined ? {} : { pageType: normalizedPageType }),
+    ...(normalizedData === undefined ? {} : { data: normalizedData }),
   }
 }
 
@@ -62,13 +73,31 @@ function getOptionalString(value?: string): string | undefined {
   return trimmedValue.length > 0 ? trimmedValue : undefined
 }
 
-function getOptionalField<T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId'>(
-  fieldName: T,
-  value?: string
-): Partial<Pick<DocsSyncPayload, T>> {
+function getOptionalField<
+  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId'
+>(fieldName: T, value?: string): Partial<Pick<DocsSyncPayload, T>> {
   const trimmedValue = getOptionalString(value)
 
   return trimmedValue === undefined
     ? {}
     : ({ [fieldName]: trimmedValue } as Partial<Pick<DocsSyncPayload, T>>)
+}
+
+function normalizePayloadData(
+  data: DocsSyncPayloadData | undefined,
+  pageType: DocsSyncPageType | undefined
+): DocsSyncPayloadData | undefined {
+  if (data === undefined && pageType === undefined) {
+    return undefined
+  }
+
+  const normalizedData: DocsSyncPayloadData = {
+    ...(data ?? {}),
+  }
+
+  if (pageType !== undefined && normalizedData.pageType === undefined) {
+    normalizedData.pageType = pageType
+  }
+
+  return normalizedData
 }

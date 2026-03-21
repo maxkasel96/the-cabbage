@@ -1,10 +1,22 @@
-export interface ConfluenceStorageBody {
+export interface ConfluenceBodyValue {
   representation: 'storage';
   value: string;
 }
 
+export interface ConfluenceStorageBody {
+  value?: string;
+  storage?: ConfluenceBodyValue;
+}
+
 export interface ConfluencePageVersion {
   number: number;
+  message?: string;
+}
+
+export interface ConfluencePageLinks {
+  webui?: string;
+  editui?: string;
+  base?: string;
 }
 
 export interface ConfluencePage {
@@ -12,26 +24,47 @@ export interface ConfluencePage {
   title: string;
   spaceId: string;
   status: string;
+  parentId?: string;
   body: ConfluenceStorageBody;
   version: ConfluencePageVersion;
+  _links?: ConfluencePageLinks;
 }
 
 export interface ConfluencePageUpdatePayload {
   id: string;
   status: 'current';
   title: string;
-  spaceId: string;
-  body: ConfluenceStorageBody;
+  spaceId?: string;
+  body: ConfluenceBodyValue;
   version: ConfluencePageVersion;
 }
 
-export interface AppendEntryInput {
-  pageId: string;
-  entryStorageValue: string;
+export interface ConfluencePageCreatePayload {
+  spaceId: string;
+  status: 'current';
+  title: string;
+  parentId?: string;
+  body: ConfluenceBodyValue;
 }
 
-export interface AppendEntryResult {
-  pageId: string;
-  pageTitle: string;
-  newVersion: number;
+export interface ConfluencePageListResponse {
+  results: ConfluencePage[];
+}
+
+export interface UpsertPageInput {
+  spaceId: string;
+  parentId: string;
+  title: string;
+  bodyStorageValue: string;
+}
+
+export interface UpsertPageResult {
+  page: ConfluencePage;
+  action: 'created' | 'updated';
+}
+
+export interface IndexLinkInput {
+  indexPageId: string;
+  linkTitle: string;
+  linkPageId: string;
 }
