@@ -136,6 +136,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
   const [isAuthMenuOpen, setIsAuthMenuOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [expandedMobileMenus, setExpandedMobileMenus] = useState<string[]>([])
   const navConfig = defaultNavConfig
   const [auth, setAuth] = useState<AuthState>({
     isAuthenticated: false,
@@ -267,11 +268,36 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     )
   }, [desktopMegaMenus, primaryLinks])
 
+
+  const initialExpandedMobileMenus = useMemo(() => {
+    return desktopMegaMenus
+      .filter((menu) =>
+        menu.groups.some((group) => group.items.some((item) => item.href === pathname))
+      )
+      .map((menu) => menu.id)
+  }, [desktopMegaMenus, pathname])
+
   useEffect(() => {
     setIsMobileMenuOpen(false)
     setIsAuthMenuOpen(false)
     setIsNavHidden(false)
-  }, [pathname])
+    setExpandedMobileMenus(initialExpandedMobileMenus)
+  }, [initialExpandedMobileMenus, pathname])
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      setExpandedMobileMenus((current) => {
+        if (current.length > 0) {
+          return current
+        }
+
+        return initialExpandedMobileMenus
+      })
+      return
+    }
+
+    setExpandedMobileMenus(initialExpandedMobileMenus)
+  }, [initialExpandedMobileMenus, isMobileMenuOpen])
 
   const handleMobileClose = () => {
     setIsMobileMenuOpen(false)
@@ -371,14 +397,15 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     wasMenuOpenRef.current = true
 
     const sheet = sheetRef.current
-    const focusableElements = sheet
-      ? Array.from(
-          sheet.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), [tabindex]:not([tabindex=\"-1\"])'
+    const getFocusableElements = () =>
+      sheet
+        ? Array.from(
+            sheet.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
           )
-        )
-      : []
-    const firstElement = focusableElements[0] ?? sheet
+        : []
+    const firstElement = getFocusableElements()[0] ?? sheet
 
     // Move focus into the drawer when it opens.
     firstElement?.focus()
@@ -394,6 +421,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
         return
       }
 
+      const focusableElements = getFocusableElements()
       if (focusableElements.length === 0) {
         event.preventDefault()
         return
@@ -460,6 +488,15 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       <span className="main-nav__sheet-label">{label}</span>
     </Link>
   )
+
+
+  const toggleMobileMenuSection = (menuId: string) => {
+    setExpandedMobileMenus((current) =>
+      current.includes(menuId)
+        ? current.filter((id) => id !== menuId)
+        : [...current, menuId]
+    )
+  }
 
   const handleDesktopBlur = (event: FocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -740,19 +777,42 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
             }
 
             const menu = item.menu
+            const isExpanded = expandedMobileMenus.includes(menu.id)
+
             return (
-              <div key={menu.id} className="main-nav__sheet-section">
-                <div className="main-nav__sheet-section-title">{menu.label}</div>
-                {menu.groups.map((group) => (
-                  <div key={group.title} className="main-nav__sheet-group">
-                    {group.title === menu.label ? null : (
-                      <div className="main-nav__sheet-group-title">{group.title}</div>
-                    )}
-                    <div className="main-nav__sheet-links">
-                      {group.items.map((item) => renderMobileLink(item.href, item.title))}
-                    </div>
+              <div
+                key={menu.id}
+                className={`main-nav__sheet-section${isExpanded ? ' is-expanded' : ''}`}
+              >
+                <button
+                  type="button"
+                  className="main-nav__sheet-section-toggle"
+                  aria-expanded={isExpanded}
+                  aria-controls={`mobile-nav-section-${menu.id}`}
+                  onClick={() => toggleMobileMenuSection(menu.id)}
+                >
+                  <span className="main-nav__sheet-section-title">{menu.label}</span>
+                  <span className="main-nav__sheet-section-icon" aria-hidden="true">
+                    {isExpanded ? '−' : '+'}
+                  </span>
+                </button>
+                {isExpanded ? (
+                  <div
+                    id={`mobile-nav-section-${menu.id}`}
+                    className="main-nav__sheet-panel"
+                  >
+                    {menu.groups.map((group) => (
+                      <div key={group.title} className="main-nav__sheet-group">
+                        {group.title === menu.label ? null : (
+                          <div className="main-nav__sheet-group-title">{group.title}</div>
+                        )}
+                        <div className="main-nav__sheet-links">
+                          {group.items.map((item) => renderMobileLink(item.href, item.title))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : null}
               </div>
             )
           })}
