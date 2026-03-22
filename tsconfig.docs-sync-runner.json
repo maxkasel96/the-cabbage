@@ -6,15 +6,16 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": ".tmp-docs-sync-tests"
+    "outDir": ".tmp-docs-sync-runner"
   },
   "include": [
     "lib/docs-sync/types.ts",
     "lib/docs-sync/buildPayload.ts",
+    "lib/docs-sync/sendPayload.ts",
     "lib/docs-sync/seedData.ts",
     "lib/docs-sync/seedRendering.ts",
     "lib/docs-sync/seedPayloads.ts",
-    "lib/docs-sync/sendPayload.ts",
-    "lib/docs-sync/syncAll.ts"
+    "lib/docs-sync/syncAll.ts",
+    "scripts/docs-sync.ts"
   ]
 }
