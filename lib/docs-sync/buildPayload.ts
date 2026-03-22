@@ -34,8 +34,8 @@ export function buildDocsSyncPayload({
   message,
   data,
 }: BuildDocsSyncPayloadOptions): DocsSyncPayload {
-  const normalizedPageType = getOptionalString(pageType)
-  const normalizedData = normalizePayloadData(data, normalizedPageType as DocsSyncPageType | undefined)
+  const normalizedPageType = getOptionalPageType(pageType)
+  const normalizedData = normalizePayloadData(data, normalizedPageType)
 
   return {
     source: getOptionalString(source) ?? 'nextjs-app',
@@ -100,4 +100,12 @@ function normalizePayloadData(
   }
 
   return normalizedData
+}
+
+function getOptionalPageType(value?: DocsSyncPageType): DocsSyncPageType | undefined {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  return value
 }
