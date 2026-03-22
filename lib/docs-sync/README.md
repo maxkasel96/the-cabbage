@@ -65,3 +65,14 @@ npm run docs:seed
 That script calls `POST /api/docs-sync/seed`, which builds the seed payload inventory and forwards each payload through the existing `/api/docs-sync` → Forge webhook flow.
 
 If your app is running on a non-default URL, set `DOCS_SEED_BASE_URL` first.
+
+## Manual Forge webhook sync
+
+To send the full features + integrations + runbooks seed set directly to Forge in one terminal run:
+
+```bash
+export CONFLUENCE_DOCS_WEBHOOK_URL='https://your-forge-webhook-url'
+npm run docs:sync
+```
+
+The runner reuses the existing seed payload builders, sends each payload sequentially to the Forge webhook, logs one line per payload, and prints a final success/failure summary.
