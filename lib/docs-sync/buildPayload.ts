@@ -3,7 +3,7 @@ import type {
   DocsSyncPageType,
   DocsSyncPayload,
   DocsSyncPayloadData,
-} from '@/lib/docs-sync/types'
+} from './types'
 
 type BuildDocsSyncPayloadOptions = {
   source?: string
@@ -15,8 +15,11 @@ type BuildDocsSyncPayloadOptions = {
   release?: string
   incidentId?: string
   pageType?: DocsSyncPageType
+  title?: string
+  externalId?: string
   summary: string
   message: string
+  content?: string
   data?: DocsSyncPayloadData
 }
 
@@ -30,8 +33,11 @@ export function buildDocsSyncPayload({
   release,
   incidentId,
   pageType,
+  title,
+  externalId,
   summary,
   message,
+  content,
   data,
 }: BuildDocsSyncPayloadOptions): DocsSyncPayload {
   const normalizedPageType = getOptionalPageType(pageType)
@@ -48,7 +54,10 @@ export function buildDocsSyncPayload({
     ...getOptionalField('integration', integration),
     ...getOptionalField('release', release),
     ...getOptionalField('incidentId', incidentId),
+    ...getOptionalField('title', title),
+    ...getOptionalField('externalId', externalId),
     ...(normalizedPageType === undefined ? {} : { pageType: normalizedPageType }),
+    ...getOptionalField('content', content),
     ...(normalizedData === undefined ? {} : { data: normalizedData }),
   }
 }
@@ -74,7 +83,7 @@ function getOptionalString(value?: string): string | undefined {
 }
 
 function getOptionalField<
-  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId'
+  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId' | 'title' | 'externalId' | 'content'
 >(fieldName: T, value?: string): Partial<Pick<DocsSyncPayload, T>> {
   const trimmedValue = getOptionalString(value)
 

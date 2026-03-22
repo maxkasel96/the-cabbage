@@ -6,6 +6,7 @@ export type DocsSyncEventType =
   | 'integration-create'
   | 'integration-update'
   | 'integration-delete'
+  | 'runbook-update'
   | 'release-update'
   | 'incident-update'
   | (string & {})
@@ -13,6 +14,7 @@ export type DocsSyncEventType =
 export type DocsSyncPageType =
   | 'feature-page'
   | 'integration-page'
+  | 'runbook-page'
   | 'release-page'
   | 'incident-page'
 
@@ -45,8 +47,11 @@ export type DocsSyncPayload = {
   release?: string
   incidentId?: string
   pageType?: DocsSyncPageType
+  title?: string
+  externalId?: string
   summary: string
   message: string
+  content?: string
   data?: DocsSyncPayloadData
 }
 
@@ -73,4 +78,17 @@ export type IntegrationDocSeed = {
   currentState: string
   notes: string[]
   relatedFeatures?: string[]
+}
+
+export type RunbookDocSeed = {
+  key: string
+  name: string
+  summary: string
+  status: string
+  owner?: string
+  owningArea?: string
+  currentState: string
+  notes: string[]
+  prerequisites?: string[]
+  steps: string[]
 }

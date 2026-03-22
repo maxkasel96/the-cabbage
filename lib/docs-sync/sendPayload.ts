@@ -1,5 +1,5 @@
-import { buildDocsSyncPayload } from '@/lib/docs-sync/buildPayload'
-import type { DocsSyncPayload } from '@/lib/docs-sync/types'
+import { buildDocsSyncPayload } from './buildPayload'
+import type { DocsSyncPayload } from './types'
 
 type SendDocsSyncPayloadOptions = {
   webhookUrl?: string

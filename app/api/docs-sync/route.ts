@@ -12,8 +12,11 @@ type DocsSyncRequestField =
   | 'release'
   | 'incidentId'
   | 'pageType'
+  | 'title'
+  | 'externalId'
   | 'summary'
   | 'message'
+  | 'content'
 
 type DocsSyncRequestBody = Partial<Record<DocsSyncRequestField, string>> & {
   data?: DocsSyncPayloadData
@@ -32,8 +35,11 @@ const SUPPORTED_STRING_FIELDS: DocsSyncRequestField[] = [
   'release',
   'incidentId',
   'pageType',
+  'title',
+  'externalId',
   'summary',
   'message',
+  'content',
 ]
 
 export async function POST(request: Request) {
@@ -51,8 +57,11 @@ export async function POST(request: Request) {
       pageType:
         (requestBody.pageType as DocsSyncPageType | undefined) ??
         (requestBody.integration ? 'integration-page' : 'feature-page'),
+      title: requestBody.title,
+      externalId: requestBody.externalId,
       summary: requestBody.summary ?? FALLBACK_SUMMARY,
       message: requestBody.message ?? FALLBACK_MESSAGE,
+      content: requestBody.content,
       data: requestBody.data,
     })
 
