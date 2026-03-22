@@ -9,12 +9,15 @@ import {
 } from '../shared/docSignals'
 import {
   getAppRouteFromFilePath,
+  getBaseName,
   getDirectoryPath,
   getRepoFilesUnderDirectory,
   getRouteGroups,
   scanRepo,
   type RepoFile,
 } from '../shared/repoScan'
+
+const IGNORED_SUPPORTING_FILE_NAMES = new Set(['layout.tsx', 'Nav.tsx', 'PageTitle.tsx', 'AdminSubNav.tsx'])
 
 export type FeatureDiscoveryCandidate = {
   key: string
@@ -52,10 +55,6 @@ function buildFeatureCandidate(pageFile: RepoFile, repoFiles: RepoFile[]): Featu
   const directoryFiles = getRepoFilesUnderDirectory(repoFiles, directoryPath).filter(
     (repoFile) => getDirectoryPath(repoFile.path) === directoryPath
   )
-  const siblingSourceFiles = directoryFiles
-    .map((repoFile) => repoFile.path)
-    .filter((filePath) => /\.(ts|tsx)$/.test(filePath))
-    .filter((filePath) => !filePath.endsWith('/route.ts'))
   const relatedApiRoutes = new Set<string>()
 
   for (const repoFile of directoryFiles) {
@@ -68,17 +67,26 @@ function buildFeatureCandidate(pageFile: RepoFile, repoFiles: RepoFile[]): Featu
     relatedApiRoutes.add(apiRoute)
   }
 
-  const importedComponents = extractRelativeImports(pageFile.content)
+  const importedComponentPaths = extractRelativeImports(pageFile.content)
     .map((relativeImport) => toRepoPath(pageFile.path, relativeImport))
     .filter((repoPath) => repoPath.startsWith('app/'))
-    .map((repoPath) => repoPath.replace(/\.(ts|tsx)$/, ''))
+  const supportingFiles = directoryFiles
+    .map((repoFile) => repoFile.path)
+    .filter((filePath) => filePath !== pageFile.path)
+    .filter((filePath) => /\.(ts|tsx)$/.test(filePath))
+    .filter((filePath) => !filePath.endsWith('/route.ts'))
+    .filter((filePath) => !IGNORED_SUPPORTING_FILE_NAMES.has(getBaseName(filePath)))
+  const importedSourceFiles = importedComponentPaths
+    .flatMap((repoPath) => resolveImportedSourceFiles(repoFiles, repoPath))
+    .filter((filePath) => !IGNORED_SUPPORTING_FILE_NAMES.has(getBaseName(filePath)))
   const majorComponents = dedupeStrings([
-    ...importedComponents
-      .filter((repoPath) => /[A-Z][A-Za-z0-9]+$/.test(repoPath))
+    ...importedComponentPaths
+      .filter((repoPath) => /[A-Z][A-Za-z0-9]+(?:\.(ts|tsx))?$/.test(repoPath))
       .map((repoPath) => {
-        const pathSegments = repoPath.split('/')
+        const normalizedPath = repoPath.replace(/\.(ts|tsx)$/, '')
+        const pathSegments = normalizedPath.split('/')
 
-        return pathSegments[pathSegments.length - 1] ?? repoPath
+        return pathSegments[pathSegments.length - 1] ?? normalizedPath
       }),
     ...extractCapitalizedIdentifiers(pageFile.content).filter((identifier) => /(Modal|Form|Card|Uploader|Menu|Nav)$/.test(identifier)),
   ]).slice(0, 6)
@@ -89,13 +97,13 @@ function buildFeatureCandidate(pageFile: RepoFile, repoFiles: RepoFile[]): Featu
     majorComponents.length > 0 ? 'Major UI screen' : '',
     routeGroups.length > 0 ? 'Route group' : '',
     hasServerActionSignals ? 'Server action' : '',
-    siblingSourceFiles.length >= 3 ? 'Multi-file workflow' : '',
+    supportingFiles.length + importedSourceFiles.length >= 2 ? 'Multi-file workflow' : '',
   ]).filter((signal) => signal.length > 0)
 
   return {
     key: inferFeatureKey(routePath, relatedApiRoutes),
     title: inferFeatureTitle(routePath, relatedApiRoutes),
-    sourceFiles: dedupeStrings([pageFile.path, ...siblingSourceFiles]).sort((left, right) => left.localeCompare(right)),
+    sourceFiles: dedupeStrings([pageFile.path, ...supportingFiles, ...importedSourceFiles]).sort((left, right) => left.localeCompare(right)),
     descriptionHints: buildFeatureDescriptionHints(routePath, relatedApiRoutes, routeGroups, majorComponents),
     pageRoutes: [routePath],
     relatedApiRoutes: [...relatedApiRoutes].sort((left, right) => left.localeCompare(right)),
@@ -174,6 +182,20 @@ function inferFeatureTitle(routePath: string, relatedApiRoutes: Set<string>): st
   }
 
   return titleFromRoute(routePath)
+}
+
+function resolveImportedSourceFiles(repoFiles: RepoFile[], importPath: string): string[] {
+  const candidatePaths = new Set([
+    importPath,
+    `${importPath}.ts`,
+    `${importPath}.tsx`,
+    `${importPath}/index.ts`,
+    `${importPath}/index.tsx`,
+  ])
+
+  return repoFiles
+    .map((repoFile) => repoFile.path)
+    .filter((filePath) => candidatePaths.has(filePath))
 }
 
 function isFeaturePage(filePath: string): boolean {

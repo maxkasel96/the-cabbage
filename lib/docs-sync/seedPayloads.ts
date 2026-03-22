@@ -146,9 +146,10 @@ function mergeDiscoveredFeatureSeeds(
   existingSeeds: FeatureDocSeed[],
   discoveredCandidates: FeatureDiscoveryCandidate[]
 ): FeatureDocSeed[] {
-  const mergedSeeds = [...existingSeeds]
-  const seenKeys = new Set(existingSeeds.map((seed) => seed.key))
-  const seenNames = new Set(existingSeeds.map((seed) => seed.name.toLowerCase()))
+  const enrichedExistingSeeds = enrichExistingSeedsWithSourceFiles(existingSeeds, discoveredCandidates, (seed) => seed.name)
+  const mergedSeeds = [...enrichedExistingSeeds]
+  const seenKeys = new Set(enrichedExistingSeeds.map((seed) => seed.key))
+  const seenNames = new Set(enrichedExistingSeeds.map((seed) => seed.name.toLowerCase()))
 
   for (const candidate of discoveredCandidates) {
     if (seenKeys.has(candidate.key) || seenNames.has(candidate.title.toLowerCase())) {
@@ -200,9 +201,10 @@ function mergeDiscoveredIntegrationSeeds(
   existingSeeds: IntegrationDocSeed[],
   discoveredCandidates: IntegrationDiscoveryCandidate[]
 ): IntegrationDocSeed[] {
-  const mergedSeeds = [...existingSeeds]
-  const seenKeys = new Set(existingSeeds.map((seed) => seed.key))
-  const seenNames = new Set(existingSeeds.map((seed) => seed.name.toLowerCase()))
+  const enrichedExistingSeeds = enrichExistingSeedsWithSourceFiles(existingSeeds, discoveredCandidates, (seed) => seed.name)
+  const mergedSeeds = [...enrichedExistingSeeds]
+  const seenKeys = new Set(enrichedExistingSeeds.map((seed) => seed.key))
+  const seenNames = new Set(enrichedExistingSeeds.map((seed) => seed.name.toLowerCase()))
 
   for (const candidate of discoveredCandidates) {
     if (seenKeys.has(candidate.key) || seenNames.has(candidate.title.toLowerCase())) {
@@ -251,9 +253,10 @@ function mergeDiscoveredRunbookSeeds(
   existingSeeds: RunbookDocSeed[],
   discoveredCandidates: RunbookDiscoveryCandidate[]
 ): RunbookDocSeed[] {
-  const mergedSeeds = [...existingSeeds]
-  const seenKeys = new Set(existingSeeds.map((seed) => seed.key))
-  const seenNames = new Set(existingSeeds.map((seed) => seed.name.toLowerCase()))
+  const enrichedExistingSeeds = enrichExistingSeedsWithSourceFiles(existingSeeds, discoveredCandidates, (seed) => seed.name)
+  const mergedSeeds = [...enrichedExistingSeeds]
+  const seenKeys = new Set(enrichedExistingSeeds.map((seed) => seed.key))
+  const seenNames = new Set(enrichedExistingSeeds.map((seed) => seed.name.toLowerCase()))
 
   for (const candidate of discoveredCandidates) {
     if (seenKeys.has(candidate.key) || seenNames.has(candidate.title.toLowerCase())) {
@@ -291,6 +294,37 @@ function mergeDiscoveredRunbookSeeds(
   }
 
   return mergedSeeds
+}
+
+
+function enrichExistingSeedsWithSourceFiles<
+  TSeed extends { key: string; sourceFiles?: string[] },
+  TCandidate extends { key: string; title: string; sourceFiles: string[] }
+>(
+  existingSeeds: TSeed[],
+  discoveredCandidates: TCandidate[],
+  getSeedName: (seed: TSeed) => string
+): TSeed[] {
+  return existingSeeds.map((seed) => {
+    if ((seed.sourceFiles?.length ?? 0) > 0) {
+      return seed
+    }
+
+    const matchingCandidate = discoveredCandidates.find(
+      (candidate) =>
+        candidate.key === seed.key ||
+        candidate.title.toLowerCase() === getSeedName(seed).toLowerCase()
+    )
+
+    if (!matchingCandidate || matchingCandidate.sourceFiles.length === 0) {
+      return seed
+    }
+
+    return {
+      ...seed,
+      sourceFiles: matchingCandidate.sourceFiles,
+    }
+  })
 }
 
 function buildFeatureSummary(candidate: FeatureDiscoveryCandidate): string {

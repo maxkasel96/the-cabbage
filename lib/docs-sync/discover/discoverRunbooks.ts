@@ -19,6 +19,7 @@ export type RunbookDiscoveryCandidate = {
 type RunbookDefinition = {
   key: string
   title: string
+  minimumSourceFiles: number
   matcher(filePath: string): boolean
 }
 
@@ -38,6 +39,7 @@ const RUNBOOK_DEFINITIONS: RunbookDefinition[] = [
   {
     key: 'docs-sync-operations',
     title: 'Docs Sync Operations',
+    minimumSourceFiles: 3,
     matcher(filePath) {
       return (
         filePath === '.github/workflows/docs-sync.yml' ||
@@ -52,27 +54,83 @@ const RUNBOOK_DEFINITIONS: RunbookDefinition[] = [
     },
   },
   {
+    key: 'member-access-and-identity-operations',
+    title: 'Member Access and Identity Operations',
+    minimumSourceFiles: 6,
+    matcher(filePath) {
+      return (
+        filePath === 'app/auth/login/page.tsx' ||
+        filePath === 'app/auth/callback/page.tsx' ||
+        filePath === 'app/api/auth/session/route.ts' ||
+        filePath === 'app/api/auth/complete-player-login/route.ts' ||
+        filePath === 'app/api/account/profile/route.ts' ||
+        filePath === 'app/api/account/profile/image/route.ts' ||
+        filePath === 'app/admin/player-logins/page.tsx' ||
+        filePath === 'app/admin/users/page.tsx' ||
+        filePath === 'app/api/admin/player-logins/route.ts' ||
+        filePath === 'app/api/admin/roles/route.ts' ||
+        filePath.startsWith('lib/auth/') ||
+        filePath === 'lib/navigation/requireAdmin.ts' ||
+        filePath === 'lib/userProfiles.ts' ||
+        filePath === 'lib/supabase-admin.ts' ||
+        filePath === 'lib/supabaseServer.ts' ||
+        filePath === 'lib/supabaseServiceRole.ts'
+      )
+    },
+  },
+  {
+    key: 'ai-recommendation-operations',
+    title: 'AI Recommendation Operations',
+    minimumSourceFiles: 3,
+    matcher(filePath) {
+      return (
+        filePath === 'app/page.tsx' ||
+        filePath === 'app/api/ai/recommend-games/route.ts' ||
+        filePath === 'lib/openai.ts'
+      )
+    },
+  },
+  {
     key: 'tournament-administration',
     title: 'Tournament Administration',
+    minimumSourceFiles: 4,
     matcher(filePath) {
-      return filePath.includes('admin/tournaments') || filePath.includes('/tournaments/') || filePath.endsWith('app/history/page.tsx') || filePath.endsWith('app/bracket/page.tsx')
+      return (
+        filePath.includes('admin/tournaments') ||
+        filePath.includes('/tournaments/') ||
+        filePath.endsWith('app/history/page.tsx') ||
+        filePath.endsWith('app/bracket/page.tsx')
+      )
     },
   },
   {
     key: 'game-catalog-administration',
     title: 'Game Catalog Administration',
+    minimumSourceFiles: 4,
     matcher(filePath) {
-      return filePath.includes('admin/games') || filePath.includes('admin/tags') || filePath.includes('admin/players') || filePath.includes('api/admin/games') || filePath.includes('api/admin/tags') || filePath.includes('api/admin/players')
+      return (
+        filePath.includes('admin/games') ||
+        filePath.includes('admin/tags') ||
+        filePath.includes('admin/players') ||
+        filePath.includes('api/admin/games') ||
+        filePath.includes('api/admin/tags') ||
+        filePath.includes('api/admin/players')
+      )
     },
   },
   {
     key: 'spotify-playlist-configuration',
     title: 'Spotify Playlist Configuration',
+    minimumSourceFiles: 3,
     matcher(filePath) {
-      return filePath.includes('spotify-favorite-playlists') || filePath === 'lib/spotify.ts' || filePath.endsWith('app/admin/app-configurations/page.tsx')
+      return (
+        filePath.includes('spotify-favorite-playlists') ||
+        filePath === 'lib/spotify.ts' ||
+        filePath.endsWith('app/admin/app-configurations/page.tsx')
+      )
     },
   },
-  // TODO: Expand or split operational clusters when teams want more granular runbooks.
+  // TODO: Expand or split operational clusters when repeated manual procedures justify more targeted runbooks.
 ]
 
 export function discoverRunbooks(options: { rootDir?: string; repoFiles?: RepoFile[] } = {}): RunbookDiscoveryCandidate[] {
@@ -119,21 +177,30 @@ export function discoverRunbooks(options: { rootDir?: string; repoFiles?: RepoFi
     }
   }
 
-  return [...accumulators.entries()]
-    .map(([key, accumulator]) => ({
-      key: normalizeCandidateKey(key),
-      title: accumulator.title,
-      sourceFiles: [...accumulator.sourceFiles].sort((left, right) => left.localeCompare(right)),
-      descriptionHints: [...accumulator.descriptionHints].sort((left, right) => left.localeCompare(right)),
-      commands: [...accumulator.commands].sort((left, right) => left.localeCompare(right)),
-      adminPaths: [...accumulator.adminPaths].sort((left, right) => left.localeCompare(right)),
-      workflowFiles: [...accumulator.workflowFiles].sort((left, right) => left.localeCompare(right)),
-      webhookRoutes: [...accumulator.webhookRoutes].sort((left, right) => left.localeCompare(right)),
-      metadata: {
-        signalKinds: [...accumulator.signalKinds].sort((left, right) => left.localeCompare(right)),
-        troubleshootingFiles: [...accumulator.troubleshootingFiles].sort((left, right) => left.localeCompare(right)),
-      },
-    }))
+  return RUNBOOK_DEFINITIONS
+    .map((runbookDefinition) => {
+      const accumulator = accumulators.get(runbookDefinition.key)
+
+      if (!accumulator || !passesQualityGate(accumulator, runbookDefinition)) {
+        return undefined
+      }
+
+      return {
+        key: normalizeCandidateKey(runbookDefinition.key),
+        title: accumulator.title,
+        sourceFiles: [...accumulator.sourceFiles].sort((left, right) => left.localeCompare(right)),
+        descriptionHints: [...accumulator.descriptionHints].sort((left, right) => left.localeCompare(right)),
+        commands: [...accumulator.commands].sort((left, right) => left.localeCompare(right)),
+        adminPaths: [...accumulator.adminPaths].sort((left, right) => left.localeCompare(right)),
+        workflowFiles: [...accumulator.workflowFiles].sort((left, right) => left.localeCompare(right)),
+        webhookRoutes: [...accumulator.webhookRoutes].sort((left, right) => left.localeCompare(right)),
+        metadata: {
+          signalKinds: [...accumulator.signalKinds].sort((left, right) => left.localeCompare(right)),
+          troubleshootingFiles: [...accumulator.troubleshootingFiles].sort((left, right) => left.localeCompare(right)),
+        },
+      }
+    })
+    .filter((candidate): candidate is RunbookDiscoveryCandidate => candidate !== undefined)
     .sort((left, right) => left.title.localeCompare(right.title))
 }
 
@@ -143,6 +210,13 @@ function buildRunbookDescriptionHint(title: string, routePath: string | undefine
   }
 
   return `Operational signals for ${title} include ${filePath}.`
+}
+
+function passesQualityGate(
+  accumulator: RunbookAccumulator,
+  runbookDefinition: RunbookDefinition
+): boolean {
+  return accumulator.sourceFiles.size >= runbookDefinition.minimumSourceFiles
 }
 
 function getOrCreateAccumulator(

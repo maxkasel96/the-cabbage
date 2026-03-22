@@ -43,6 +43,12 @@ assert.ok(inventory.runbooks.length >= runbookDocSeeds.length)
 assert.ok(inventory.discovery.features.length > 0)
 assert.ok(inventory.discovery.integrations.length > 0)
 assert.ok(inventory.discovery.runbooks.length > 0)
+const gameRecommendationsSeed = inventory.features.find((seed) => seed.name === 'Game recommendations')
+const gameRecommendationsPayload = gameRecommendationsSeed ? buildFeatureSeedPayload(gameRecommendationsSeed) : undefined
+
+assert.ok((gameRecommendationsSeed?.sourceFiles?.length ?? 0) > 0)
+assert.match(gameRecommendationsPayload?.content ?? '', /<h2>Source Files<\/h2><ul>/)
+
 assert.ok(inventory.payloads.every((payload) => typeof payload.content === 'string' && payload.content.length > 0))
 assert.ok(inventory.payloads.some((payload) => (payload.content ?? '').includes('Source Files')))
 
