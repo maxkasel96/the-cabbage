@@ -44,6 +44,7 @@ export type DocsSyncPayload = {
   feature?: string
   system?: string
   integration?: string
+  runbook?: string
   release?: string
   incidentId?: string
   pageType?: DocsSyncPageType

@@ -3,6 +3,7 @@
   "eventType": "runbook-update",
   "timestamp": "2026-03-22T00:00:00.000Z",
   "pageType": "runbook-page",
+  "runbook": "Associate Players with Emails",
   "title": "Runbook - Associate Players with Emails",
   "externalId": "nextjs-app:runbook-page:associate-players-with-emails",
   "summary": "Link approved players to member email identities so they can access authenticated features.",

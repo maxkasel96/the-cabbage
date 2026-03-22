@@ -12,6 +12,7 @@ type BuildDocsSyncPayloadOptions = {
   feature?: string
   system?: string
   integration?: string
+  runbook?: string
   release?: string
   incidentId?: string
   pageType?: DocsSyncPageType
@@ -30,6 +31,7 @@ export function buildDocsSyncPayload({
   feature,
   system,
   integration,
+  runbook,
   release,
   incidentId,
   pageType,
@@ -52,6 +54,7 @@ export function buildDocsSyncPayload({
     ...getOptionalField('feature', feature),
     ...getOptionalField('system', system),
     ...getOptionalField('integration', integration),
+    ...getOptionalField('runbook', runbook),
     ...getOptionalField('release', release),
     ...getOptionalField('incidentId', incidentId),
     ...getOptionalField('title', title),
@@ -83,7 +86,7 @@ function getOptionalString(value?: string): string | undefined {
 }
 
 function getOptionalField<
-  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId' | 'title' | 'externalId' | 'content'
+  T extends 'feature' | 'system' | 'integration' | 'runbook' | 'release' | 'incidentId' | 'title' | 'externalId' | 'content'
 >(fieldName: T, value?: string): Partial<Pick<DocsSyncPayload, T>> {
   const trimmedValue = getOptionalString(value)
 
