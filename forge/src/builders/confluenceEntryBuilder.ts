@@ -3,9 +3,18 @@ import {
   CONFLUENCE_SITE_BASE_URL,
   CONFLUENCE_SPACE_KEY,
 } from '../config/constants';
-import type { DocumentationSyncContext, SupportedPageType } from '../types/webhook';
+import type {
+  DocumentationSyncContext,
+  SupportedPageType,
+  ValidatedDocumentationSummaryDetails,
+} from '../types/webhook';
 
 const INDEX_SECTION_MARKER_PREFIX = 'DOCS-SYNC-INDEX';
+
+type SummarySection = {
+  heading: string;
+  body: string;
+};
 
 export function buildDocumentationPageStorageValue(context: DocumentationSyncContext): string {
   const { payload, indexPageId, detailPageId, receivedAt } = context;
@@ -17,7 +26,7 @@ export function buildDocumentationPageStorageValue(context: DocumentationSyncCon
     '<h2>Navigation</h2>',
     `<ul><li><a href="${escapeStorageText(buildPageUrl(indexPageId))}">${escapeStorageText(CONFLUENCE_INDEX_TITLES[payload.pageType])}</a></li></ul>`,
     '<h2>Summary</h2>',
-    `<p>${escapeStorageText(detail.summary ?? payload.summary)}</p>`,
+    buildSummaryMarkup(detail.summary ?? payload.summary, detail.summaryDetails),
     '<h2>Current State</h2>',
     `<p>${escapeStorageText(detail.currentState ?? payload.message)}</p>`,
   ];
@@ -98,6 +107,69 @@ export function ensureIndexEntryInStorageValue(
     existingStorageValue,
     `<!-- ${marker}:START --><h2>Synced ${escapeStorageText(CONFLUENCE_INDEX_TITLES[pageType])} Entries</h2><ul>${entryMarkup}</ul><!-- ${marker}:END -->`,
   ].join('');
+}
+
+function buildSummaryMarkup(summary: string, summaryDetails?: ValidatedDocumentationSummaryDetails): string {
+  const sections = getSummarySections(summaryDetails);
+
+  if (sections.length === 0) {
+    return `<p>${escapeStorageText(summary)}</p>`;
+  }
+
+  return [
+    `<p>${escapeStorageText(summary)}</p>`,
+    ...sections.map(({ heading, body }) => `<p><strong>${escapeStorageText(heading)}:</strong></p>${body}`),
+  ].join('');
+}
+
+function getSummarySections(summaryDetails?: ValidatedDocumentationSummaryDetails): SummarySection[] {
+  if (summaryDetails === undefined) {
+    return [];
+  }
+
+  return [
+    buildSummaryParagraphSection('What this is', summaryDetails.what),
+    buildSummaryParagraphSection('Why it exists', summaryDetails.whyItExists),
+    buildSummaryListSection('Who uses it', summaryDetails.whoUsesIt),
+    buildSummaryListSection('Core flow', summaryDetails.flow),
+    buildSummaryListSection('Dependencies', summaryDetails.dependencies),
+    buildSummaryListSection('Inputs and outputs', summaryDetails.inputsAndOutputs),
+    buildSummaryListSection('Expected behavior', summaryDetails.expectedBehavior),
+    buildSummaryListSection('Failure points and risks', summaryDetails.failurePointsAndRisks),
+    buildSummaryListSection('Operational considerations', summaryDetails.operationalConsiderations),
+    buildSummaryListSection(
+      'Known limitations and future improvements',
+      summaryDetails.limitationsAndFutureImprovements,
+    ),
+  ].filter((section): section is SummarySection => section !== undefined);
+}
+
+function buildSummaryParagraphSection(heading: string, value?: string): SummarySection | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return undefined;
+  }
+
+  return {
+    heading,
+    body: `<p>${escapeStorageText(value)}</p>`,
+  };
+}
+
+function buildSummaryListSection(heading: string, items?: string[]): SummarySection | undefined {
+  if (!Array.isArray(items)) {
+    return undefined;
+  }
+
+  const normalizedItems = items.map((item) => item.trim()).filter((item) => item.length > 0);
+
+  if (normalizedItems.length === 0) {
+    return undefined;
+  }
+
+  return {
+    heading,
+    body: buildList(normalizedItems, 'None documented.'),
+  };
 }
 
 function buildDefinitionList(entries: Array<[string, string | undefined]>): string {

@@ -36,7 +36,7 @@ export class DocumentationSyncService {
       });
     }
 
-    const initialBodyStorageValue = buildDocumentationPageStorageValue({
+    const initialBodyStorageValue = getBodyStorageValue({
       payload,
       receivedAt,
       indexPageId: indexPage.id,
@@ -49,7 +49,7 @@ export class DocumentationSyncService {
       bodyStorageValue: initialBodyStorageValue,
     });
 
-    const finalBodyStorageValue = buildDocumentationPageStorageValue({
+    const finalBodyStorageValue = getBodyStorageValue({
       payload,
       receivedAt,
       indexPageId: indexPage.id,
@@ -78,4 +78,24 @@ export class DocumentationSyncService {
       indexPageId: indexPage.id,
     };
   }
+}
+
+function getBodyStorageValue({
+  payload,
+  receivedAt,
+  indexPageId,
+  detailPageId,
+}: {
+  payload: ValidatedDocumentationWebhookPayload;
+  receivedAt: string;
+  indexPageId: string;
+  detailPageId?: string;
+}): string {
+  return payload.content ??
+    buildDocumentationPageStorageValue({
+      payload,
+      receivedAt,
+      indexPageId,
+      detailPageId,
+    });
 }

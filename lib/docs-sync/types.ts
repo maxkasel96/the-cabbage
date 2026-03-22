@@ -18,8 +18,22 @@ export type DocsSyncPageType =
   | 'release-page'
   | 'incident-page'
 
+export type DocsSummaryDetails = {
+  what?: string
+  whyItExists?: string
+  whoUsesIt?: string[]
+  flow?: string[]
+  dependencies?: string[]
+  inputsAndOutputs?: string[]
+  expectedBehavior?: string[]
+  failurePointsAndRisks?: string[]
+  operationalConsiderations?: string[]
+  limitationsAndFutureImprovements?: string[]
+}
+
 export type DocsSyncDetailFields = {
   summary?: string
+  summaryDetails?: DocsSummaryDetails
   status?: string
   owner?: string
   owningArea?: string
@@ -60,6 +74,7 @@ export type FeatureDocSeed = {
   key: string
   name: string
   summary: string
+  summaryDetails: DocsSummaryDetails
   status: string
   owner?: string
   owningArea?: string
@@ -72,6 +87,7 @@ export type IntegrationDocSeed = {
   key: string
   name: string
   summary: string
+  summaryDetails: DocsSummaryDetails
   status: string
   connectedSystem: string
   owner?: string
@@ -85,6 +101,7 @@ export type RunbookDocSeed = {
   key: string
   name: string
   summary: string
+  summaryDetails: DocsSummaryDetails
   status: string
   owner?: string
   owningArea?: string

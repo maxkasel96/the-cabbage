@@ -33,6 +33,7 @@ export function buildFeatureSeedPayload(seed: FeatureDocSeed): DocsSyncPayload {
       seedKey: seed.key,
       detail: {
         summary: seed.summary,
+        summaryDetails: seed.summaryDetails,
         status: seed.status,
         owner: seed.owner,
         owningArea: seed.owningArea,
@@ -60,6 +61,7 @@ export function buildIntegrationSeedPayload(seed: IntegrationDocSeed): DocsSyncP
       seedKey: seed.key,
       detail: {
         summary: seed.summary,
+        summaryDetails: seed.summaryDetails,
         status: seed.status,
         owner: seed.owner,
         owningArea: seed.owningArea,
@@ -87,6 +89,7 @@ export function buildRunbookSeedPayload(seed: RunbookDocSeed): DocsSyncPayload {
       seedKey: seed.key,
       detail: {
         summary: seed.summary,
+        summaryDetails: seed.summaryDetails,
         status: seed.status,
         owner: seed.owner,
         owningArea: seed.owningArea,

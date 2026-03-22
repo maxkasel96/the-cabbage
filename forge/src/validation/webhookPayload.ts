@@ -40,6 +40,7 @@ export function validateDocumentationWebhookPayload(
     ...getOptionalValidatedField('integration', payload.integration),
     ...getOptionalValidatedField('release', payload.release),
     ...getOptionalValidatedField('incidentId', payload.incidentId),
+    ...getOptionalValidatedField('content', payload.content),
     ...(seedKey === undefined ? {} : { seedKey }),
     detail,
   };
@@ -87,6 +88,7 @@ function getValidatedDetail(
 ): ValidatedDocumentationDetail {
   return {
     summary: getOptionalString(detail?.summary) ?? summary.trim(),
+    summaryDetails: getValidatedSummaryDetails(detail?.summaryDetails),
     status: getOptionalString(detail?.status),
     owner: getOptionalString(detail?.owner),
     owningArea: getOptionalString(detail?.owningArea),
@@ -98,8 +100,30 @@ function getValidatedDetail(
   };
 }
 
+
+function getValidatedSummaryDetails(summaryDetails: DocumentationWebhookPayloadDetail['summaryDetails']): ValidatedDocumentationDetail['summaryDetails'] {
+  const details = getPlainObject(summaryDetails)
+
+  if (details === undefined) {
+    return undefined
+  }
+
+  return {
+    what: getOptionalString(details.what),
+    whyItExists: getOptionalString(details.whyItExists),
+    whoUsesIt: getOptionalStringArray(details.whoUsesIt),
+    flow: getOptionalStringArray(details.flow),
+    dependencies: getOptionalStringArray(details.dependencies),
+    inputsAndOutputs: getOptionalStringArray(details.inputsAndOutputs),
+    expectedBehavior: getOptionalStringArray(details.expectedBehavior),
+    failurePointsAndRisks: getOptionalStringArray(details.failurePointsAndRisks),
+    operationalConsiderations: getOptionalStringArray(details.operationalConsiderations),
+    limitationsAndFutureImprovements: getOptionalStringArray(details.limitationsAndFutureImprovements),
+  }
+}
+
 function getOptionalValidatedField<
-  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId',
+  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId' | 'content',
 >(fieldName: T, value: unknown): Partial<Record<T, string>> {
   const normalizedValue = getOptionalString(value);
 

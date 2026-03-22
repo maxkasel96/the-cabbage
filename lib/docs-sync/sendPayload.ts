@@ -5,6 +5,8 @@ declare const process: {
 import { buildDocsSyncPayload } from './buildPayload'
 import type { DocsSyncPayload } from './types'
 
+const DEBUG_PAGE_TITLE = 'Player logins and profiles'
+
 type SendDocsSyncPayloadOptions = {
   webhookUrl?: string
 }
@@ -20,6 +22,12 @@ export async function sendDocsSyncPayload(
   }
 
   const payload = buildDocsSyncPayload(payloadInput)
+
+  if (getPayloadTitle(payload) === DEBUG_PAGE_TITLE) {
+    console.log(`[docs:sync debug] Outbound payload for ${DEBUG_PAGE_TITLE}`)
+    console.log(JSON.stringify(payload, null, 2))
+  }
+
   const response = await fetch(webhookUrl, {
     method: 'POST',
     headers: {
@@ -35,6 +43,10 @@ export async function sendDocsSyncPayload(
     status: response.status,
     forgeResponse,
   }
+}
+
+function getPayloadTitle(payload: DocsSyncPayload): string | undefined {
+  return payload.title ?? payload.feature ?? payload.integration ?? payload.runbook
 }
 
 async function parseForgeResponse(response: Response) {
