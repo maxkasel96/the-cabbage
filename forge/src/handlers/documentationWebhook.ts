@@ -28,12 +28,15 @@ export async function documentationWebhookHandler(
     const validatedPayload = validateDocumentationWebhookPayload(payload);
     const syncResult = await documentationSyncService.sync(validatedPayload);
 
-    return okResponse('Documentation entry appended successfully.', {
+    return okResponse('Documentation page synced successfully.', {
       source: validatedPayload.source,
       eventType: validatedPayload.eventType,
+      pageType: validatedPayload.pageType,
       targetPageId: syncResult.targetPageId,
       pageTitle: syncResult.pageTitle,
+      pageAction: syncResult.pageAction,
       newVersion: syncResult.newVersion,
+      indexPageId: syncResult.indexPageId,
       spaceKey: CONFLUENCE_SPACE_KEY,
       siteBaseUrl: CONFLUENCE_SITE_BASE_URL,
     });
@@ -44,7 +47,6 @@ export async function documentationWebhookHandler(
 
 function assertSharedSecretIfConfigured(request: ForgeWebTriggerRequest): void {
   if (!WEBHOOK_SHARED_SECRET) {
-    // TODO: Enforce a shared secret once the external caller is ready to send it.
     return;
   }
 
