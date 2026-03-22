@@ -40,6 +40,7 @@ export function validateDocumentationWebhookPayload(
     ...getOptionalValidatedField('integration', payload.integration),
     ...getOptionalValidatedField('release', payload.release),
     ...getOptionalValidatedField('incidentId', payload.incidentId),
+    ...getOptionalValidatedField('content', payload.content),
     ...(seedKey === undefined ? {} : { seedKey }),
     detail,
   };
@@ -122,7 +123,7 @@ function getValidatedSummaryDetails(summaryDetails: DocumentationWebhookPayloadD
 }
 
 function getOptionalValidatedField<
-  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId',
+  T extends 'feature' | 'system' | 'integration' | 'release' | 'incidentId' | 'content',
 >(fieldName: T, value: unknown): Partial<Record<T, string>> {
   const normalizedValue = getOptionalString(value);
 

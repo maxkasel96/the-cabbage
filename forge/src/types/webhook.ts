@@ -50,6 +50,7 @@ export interface DocumentationWebhookPayload {
   release?: string;
   incidentId?: string;
   pageType?: string;
+  content?: string;
   summary: string;
   message: string;
   timestamp: string;
@@ -92,6 +93,7 @@ export interface ValidatedDocumentationWebhookPayload {
   integration?: string;
   release?: string;
   incidentId?: string;
+  content?: string;
   summary: string;
   message: string;
   timestamp: string;
