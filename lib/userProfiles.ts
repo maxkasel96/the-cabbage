@@ -82,7 +82,18 @@ export async function listUserProfiles() {
     throw new Error(error.message)
   }
 
-  return (data ?? []).map((profile) => ({
+  type LinkedPlayerRow = {
+    id: string
+    display_name: string
+  }
+
+  type UserProfileListRow = Omit<UserProfileRecord, 'role' | 'profile_data'> & {
+    role: unknown
+    profile_data: unknown
+    players?: LinkedPlayerRow | LinkedPlayerRow[] | null
+  }
+
+  return ((data ?? []) as UserProfileListRow[]).map((profile) => ({
     ...normalizeProfile(profile),
     linked_player: Array.isArray(profile.players) ? profile.players[0] ?? null : profile.players ?? null,
   }))
@@ -102,7 +113,10 @@ export async function updateOwnUserProfile(
       ? changes.display_name.trim() || null
       : currentProfile.display_name
   const nextProfileData = isPlainObject(changes.profile_data)
-    ? changes.profile_data
+    ? {
+        ...currentProfile.profile_data,
+        ...changes.profile_data,
+      }
     : currentProfile.profile_data
 
   const { data, error } = await supabase

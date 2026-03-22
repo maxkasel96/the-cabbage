@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { parseEditableAccountProfileFields } from '@/lib/accountProfileFields'
 import { requireMember } from '@/lib/auth/requireMember'
 import { ensureUserProfile, updateOwnUserProfile } from '@/lib/userProfiles'
 
@@ -42,9 +43,10 @@ export async function PATCH(req: Request) {
   }
 
   try {
+    const editableFields = profileData ? parseEditableAccountProfileFields(profileData) : undefined
     const profile = await updateOwnUserProfile(auth.user, {
       display_name: displayName,
-      profile_data: profileData,
+      profile_data: editableFields ? { ...profileData, ...editableFields } : undefined,
     })
 
     return NextResponse.json({ profile })

@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
-import Nav from '@/app/components/Nav'
 import PageTitle from '@/app/components/PageTitle'
+import Nav from '@/app/components/Nav'
+import ProfileImageUploader from '@/app/account/profile/ProfileImageUploader'
+import { getEditableAccountProfileFields, profileFieldLimits } from '@/lib/accountProfileFields'
 
 type ProfileData = Record<string, unknown>
 
@@ -34,6 +36,8 @@ const formatDate = (value: string) => {
 export default function AccountProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [displayName, setDisplayName] = useState('')
+  const [bio, setBio] = useState('')
+  const [favoriteGames, setFavoriteGames] = useState('')
   const [status, setStatus] = useState('Loading profile...')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -48,7 +52,7 @@ export default function AccountProfilePage() {
       const res = await fetch('/api/account/profile', { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
 
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 403) {
         setRequiresSignIn(true)
         setStatus('')
         setError('')
@@ -61,13 +65,23 @@ export default function AccountProfilePage() {
         return
       }
 
-      setProfile(json.profile ?? null)
-      setDisplayName(json.profile?.display_name ?? '')
+      const nextProfile = (json.profile ?? null) as Profile | null
+      const editableFields = nextProfile ? getEditableAccountProfileFields(nextProfile.profile_data) : null
+
+      setProfile(nextProfile)
+      setDisplayName(nextProfile?.display_name ?? '')
+      setBio(editableFields?.bio ?? '')
+      setFavoriteGames(editableFields?.favoriteGames ?? '')
       setStatus('')
     }
 
     void loadProfile()
   }, [])
+
+  const editableFields = useMemo(
+    () => (profile ? getEditableAccountProfileFields(profile.profile_data) : null),
+    [profile]
+  )
 
   const profileNotes = useMemo(() => {
     if (!profile) {
@@ -92,6 +106,10 @@ export default function AccountProfilePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         displayName,
+        profileData: {
+          bio,
+          favoriteGames,
+        },
       }),
     })
 
@@ -104,10 +122,34 @@ export default function AccountProfilePage() {
       return
     }
 
-    setProfile(json.profile ?? null)
-    setDisplayName(json.profile?.display_name ?? '')
+    const nextProfile = (json.profile ?? null) as Profile | null
+    const nextFields = nextProfile ? getEditableAccountProfileFields(nextProfile.profile_data) : null
+
+    setProfile(nextProfile)
+    setDisplayName(nextProfile?.display_name ?? '')
+    setBio(nextFields?.bio ?? '')
+    setFavoriteGames(nextFields?.favoriteGames ?? '')
     setSaving(false)
     setStatus('Profile saved.')
+  }
+
+  const handleProfileImageUploaded = (profileImagePath: string) => {
+    setProfile((currentProfile: Profile | null) => {
+      if (!currentProfile) {
+        return currentProfile
+      }
+
+      return {
+        ...currentProfile,
+        profile_data: {
+          ...currentProfile.profile_data,
+          profileImagePath,
+        },
+      }
+    })
+
+    setStatus('Profile image uploaded.')
+    setError('')
   }
 
   return (
@@ -127,9 +169,8 @@ export default function AccountProfilePage() {
         <div style={{ maxWidth: 780, margin: '0 auto', display: 'grid', gap: 18 }}>
           <PageTitle>My profile</PageTitle>
           <p style={{ marginTop: 0, color: 'var(--text-secondary)' }}>
-            This page establishes the base account-profile framework. Your role permissions are already enforced,
-            your profile record is created automatically, and the future player association can be added without
-            changing the sign-in flow.
+            Update the player-facing details that appear on your account profile, including a bio, favorite games,
+            and your profile image.
           </p>
 
           {requiresSignIn ? (
@@ -141,7 +182,7 @@ export default function AccountProfilePage() {
                 background: 'var(--surface)',
               }}
             >
-              <p>You need to sign in before you can create or edit a profile.</p>
+              <p>You need to sign in with a linked player account before you can edit a profile.</p>
               <Link href="/auth/login?next=%2Faccount%2Fprofile">Go to sign in</Link>
             </div>
           ) : null}
@@ -154,7 +195,7 @@ export default function AccountProfilePage() {
                 padding: 20,
                 background: 'var(--surface)',
                 display: 'grid',
-                gap: 16,
+                gap: 18,
               }}
             >
               <div style={{ display: 'grid', gap: 6 }}>
@@ -164,7 +205,7 @@ export default function AccountProfilePage() {
                 <input
                   id="display-name"
                   value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => setDisplayName(event.target.value)}
                   placeholder="How should we refer to you?"
                   style={{
                     width: '100%',
@@ -175,10 +216,66 @@ export default function AccountProfilePage() {
                     color: 'inherit',
                   }}
                 />
+              </div>
+
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label htmlFor="bio" style={{ fontWeight: 600 }}>
+                  Bio
+                </label>
+                <textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setBio(event.target.value)}
+                  placeholder="Tell other players a bit about yourself."
+                  maxLength={profileFieldLimits.bio}
+                  rows={6}
+                  style={{
+                    width: '100%',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-subtle)',
+                    padding: '10px 12px',
+                    background: 'var(--surface)',
+                    color: 'inherit',
+                    resize: 'vertical',
+                  }}
+                />
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                  More user-editable fields can be layered onto this profile later. For now, the framework stores a
-                  canonical profile row, role, and future player-link placeholder.
+                  {bio.length}/{profileFieldLimits.bio} characters
                 </span>
+              </div>
+
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label htmlFor="favorite-games" style={{ fontWeight: 600 }}>
+                  Favorite games
+                </label>
+                <input
+                  id="favorite-games"
+                  value={favoriteGames}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => setFavoriteGames(event.target.value)}
+                  placeholder="For now, enter these as a simple text field."
+                  maxLength={profileFieldLimits.favoriteGames}
+                  style={{
+                    width: '100%',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-subtle)',
+                    padding: '10px 12px',
+                    background: 'var(--surface)',
+                    color: 'inherit',
+                  }}
+                />
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                  {favoriteGames.length}/{profileFieldLimits.favoriteGames} characters
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div style={{ fontWeight: 600 }}>Profile image</div>
+                <ProfileImageUploader
+                  displayName={displayName || profile?.display_name || profile?.email || 'Player profile'}
+                  currentImagePath={editableFields?.profileImagePath ?? null}
+                  disabled={saving || requiresSignIn}
+                  onUploadSuccess={handleProfileImageUploaded}
+                />
               </div>
 
               <div style={{ display: 'grid', gap: 8 }}>
@@ -186,7 +283,10 @@ export default function AccountProfilePage() {
                 {profile ? (
                   <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
                     <li>Email: {profile.email ?? 'No email on file'}</li>
-                    {profileNotes.map((note) => (
+                    <li>Bio: {editableFields?.bio ?? 'Not added yet'}</li>
+                    <li>Favorite games: {editableFields?.favoriteGames ?? 'Not added yet'}</li>
+                    <li>Profile image: {editableFields?.profileImagePath ? 'Uploaded' : 'Not uploaded yet'}</li>
+                    {profileNotes.map((note: string) => (
                       <li key={note}>{note}</li>
                     ))}
                   </ul>
