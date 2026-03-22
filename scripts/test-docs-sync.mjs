@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 
 const {
+  buildDocsSeedInventory,
   buildFeatureSeedPayload,
   buildIntegrationSeedPayload,
   buildRunbookSeedPayload,
@@ -9,6 +10,7 @@ const {
 const { featureDocSeeds, integrationDocSeeds, runbookDocSeeds } = await import('../.tmp-docs-sync-tests/seedData.js')
 const { syncAllDocsPayloads } = await import('../.tmp-docs-sync-tests/syncAll.js')
 
+const inventory = buildDocsSeedInventory()
 const payloads = buildSeedDocsSyncPayloads()
 const runbookSeed = runbookDocSeeds[0]
 const runbookPayload = buildRunbookSeedPayload(runbookSeed)
@@ -34,7 +36,15 @@ assert.equal(featurePayload.feature, featureDocSeeds[0]?.name)
 assert.equal(integrationPayload.eventType, 'integration-update')
 assert.equal(integrationPayload.pageType, 'integration-page')
 assert.equal(integrationPayload.integration, integrationDocSeeds[0]?.name)
-assert.equal(payloads.length, featureDocSeeds.length + integrationDocSeeds.length + runbookDocSeeds.length)
+assert.equal(payloads.length, inventory.payloads.length)
+assert.ok(inventory.features.length >= featureDocSeeds.length)
+assert.ok(inventory.integrations.length >= integrationDocSeeds.length)
+assert.ok(inventory.runbooks.length >= runbookDocSeeds.length)
+assert.ok(inventory.discovery.features.length > 0)
+assert.ok(inventory.discovery.integrations.length > 0)
+assert.ok(inventory.discovery.runbooks.length > 0)
+assert.ok(inventory.payloads.every((payload) => typeof payload.content === 'string' && payload.content.length > 0))
+assert.ok(inventory.payloads.some((payload) => (payload.content ?? '').includes('Source Files')))
 
 const summary = await syncAllDocsPayloads({
   payloads,
@@ -46,8 +56,8 @@ const summary = await syncAllDocsPayloads({
 })
 
 assert.equal(summary.totalAttempted, payloads.length)
-assert.equal(summary.totalSucceeded, featureDocSeeds.length + runbookDocSeeds.length)
-assert.equal(summary.totalFailed, integrationDocSeeds.length)
+assert.equal(summary.totalSucceeded, payloads.filter((payload) => payload.pageType !== 'integration-page').length)
+assert.equal(summary.totalFailed, payloads.filter((payload) => payload.pageType === 'integration-page').length)
 assert.equal(summary.results[0]?.title, payloads[0]?.title)
 assert.equal(summary.results[0]?.pageType, payloads[0]?.pageType)
 assert.equal(summary.results.find((result) => result.pageType === 'integration-page')?.status, 500)

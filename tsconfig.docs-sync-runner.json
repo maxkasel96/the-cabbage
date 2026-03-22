@@ -6,12 +6,18 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": ".tmp-docs-sync-runner"
+    "outDir": ".tmp-docs-sync-runner",
+    "types": []
   },
   "include": [
     "lib/docs-sync/types.ts",
     "lib/docs-sync/buildPayload.ts",
     "lib/docs-sync/sendPayload.ts",
+    "lib/docs-sync/shared/repoScan.ts",
+    "lib/docs-sync/shared/docSignals.ts",
+    "lib/docs-sync/discover/discoverFeatures.ts",
+    "lib/docs-sync/discover/discoverIntegrations.ts",
+    "lib/docs-sync/discover/discoverRunbooks.ts",
     "lib/docs-sync/seedData.ts",
     "lib/docs-sync/seedRendering.ts",
     "lib/docs-sync/seedPayloads.ts",
