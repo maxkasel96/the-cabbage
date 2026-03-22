@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "docs:seed": "node scripts/run-docs-seed.mjs"
+    "docs:seed": "node scripts/run-docs-seed.mjs",
+    "test:docs-sync": "rm -rf .tmp-docs-sync-tests && tsc -p tsconfig.docs-sync-tests.json && node scripts/test-docs-sync.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

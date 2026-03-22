@@ -1,0 +1,36 @@
+{
+  "source": "nextjs-app",
+  "eventType": "runbook-update",
+  "timestamp": "2026-03-22T00:00:00.000Z",
+  "pageType": "runbook-page",
+  "title": "Runbook - Associate Players with Emails",
+  "externalId": "nextjs-app:runbook-page:associate-players-with-emails",
+  "summary": "Link approved players to member email identities so they can access authenticated features.",
+  "message": "Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.",
+  "content": "<article><h1>Runbook - Associate Players with Emails</h1><section><h2>Summary</h2><p>Link approved players to member email identities so they can access authenticated features.</p></section><section><h2>Current State</h2><p>Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.</p></section><section><h2>Status</h2><p>Active</p></section><section><h2>Owner</h2><p>Unassigned</p></section><section><h2>Owning Area</h2><p>Player Ops</p></section><section><h2>Prerequisites</h2><ul><li>Admin access to the Next.js application.</li><li>The member email address and intended player profile are already known.</li></ul></section><section><h2>Procedure</h2><ol><li>Open the Player logins admin page.</li><li>Locate the target player or create the missing player login identity.</li><li>Associate the correct email address with the player record and save the change.</li><li>Confirm the member can authenticate and that the linked player profile appears correctly.</li></ol></section><section><h2>Notes</h2><ul><li>Use this when a member account exists but is not yet connected to the correct player profile.</li><li>Changes are made in the Next.js admin flow; Confluence should mirror the operational procedure only.</li></ul></section></article>",
+  "data": {
+    "pageType": "runbook-page",
+    "seedKey": "associate-players-with-emails",
+    "detail": {
+      "summary": "Link approved players to member email identities so they can access authenticated features.",
+      "status": "Active",
+      "owningArea": "Player Ops",
+      "currentState": "Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.",
+      "notes": [
+        "Use this when a member account exists but is not yet connected to the correct player profile.",
+        "Changes are made in the Next.js admin flow; Confluence should mirror the operational procedure only."
+      ]
+    },
+    "prerequisites": [
+      "Admin access to the Next.js application.",
+      "The member email address and intended player profile are already known."
+    ],
+    "steps": [
+      "Open the Player logins admin page.",
+      "Locate the target player or create the missing player login identity.",
+      "Associate the correct email address with the player record and save the change.",
+      "Confirm the member can authenticate and that the linked player profile appears correctly."
+    ],
+    "runbookName": "Associate Players with Emails"
+  }
+}

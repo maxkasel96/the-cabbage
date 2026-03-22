@@ -21,11 +21,14 @@ The Next.js app sends docs-sync payloads to the deployed Forge web trigger. The 
   integration?: string
   release?: string
   incidentId?: string
-  pageType?: 'feature-page' | 'integration-page' | 'release-page' | 'incident-page'
+  pageType?: 'feature-page' | 'integration-page' | 'runbook-page' | 'release-page' | 'incident-page'
+  title?: string
+  externalId?: string
   summary: string
   message: string
+  content?: string
   data?: {
-    pageType?: 'feature-page' | 'integration-page' | 'release-page' | 'incident-page'
+    pageType?: 'feature-page' | 'integration-page' | 'runbook-page' | 'release-page' | 'incident-page'
     seedKey?: string
     detail?: {
       summary?: string
@@ -48,6 +51,7 @@ The initial documentation seed lives in `lib/docs-sync/seedData.ts` and is conve
 
 - Features map to `pageType: 'feature-page'` and `eventType: 'feature-update'`
 - Integrations map to `pageType: 'integration-page'` and `eventType: 'integration-update'`
+- Runbooks map to `pageType: 'runbook-page'` and `eventType: 'runbook-update'`
 - Both paths send structured `data.detail` fields so Forge can render lightweight detail sections without a one-off template path
 
 ## Local seed runner
