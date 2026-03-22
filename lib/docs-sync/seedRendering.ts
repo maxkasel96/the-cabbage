@@ -33,6 +33,7 @@ export function buildFeatureDocContent(seed: FeatureDocSeed): string {
     ['Owner', `<p>${escapeHtml(seed.owner ?? 'Unassigned')}</p>`],
     ['Owning Area', `<p>${escapeHtml(seed.owningArea ?? 'Not specified')}</p>`],
     ['Related Integrations', buildList(seed.relatedIntegrations ?? [])],
+    ['Source Files', buildList(seed.sourceFiles ?? [])],
     ['Notes', buildList(seed.notes)],
   ])
 }
@@ -46,6 +47,7 @@ export function buildIntegrationDocContent(seed: IntegrationDocSeed): string {
     ['Owner', `<p>${escapeHtml(seed.owner ?? 'Unassigned')}</p>`],
     ['Owning Area', `<p>${escapeHtml(seed.owningArea ?? 'Not specified')}</p>`],
     ['Related Features', buildList(seed.relatedFeatures ?? [])],
+    ['Source Files', buildList(seed.sourceFiles ?? [])],
     ['Notes', buildList(seed.notes)],
   ])
 }
@@ -59,6 +61,7 @@ export function buildRunbookContent(seed: RunbookDocSeed): string {
     ['Owning Area', `<p>${escapeHtml(seed.owningArea ?? 'Not specified')}</p>`],
     ['Prerequisites', buildList(seed.prerequisites ?? [])],
     ['Procedure', buildOrderedList(seed.steps)],
+    ['Source Files', buildList(seed.sourceFiles ?? [])],
     ['Notes', buildList(seed.notes)],
   ])
 }

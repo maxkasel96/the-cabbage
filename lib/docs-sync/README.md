@@ -60,6 +60,7 @@ The Next.js app sends docs-sync payloads to the deployed Forge web trigger. The 
 ## Seed flow
 
 The initial documentation seed lives in `lib/docs-sync/seedData.ts` and is converted into standard docs-sync payloads by `lib/docs-sync/seedPayloads.ts`.
+A lightweight discovery layer now scans the repo via `lib/docs-sync/discover/*` and `lib/docs-sync/shared/*`, then merges deterministic feature, integration, and runbook candidates into the existing seed payload builders without changing the Forge or Confluence upsert contract.
 
 - Features map to `pageType: 'feature-page'` and `eventType: 'feature-update'`
 - Integrations map to `pageType: 'integration-page'` and `eventType: 'integration-update'`
@@ -89,3 +90,4 @@ npm run docs:sync
 ```
 
 The runner reuses the existing seed payload builders, sends each payload sequentially to the Forge webhook, logs one line per payload, and prints a final success/failure summary.
+Before syncing, the CLI also prints discovery counts plus a readable list of candidate titles and source files so the heuristics can be reviewed locally.

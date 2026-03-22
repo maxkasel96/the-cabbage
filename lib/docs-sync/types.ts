@@ -70,7 +70,11 @@ export type DocsSyncPayload = {
   data?: DocsSyncPayloadData
 }
 
-export type FeatureDocSeed = {
+type DiscoverySeedFields = {
+  sourceFiles?: string[]
+}
+
+export type FeatureDocSeed = DiscoverySeedFields & {
   key: string
   name: string
   summary: string
@@ -83,7 +87,7 @@ export type FeatureDocSeed = {
   relatedIntegrations?: string[]
 }
 
-export type IntegrationDocSeed = {
+export type IntegrationDocSeed = DiscoverySeedFields & {
   key: string
   name: string
   summary: string
@@ -97,7 +101,7 @@ export type IntegrationDocSeed = {
   relatedFeatures?: string[]
 }
 
-export type RunbookDocSeed = {
+export type RunbookDocSeed = DiscoverySeedFields & {
   key: string
   name: string
   summary: string
