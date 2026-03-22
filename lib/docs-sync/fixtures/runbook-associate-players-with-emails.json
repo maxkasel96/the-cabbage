@@ -1,19 +1,56 @@
 {
   "source": "nextjs-app",
-  "eventType": "runbook-update",
   "timestamp": "2026-03-22T00:00:00.000Z",
-  "pageType": "runbook-page",
+  "eventType": "runbook-update",
+  "summary": "Link approved players to member email identities so they can access authenticated features.",
+  "message": "Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.",
   "runbook": "Associate Players with Emails",
   "title": "Runbook - Associate Players with Emails",
   "externalId": "nextjs-app:runbook-page:associate-players-with-emails",
-  "summary": "Link approved players to member email identities so they can access authenticated features.",
-  "message": "Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.",
-  "content": "<article><h1>Runbook - Associate Players with Emails</h1><section><h2>Summary</h2><p>Link approved players to member email identities so they can access authenticated features.</p></section><section><h2>Current State</h2><p>Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.</p></section><section><h2>Status</h2><p>Active</p></section><section><h2>Owner</h2><p>Unassigned</p></section><section><h2>Owning Area</h2><p>Player Ops</p></section><section><h2>Prerequisites</h2><ul><li>Admin access to the Next.js application.</li><li>The member email address and intended player profile are already known.</li></ul></section><section><h2>Procedure</h2><ol><li>Open the Player logins admin page.</li><li>Locate the target player or create the missing player login identity.</li><li>Associate the correct email address with the player record and save the change.</li><li>Confirm the member can authenticate and that the linked player profile appears correctly.</li></ol></section><section><h2>Notes</h2><ul><li>Use this when a member account exists but is not yet connected to the correct player profile.</li><li>Changes are made in the Next.js admin flow; Confluence should mirror the operational procedure only.</li></ul></section></article>",
+  "pageType": "runbook-page",
+  "content": "<article><h1>Runbook - Associate Players with Emails</h1><section><h2>Summary</h2><p>Link approved players to member email identities so they can access authenticated features.</p><p><strong>What this is:</strong></p><p>An operational runbook for connecting a member email identity to the correct approved player record.</p><p><strong>Why it exists:</strong></p><p>It ensures members can sign in with the correct permissions and see the right player profile without requiring ad hoc troubleshooting each time.</p><p><strong>Who uses it:</strong></p><ul><li>Admins or player-operations staff granting or correcting member access.</li></ul><p><strong>Core flow:</strong></p><ul><li>Open the player logins admin workflow for the target member.</li><li>Locate the existing player login or create the missing login identity.</li><li>Associate the correct member email to the intended player record and save the update.</li><li>Validate that the member can authenticate and that the correct player profile is returned.</li></ul><p><strong>Dependencies:</strong></p><ul><li>Next.js admin workflow for player logins.</li><li>Underlying auth and player record persistence in Supabase.</li></ul><p><strong>Inputs and outputs:</strong></p><ul><li>Inputs: approved member email, target player profile, and admin confirmation of the intended mapping.</li><li>Outputs: updated player-login mapping plus a verified authenticated experience for the member.</li></ul><p><strong>Expected behavior:</strong></p><ul><li>Create or repair the member-to-player association without impacting unrelated accounts.</li><li>Allow the member to sign in and land on the correct profile after the update.</li></ul><p><strong>Failure points and risks:</strong></p><ul><li>Linking the wrong email or player record can grant access to the wrong identity.</li><li>Skipping the verification step can leave access issues undiscovered until the member tries to log in.</li></ul><p><strong>Operational considerations:</strong></p><ul><li>Confirm the intended player profile before saving because account mappings are sensitive.</li><li>Re-test the member experience immediately after the change so issues are caught while the admin context is still open.</li></ul><p><strong>Known limitations and future improvements:</strong></p><ul><li>This process is still admin-driven rather than fully self-service.</li><li>Future improvements could reduce manual mapping work and provide clearer recovery for mismatched identities.</li></ul></section><section><h2>Current State</h2><p>Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.</p></section><section><h2>Status</h2><p>Active</p></section><section><h2>Owner</h2><p>Unassigned</p></section><section><h2>Owning Area</h2><p>Player Ops</p></section><section><h2>Prerequisites</h2><ul><li>Admin access to the Next.js application.</li><li>The member email address and intended player profile are already known.</li></ul></section><section><h2>Procedure</h2><ol><li>Open the Player logins admin page.</li><li>Locate the target player or create the missing player login identity.</li><li>Associate the correct email address with the player record and save the change.</li><li>Confirm the member can authenticate and that the linked player profile appears correctly.</li></ol></section><section><h2>Notes</h2><ul><li>Use this when a member account exists but is not yet connected to the correct player profile.</li><li>Changes are made in the Next.js admin flow; Confluence should mirror the operational procedure only.</li></ul></section></article>",
   "data": {
     "pageType": "runbook-page",
     "seedKey": "associate-players-with-emails",
     "detail": {
       "summary": "Link approved players to member email identities so they can access authenticated features.",
+      "summaryDetails": {
+        "what": "An operational runbook for connecting a member email identity to the correct approved player record.",
+        "whyItExists": "It ensures members can sign in with the correct permissions and see the right player profile without requiring ad hoc troubleshooting each time.",
+        "whoUsesIt": [
+          "Admins or player-operations staff granting or correcting member access."
+        ],
+        "flow": [
+          "Open the player logins admin workflow for the target member.",
+          "Locate the existing player login or create the missing login identity.",
+          "Associate the correct member email to the intended player record and save the update.",
+          "Validate that the member can authenticate and that the correct player profile is returned."
+        ],
+        "dependencies": [
+          "Next.js admin workflow for player logins.",
+          "Underlying auth and player record persistence in Supabase."
+        ],
+        "inputsAndOutputs": [
+          "Inputs: approved member email, target player profile, and admin confirmation of the intended mapping.",
+          "Outputs: updated player-login mapping plus a verified authenticated experience for the member."
+        ],
+        "expectedBehavior": [
+          "Create or repair the member-to-player association without impacting unrelated accounts.",
+          "Allow the member to sign in and land on the correct profile after the update."
+        ],
+        "failurePointsAndRisks": [
+          "Linking the wrong email or player record can grant access to the wrong identity.",
+          "Skipping the verification step can leave access issues undiscovered until the member tries to log in."
+        ],
+        "operationalConsiderations": [
+          "Confirm the intended player profile before saving because account mappings are sensitive.",
+          "Re-test the member experience immediately after the change so issues are caught while the admin context is still open."
+        ],
+        "limitationsAndFutureImprovements": [
+          "This process is still admin-driven rather than fully self-service.",
+          "Future improvements could reduce manual mapping work and provide clearer recovery for mismatched identities."
+        ]
+      },
       "status": "Active",
       "owningArea": "Player Ops",
       "currentState": "Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.",
