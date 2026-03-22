@@ -9,6 +9,7 @@ type DocsSyncRequestField =
   | 'feature'
   | 'system'
   | 'integration'
+  | 'runbook'
   | 'release'
   | 'incidentId'
   | 'pageType'
@@ -32,6 +33,7 @@ const SUPPORTED_STRING_FIELDS: DocsSyncRequestField[] = [
   'feature',
   'system',
   'integration',
+  'runbook',
   'release',
   'incidentId',
   'pageType',
@@ -52,6 +54,7 @@ export async function POST(request: Request) {
       feature: requestBody.feature ?? (!requestBody.integration ? FALLBACK_FEATURE : undefined),
       system: requestBody.system,
       integration: requestBody.integration,
+      runbook: requestBody.runbook,
       release: requestBody.release,
       incidentId: requestBody.incidentId,
       pageType:

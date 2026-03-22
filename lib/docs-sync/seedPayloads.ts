@@ -76,6 +76,7 @@ export function buildRunbookSeedPayload(seed: RunbookDocSeed): DocsSyncPayload {
   return buildDocsSyncPayload({
     eventType: 'runbook-update',
     pageType: 'runbook-page',
+    runbook: seed.name,
     title: buildRunbookTitle(seed.name),
     externalId: buildRunbookExternalId(seed.key),
     summary: seed.summary,
