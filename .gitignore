@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Docs sync temp files
+.tmp-docs-sync-runner/
+.tmp-docs-sync-tests/
