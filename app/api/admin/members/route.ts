@@ -1,8 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { getRoleFromUser } from '@/lib/auth/roles'
-import { createClient, type User } from '@supabase/supabase-js'
+import type { User } from '@supabase/supabase-js'
 
 const failure = (error: string, status: number) => NextResponse.json({ error }, { status })
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   })
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const admin = await requireAdmin(request)
   if (!admin.ok) return failure(admin.message, admin.status)
   const body = await request.json().catch(() => null)
@@ -50,24 +50,9 @@ export async function POST(request: NextRequest) {
     p_email: email,
   })
   if (error?.code === '23505')
-    return failure('This player or email already has a membership or a different invitation.', 409)
+    return failure('This player or email already has a membership or a different approval.', 409)
   if (error?.code === '22023') return failure('Choose an active roster player.', 400)
-  if (error) return failure('Unable to save the invitation.', 500)
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
-  const mailer = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  )
-  const { error: mailError } = await mailer.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: new URL('/auth/callback?next=/account/profile', origin).href },
-  })
-  if (mailError)
-    return failure(
-      'Invitation saved. Email delivery failed. Use Resend or ask the player to sign in with Google using the invited address.',
-      502,
-    )
+  if (error) return failure('Unable to approve this email.', 500)
   return NextResponse.json({ ok: true })
 }
 
@@ -109,7 +94,7 @@ export async function DELETE(request: Request) {
   const admin = await requireAdmin(request)
   if (!admin.ok) return failure(admin.message, admin.status)
   const body = await request.json().catch(() => null)
-  if (typeof body?.playerId !== 'string') return failure('Choose a pending invitation.', 400)
+  if (typeof body?.playerId !== 'string') return failure('Choose a pending approval.', 400)
   const { error } = await getSupabaseServiceRole()
     .from('player_memberships')
     .delete()
@@ -117,6 +102,6 @@ export async function DELETE(request: Request) {
     .is('user_id', null)
     .select('player_id')
     .single()
-  if (error) return failure('This invitation has already been accepted or cancelled.', 409)
+  if (error) return failure('This approval has already been claimed or removed.', 409)
   return NextResponse.json({ ok: true })
 }

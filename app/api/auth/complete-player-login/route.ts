@@ -4,7 +4,7 @@ import { supabaseServerForToken } from '@/lib/supabaseServer'
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   if (typeof body?.accessToken !== 'string' || !body.accessToken) {
-    return NextResponse.json({ error: 'Sign in to accept your invitation.' }, { status: 401 })
+    return NextResponse.json({ error: 'Sign in to link your player.' }, { status: 401 })
   }
   const { error } = await supabaseServerForToken(body.accessToken).rpc('accept_player_invitation')
   if (error) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: denied
-          ? 'An active player invitation or membership is required.'
+          ? 'Ask an admin to approve your Google email or check that your membership is active.'
           : 'Unable to complete sign-in.',
       },
       { status: denied ? 403 : 500 },

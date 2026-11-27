@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import Nav from '@/app/components/Nav'
 import AdminSubNav from '@/app/components/AdminSubNav'
 import PageTitle from '@/app/components/PageTitle'
@@ -65,12 +66,16 @@ export default function MembersPage() {
       <p role="status">{status}</p>
       {roster && (
         <>
-          <h2>Invite a player</h2>
+          <h2>Approve a player</h2>
+          <p>
+            Save their Google account email, then share the{' '}
+            <Link href="/auth/login" className="underline">player sign-in link</Link> with them.
+          </p>
           <form
             className="flex flex-wrap gap-3 items-end my-4"
             onSubmit={(event) => {
               event.preventDefault()
-              void save('POST', { email, playerId }, 'Invitation sent.')
+              void save('POST', { email, playerId }, 'Google email approved.')
             }}
           >
             <label>
@@ -85,38 +90,24 @@ export default function MembersPage() {
               </select>
             </label>
             <label>
-              Login email{' '}
+              Google account email{' '}
               <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </label>
-            <button disabled={busy || !playerId}>Send invitation</button>
+            <button disabled={busy || !playerId}>Approve email</button>
           </form>
           {roster.memberships.some((m) => !m.user_id) && (
             <section>
-              <h2>Pending invitations</h2>
+              <h2>Awaiting first sign-in</h2>
               {roster.memberships
                 .filter((m) => !m.user_id)
                 .map((m) => (
                   <div className="flex flex-wrap gap-3 my-3" key={m.player_id}>
                     <strong>{players.get(m.player_id)?.display_name}</strong> {m.invited_email}
-                    {m.is_active && (
-                      <button
-                        disabled={busy}
-                        onClick={() =>
-                          save(
-                            'POST',
-                            { playerId: m.player_id, email: m.invited_email },
-                            'Invitation sent.',
-                          )
-                        }
-                      >
-                        Resend
-                      </button>
-                    )}
                     <button
                       disabled={busy}
-                      onClick={() => save('DELETE', { playerId: m.player_id }, 'Invitation cancelled.')}
+                      onClick={() => save('DELETE', { playerId: m.player_id }, 'Approval removed.')}
                     >
-                      Cancel invitation
+                      Remove approval
                     </button>
                   </div>
                 ))}

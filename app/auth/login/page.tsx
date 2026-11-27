@@ -119,11 +119,26 @@ function LoginContent() {
     >
       <h1 style={{ margin: 0, marginBottom: 8 }}>Sign in</h1>
       <p style={{ marginTop: 0, marginBottom: 20, color: 'var(--text-secondary)' }}>
-        To claim your player, open your invitation email or use Google with the invited address.
-        Once linked, you can also sign in with your password.
+        For your first sign-in, use the Google account your admin approved.
       </p>
 
-      <form onSubmit={signInWithPassword} style={{ display: 'grid', gap: 10, marginBottom: 12 }}>
+      <button
+        type="button"
+        onClick={signInWithGoogle}
+        disabled={isSubmittingPassword || isSubmittingGoogle}
+        style={{
+          width: '100%',
+          borderRadius: 10,
+          border: '1px solid var(--border-subtle)',
+          padding: '10px 14px',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        {isSubmittingGoogle ? 'Redirecting...' : 'Continue with Google'}
+      </button>
+
+      <form onSubmit={signInWithPassword} style={{ display: 'grid', gap: 10, marginTop: 20 }}>
         <input
           type="email"
           value={email}
@@ -164,51 +179,9 @@ function LoginContent() {
             cursor: 'pointer',
           }}
         >
-          {isSubmittingPassword ? 'Signing in...' : 'Sign in with email'}
+          {isSubmittingPassword ? 'Signing in...' : 'Sign in with password'}
         </button>
       </form>
-
-      <button
-        type="button"
-        disabled={!email.trim() || isSubmittingPassword}
-        onClick={async () => {
-          setErrorMessage('')
-          setIsSubmittingPassword(true)
-          try {
-            const { error } = await supabaseBrowser().auth.signInWithOtp({
-              email: email.trim(),
-              options: {
-                shouldCreateUser: false,
-                emailRedirectTo: window.location.origin + '/auth/callback?next=/account/profile',
-              },
-            })
-            if (error) throw error
-            setStatus('Check your email for a sign-in link. You can set a password on your profile.')
-          } catch {
-            setErrorMessage('Unable to send a sign-in link. Check your email or contact an admin.')
-          } finally {
-            setIsSubmittingPassword(false)
-          }
-        }}
-      >
-        Email me a sign-in link
-      </button>
-
-      <button
-        type="button"
-        onClick={signInWithGoogle}
-        disabled={isSubmittingPassword || isSubmittingGoogle}
-        style={{
-          width: '100%',
-          borderRadius: 10,
-          border: '1px solid var(--border-subtle)',
-          padding: '10px 14px',
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        {isSubmittingGoogle ? 'Redirecting...' : 'Continue with Google'}
-      </button>
 
       {status ? <p style={{ marginBottom: 0 }}>{status}</p> : null}
       {errorMessage ? (

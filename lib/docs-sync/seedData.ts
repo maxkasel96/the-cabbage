@@ -305,7 +305,7 @@ export const runbookDocSeeds: RunbookDocSeed[] = [
       flow: [
         'Open Admin → Members.',
         'Select the existing active roster player.',
-        'Send the invitation to the member’s login email.',
+        'Approve the member’s Google account email and share the player sign-in link.',
         'Validate that the member can authenticate and that the correct player profile is returned.',
       ],
       dependencies: ['Next.js admin workflow for player logins.', 'Underlying auth and player record persistence in Supabase.'],
@@ -333,7 +333,7 @@ export const runbookDocSeeds: RunbookDocSeed[] = [
     status: 'Active',
     owningArea: 'Player Ops',
     currentState:
-      'Admins invite roster players and manage account status and roles from the Members page.',
+      'Admins approve Google emails for roster players and manage account status and roles from the Members page.',
     notes: [
       'Use this when a member account exists but is not yet connected to the correct player profile.',
       'Changes are made in the Next.js admin flow; Confluence should mirror the operational procedure only.',
@@ -344,8 +344,8 @@ export const runbookDocSeeds: RunbookDocSeed[] = [
     ],
     steps: [
       'Open Admin → Members.',
-      'Choose an active player who has no pending invitation or linked account.',
-      'Enter the member’s email and send the invitation. The first verified sign-in links their account ID.',
+      'Choose an active player who has no pending approval or linked account.',
+      'Approve the member’s Google email and share /auth/login. Signing in with the approved Google account links it to the player.',
       'Check the player, account email, and last sign-in in the Members table.',
     ],
   },
