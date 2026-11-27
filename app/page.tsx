@@ -1,6 +1,5 @@
 'use client'
 
-import { TAG_CATEGORY_LABELS } from '@/lib/tagCategories'
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
@@ -20,14 +19,6 @@ type Game = {
 type Player = {
   id: string
   display_name: string
-}
-
-type Tag = {
-  id: string
-  slug: string
-  label: string
-  sort_order: number
-  category: string | null
 }
 
 type Team = {
@@ -58,17 +49,9 @@ const RECOMMENDATION_LOADING_IMAGE_URL =
   'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
 
 
-const TAG_CATEGORY_ORDER = Object.keys(TAG_CATEGORY_LABELS)
-
-function getTagCategoryLabel(category: string) {
-  if (category === 'uncategorized') return 'Other'
-  return TAG_CATEGORY_LABELS[category] ?? category.replace(/_/g, ' ')
-}
-
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
 
   const [status, setStatus] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
@@ -78,14 +61,15 @@ export default function Home() {
   const [noteModalOpen, setNoteModalOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
   const [marking, setMarking] = useState(false)
-  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false)
   const [winImageFiles, setWinImageFiles] = useState<File[]>([])
   const winImageInputRef = useRef<HTMLInputElement | null>(null)
 
-  // Multi-select tag filters (by slug)
-  const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set())
-
   const [playerCount, setPlayerCount] = useState('')
+  const [poolVersion, setPoolVersion] = useState(0)
+  const [pool, setPool] = useState<{ key: string; count: number } | null>(null)
+  const poolKey = `${poolVersion}/${playerCount}`
+  const eligibleCount = pool?.key === poolKey ? pool.count : null
+  const validGroupSize = !playerCount || (Number.isInteger(Number(playerCount)) && Number(playerCount) > 0 && Number(playerCount) <= 2147483647)
   const [activeTournamentId, setActiveTournamentId] = useState('')
   const [recommendationPrompt, setRecommendationPrompt] = useState('')
   const [recommendState, setRecommendState] = useState<ApiState>({
@@ -109,18 +93,12 @@ export default function Home() {
   const [showExplosion, setShowExplosion] = useState(false)
   const explosionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useBodyScrollLock(noteModalOpen || welcomeModalOpen)
+  useBodyScrollLock(noteModalOpen)
 
   async function fetchPlayers() {
     const res = await fetch('/api/players')
     const json = await res.json()
     setPlayers(json.players ?? [])
-  }
-
-  async function fetchTags() {
-    const res = await fetch('/api/tags')
-    const json = await res.json()
-    setTags(json.tags ?? [])
   }
 
   async function fetchActiveTournament() {
@@ -144,7 +122,6 @@ export default function Home() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers()
-    fetchTags()
     fetchActiveTournament()
   }, [])
 
@@ -176,11 +153,24 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    const hasSeenWelcome = window.localStorage.getItem('cabbageWelcomeSeen') === 'true'
-    if (!hasSeenWelcome) {
-      setWelcomeModalOpen(true)
-    }
-  }, [])
+    if (!validGroupSize) return
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      const params = new URLSearchParams({ countOnly: '1' })
+      if (playerCount) params.set('playerCount', playerCount)
+      try {
+        const response = await fetch(`/api/random?${params}`, { signal: controller.signal })
+        if (!response.ok) return
+        const data = await response.json()
+        if (!controller.signal.aborted && typeof data.eligibleCount === 'number') {
+          setPool({ key: poolKey, count: data.eligibleCount })
+        }
+      } catch {
+        // A count is optional. The draw checks the current pool independently.
+      }
+    }, 200)
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [playerCount, poolKey, validGroupSize])
 
   useEffect(() => {
     if (!showExplosion) return
@@ -197,20 +187,6 @@ export default function Home() {
       }
     }
   }, [showExplosion])
-
-  function toggleTag(slug: string) {
-    setSelectedTagSlugs((prev) => {
-      const next = new Set(prev)
-      if (next.has(slug)) next.delete(slug)
-      else next.add(slug)
-      return next
-    })
-  }
-
-  function clearFilters() {
-    setSelectedTagSlugs(new Set())
-    setPlayerCount('')
-  }
 
   function toggleWinner(playerId: string) {
     setWinnerPlayerIds((prev) => {
@@ -250,24 +226,6 @@ export default function Home() {
   // Random roll animation helper
   const [isRolling, setIsRolling] = useState(false)
   const [rollKey, setRollKey] = useState(0)
-  const rollButtonRef = useRef<HTMLButtonElement | null>(null)
-
-  useEffect(() => {
-    if (!game || isRolling) return
-    const button = rollButtonRef.current
-    if (!button) return
-    button.animate(
-      [
-        { transform: 'scale(1) rotate(0deg)' },
-        { transform: 'scale(1.08) rotate(-3deg)' },
-        { transform: 'scale(0.98) rotate(2deg)' },
-        { transform: 'scale(1.04) rotate(-1deg)' },
-        { transform: 'scale(1) rotate(0deg)' },
-      ],
-      { duration: 600, easing: 'ease-out' }
-    )
-  }, [game, isRolling])
-
   async function rollRandom() {
     if (isRolling) return
     if (!isAuthenticated) {
@@ -275,44 +233,26 @@ export default function Home() {
       return
     }
 
-    setStatus('')
-    setWinnerPlayerIds(new Set())
-    setGameStarted(false)
-    setTeamMode('')
-    setTeamCount('')
-    setTeams([])
-    setTeamStatus('')
-    setShowWinners(false)
-    setWinningTeamId(null)
-    setIsRolling(true)
-    setActiveRecommendedGameId(null)
-
-    // Let the “rolling” animation be visible before the fetch resolves
-    await new Promise((r) => setTimeout(r, 350))
-
     const params = new URLSearchParams()
-    if (selectedTagSlugs.size > 0) {
-      params.set('tags', Array.from(selectedTagSlugs).join(','))
-    }
-    const trimmedPlayerCount = playerCount.trim()
-    if (trimmedPlayerCount) {
-      params.set('playerCount', trimmedPlayerCount)
-    }
+    if (game && !activeRecommendedGameId) params.set('previousId', game.id)
+    if (playerCount) params.set('playerCount', playerCount)
 
-    const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
-    const res = await fetch(url)
-    const json = await res.json()
-
-    if (!res.ok) {
-      setGame(null)
-      setStatus(json.message || json.error || 'Failed to fetch a game')
+    resetRecommendation()
+    setStatus('')
+    setRecommendedGames([])
+    setRecommendState({ loading: false, error: null, result: null })
+    setIsRolling(true)
+    try {
+      const response = await fetch(`/api/random?${params}`)
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || data.error || 'Could not draw a game.')
+      setGame(data.game)
+      setRollKey((key) => key + 1)
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Could not draw a game.')
+    } finally {
       setIsRolling(false)
-      return
     }
-
-    setGame(json.game)
-    setRollKey((k) => k + 1) // retrigger pop animation
-    setIsRolling(false)
   }
 
   function extractRecommendedGames(result: unknown) {
@@ -407,6 +347,8 @@ export default function Home() {
       return
     }
 
+    resetRecommendation()
+    setStatus('')
     setRecommendState({ loading: true, error: null, result: null })
     setRecommendedGames([])
     setActiveRecommendedGameId(null)
@@ -418,7 +360,7 @@ export default function Home() {
         body: JSON.stringify({
           tournamentId: activeTournamentId,
           playerCount: groupSize,
-          userPrompt: recommendationPrompt,
+          userPrompt: recommendationPrompt.trim(),
         }),
       })
       const data = await response.json()
@@ -551,6 +493,7 @@ export default function Home() {
         : `Saved: ${game.name} (No winners selected). View History to confirm.`
     )
 
+    setPoolVersion((version) => version + 1)
     resetRecommendation()
   }
 
@@ -590,10 +533,7 @@ export default function Home() {
     })
   }
 
-  function closeWelcomeModal() {
-    window.localStorage.setItem('cabbageWelcomeSeen', 'true')
-    setWelcomeModalOpen(false)
-  }
+
 
   // Function for saving note and closing modal
   async function confirmMarkPlayed() {
@@ -656,17 +596,9 @@ export default function Home() {
 
     setStatus(`Saved: ${game.name}. View History to confirm.`)
 
+    setPoolVersion((version) => version + 1)
     resetRecommendation()
   }
-
-  const selectedTags = tags.filter((tag) => selectedTagSlugs.has(tag.slug))
-
-  const selectedLabels =
-    selectedTags.length === 0
-      ? 'None'
-      : selectedTags
-          .map((tag) => tag.label)
-          .join(', ')
 
   const selectedWinnersLabel =
     winnerPlayerIds.size === 0
@@ -675,20 +607,6 @@ export default function Home() {
           .filter((p) => winnerPlayerIds.has(p.id))
           .map((p) => p.display_name)
           .join(', ')
-
-  const orderedCategoryKeys = [
-    ...TAG_CATEGORY_ORDER,
-    ...Array.from(new Set(tags.map((tag) => tag.category || 'uncategorized'))).filter(
-      (category) => !TAG_CATEGORY_ORDER.includes(category as (typeof TAG_CATEGORY_ORDER)[number])
-    ),
-  ]
-
-  const tagsByCategory = orderedCategoryKeys
-    .map((category) => ({
-      category,
-      tags: tags.filter((tag) => (tag.category || 'uncategorized') === category),
-    }))
-    .filter((entry) => entry.tags.length > 0)
 
   function renderGameCard(displayGame: Game, options?: { badge: string; meta?: string; key?: string }) {
     return (
@@ -930,8 +848,8 @@ export default function Home() {
           display: grid;
           gap: 24px;
           grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.4fr);
-          align-items: start;
-          margin-top: 24px;
+          align-items: stretch;
+          margin-top: 16px;
         }
 
         .sectionTitle {
@@ -946,20 +864,6 @@ export default function Home() {
           font-size: 13px;
           opacity: 0.7;
           margin-top: 2px;
-        }
-
-        .filtersHeader {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-
-        .filtersMeta {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          align-items: center;
         }
 
         @keyframes shake {
@@ -1220,7 +1124,11 @@ export default function Home() {
           font-weight: 700;
         }
 
-        .filtersCard {
+        .pickerCard {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          min-width: 0;
           background: color-mix(in srgb, var(--surface) 85%, #ffffff 15%);
           border: 2px solid color-mix(in srgb, var(--primary) 45%, var(--border-strong) 55%);
           border-radius: 16px;
@@ -1229,168 +1137,13 @@ export default function Home() {
           color: var(--text-primary);
         }
 
-        .categoryGrid {
-          display: grid;
-          gap: 12px;
-          margin-top: 12px;
-        }
-
-        .categorySection {
-          border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border-strong) 65%);
-          border-radius: 12px;
-          background: color-mix(in srgb, var(--page-background) 92%, #f1f5e8 8%);
-          overflow: hidden;
-        }
-
-        .categorySummary {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 10px;
-          cursor: pointer;
-          list-style: none;
-          user-select: none;
-          background: color-mix(in srgb, var(--surface-alt) 84%, #e3edd3 16%);
-        }
-
-        .categorySummary::-webkit-details-marker {
-          display: none;
-        }
-
-        .categorySummaryCaret {
-          font-size: 12px;
-          color: var(--text-primary);
-          transition: transform 140ms ease;
-        }
-
-        .categorySection[open] .categorySummaryCaret {
-          transform: rotate(90deg);
-        }
-
-        .categoryTitle {
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          font-weight: 800;
-          color: var(--text-primary);
-        }
-
-        .categoryCount {
-          font-size: 12px;
-          padding: 3px 8px;
-          border-radius: 999px;
-          border: 2px solid color-mix(in srgb, var(--primary) 45%, var(--border-strong) 55%);
-          background: color-mix(in srgb, var(--surface-alt) 80%, #ddeac5 20%);
-          color: var(--text-primary);
-          font-weight: 800;
-        }
-
-        .categoryChips {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          margin-top: 8px;
-          padding: 0 10px 12px;
-        }
-
-        .chip {
-          padding: 7px 14px;
-          border-radius: 999px;
-          border: 2px solid color-mix(in srgb, var(--primary) 40%, var(--border-strong) 60%);
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.2px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: color-mix(in srgb, var(--page-background) 88%, #f2f7e8 12%);
-          color: var(--text-primary);
-          transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
-        }
-
-        .chip:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 12px rgba(33, 54, 22, 0.28);
-        }
-
-        .chipActive {
-          background: var(--primary);
-          color: var(--text-inverse);
-          border-color: color-mix(in srgb, var(--primary) 65%, #1f2d17 35%);
-          box-shadow: 0 8px 16px rgba(33, 54, 22, 0.34);
-        }
-
-        .filtersSummary {
-          background: color-mix(in srgb, var(--page-background) 92%, #eaf3da 8%);
-          border-radius: 12px;
-          padding: 10px 12px;
-          border: 2px solid color-mix(in srgb, var(--primary) 32%, var(--divider-soft) 68%);
-          font-size: 13px;
-          color: var(--text-primary);
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          align-items: center;
-        }
-
-        .filtersSummaryLabel {
-          font-weight: 700;
-        }
-
-        .activeFilterList {
-          display: inline-flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          align-items: center;
-        }
-
-        .activeFilterChip {
-          color: inherit;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: inherit;
-          font-weight: inherit;
-          line-height: inherit;
-        }
-
-        .activeFilterRemove {
-          appearance: none;
-          border: none;
-          background: none;
-          box-shadow: none;
-          color: #c62828;
-          cursor: pointer;
-          margin: 0;
-          padding: 0;
-          font-size: 12px;
-          font-weight: 700;
-          line-height: 1;
-          display: inline;
-        }
-
-        .activeFilterRemove:hover {
-          color: #a61d24;
-        }
-
-        .activeFilterRemove:focus-visible {
-          outline: 2px solid rgba(198, 40, 40, 0.35);
-          outline-offset: 2px;
-          border-radius: 2px;
-        }
-
-        .filtersCount {
-          font-size: 12px;
-          padding: 6px 10px;
-          border-radius: 999px;
-          background: color-mix(in srgb, var(--surface-alt) 80%, #deebc7 20%);
-          border: 2px solid color-mix(in srgb, var(--primary) 40%, var(--border-strong) 60%);
-          color: var(--text-primary);
-          font-weight: 800;
-        }
-
+        .pickerCard h2 { margin: 0; font-size: 22px; font-weight: 800; }
+        .pickerCard p { margin: 0; color: var(--text-secondary); }
+        .pickerCard button { margin-top: auto; padding: 12px 18px; font-size: 16px; cursor: pointer; }
+        .pickerCard button:disabled { cursor: default; opacity: .65; }
+        .pickerGroupSize { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+        .pickerGroupSize label { font-weight: 700; }
+        .pickerResults { margin-top: 24px; }
         .playersInput {
           padding: 8px 12px;
           border-radius: 10px;
@@ -1411,8 +1164,7 @@ export default function Home() {
           width: 100%;
           margin-top: 8px;
           padding: 14px 16px;
-          min-height: 132px;
-          max-height: 132px;
+          min-height: 76px;
           border-radius: 12px;
           border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border-strong) 65%);
           background: color-mix(in srgb, var(--page-background) 92%, #f4f8ec 8%);
@@ -1420,7 +1172,7 @@ export default function Home() {
           font-size: 16px;
           line-height: 1.5;
           box-shadow: inset 0 1px 2px rgba(33, 54, 22, 0.16);
-          resize: none;
+          resize: vertical;
           overflow-y: auto;
           white-space: pre-wrap;
           overflow-wrap: anywhere;
@@ -1755,160 +1507,44 @@ export default function Home() {
         </div>
         <PageTitle>The Game Cabbage</PageTitle>
 
+        <div className="pickerGroupSize">
+          <label htmlFor="player-count">Number of players <span className="sectionSubtitle">(optional)</span></label>
+          <input id="player-count" className="playersInput" type="number" min="1" step="1"
+            placeholder="Any size" value={playerCount} disabled={isRolling}
+            aria-invalid={!validGroupSize} onChange={(event) => setPlayerCount(event.target.value)} />
+          {!validGroupSize && <span role="alert">Enter a positive whole number.</span>}
+        </div>
+
         <div className="mainLayout">
-          <section className="filtersCard">
-            <div style={{ paddingBottom: 16, borderBottom: '1px solid var(--divider-soft)' }}>
-              <div style={{ fontWeight: 700 }}>Talk to The Cabbage</div>
-              <p style={{ margin: '4px 0 8px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                Go ahead. Tell the Cabbage what you want and you're feeling. Do you want a game for a large group of people? How many Old Fashion&apos;s has TK had? Is Cory being a &apos;lil bitch and won&apos;t play with us? Give me that info and I&apos;ll recommend what you should play next.
-              </p>
-              <textarea
-                className="recommendationInput"
-                value={recommendationPrompt}
-                onChange={(event) => setRecommendationPrompt(event.target.value)}
-                placeholder="Type what kind of game you want, who is playing, and the vibe you're after"
-              />
-              <button
-                onClick={runRecommendations}
-                disabled={recommendState.loading}
-                className="startGameButton"
-                style={{
-                  marginTop: 16,
-                  cursor: recommendState.loading ? 'not-allowed' : 'pointer',
-                  padding: '16px 26px',
-                  fontSize: 18,
-                  width: '100%',
-                }}
-              >
-                {recommendState.loading ? 'Loading recommendations...' : 'Run Cabbage AI'}
-              </button>
-
-              {recommendState.error ? <p style={{ color: 'crimson' }}>Error: {recommendState.error}</p> : null}
-              {recommendState.result && recommendedGames.length === 0 ? (
-                <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
-                  No recommendation cards were returned for this prompt.
-                </p>
-              ) : null}
-            </div>
-
-            <div className="filtersHeader" style={{ marginTop: 16 }}>
-              <div>
-                <div className="sectionTitle">Guide the Cabbage</div>
-                <div className="sectionSubtitle">Pick any tags within a group. Your game must match at least one from each group you use.</div>
-              </div>
-              <div className="filtersMeta">
-                <div className="filtersCount">Selected tags: {selectedTagSlugs.size}</div>
-                <div className="filtersSummary">
-                  <strong className="filtersSummaryLabel">Filters:</strong>
-                  {selectedTags.length === 0 ? (
-                    <span>{selectedLabels}</span>
-                  ) : (
-                    <div className="activeFilterList">
-                      {selectedTags.map((tag) => (
-                        <span key={tag.id} className="activeFilterChip">
-                          <span>{tag.label}</span>
-                          <button
-                            type="button"
-                            className="activeFilterRemove filter-chip-button"
-                            onClick={() => toggleTag(tag.slug)}
-                            aria-label={`Remove ${tag.label} filter`}
-                            title={`Remove ${tag.label}`}
-                          >
-                            x
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {tagsByCategory.length > 0 && (
-              <div className="categoryGrid">
-                {tagsByCategory.map(({ category, tags: categoryTags }) => (
-                  <details key={category} className="categorySection">
-                    <summary className="categorySummary">
-                      <div className="categoryTitle">{getTagCategoryLabel(category)}</div>
-                      <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                        <div className="categoryCount">{categoryTags.length}</div>
-                        <span className="categorySummaryCaret">▶</span>
-                      </div>
-                    </summary>
-                    <div className="categoryChips">
-                      {categoryTags.map((t) => {
-                        const active = selectedTagSlugs.has(t.slug)
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => toggleTag(t.slug)}
-                            className={`chip filter-chip-button ${active ? 'chipActive' : ''}`}
-                            aria-pressed={active}
-                            title={t.slug}
-                          >
-                            <span>{active ? '✨' : '•'}</span>
-                            {t.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </details>
-                ))}
-              </div>
-            )}
-
-            <div style={{ marginTop: 14, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ fontWeight: 600 }}>Number of players</div>
-              <input
-                className="playersInput"
-                type="number"
-                min={1}
-                value={playerCount}
-                onChange={(event) => setPlayerCount(event.target.value)}
-                placeholder="e.g., 4"
-              />
-              <div style={{ fontSize: 12, opacity: 0.7 }}>Only games with a recorded range that fits your group qualify. Leave blank for any size.</div>
-              {(selectedTagSlugs.size > 0 || playerCount) && (
-                <button
-                  onClick={clearFilters}
-                  style={{
-                    fontSize: 12,
-                    background: 'none',
-                    border: 'none',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    padding: 0,
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  Clear filters
-                </button>
-              )}
-            </div>
-
-            <button
-              onClick={rollRandom}
-              ref={rollButtonRef}
-              disabled={isRolling}
-              className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}
-              style={{
-                padding: '16px 26px',
-                cursor: isRolling ? 'not-allowed' : 'pointer',
-                opacity: isRolling ? 0.75 : 1,
-                fontSize: 18,
-                marginTop: 16,
-              }}
-            >
-              {isRolling ? 'Choosing from the cabbage…' : 'Give me a random game'}
+          <section className="pickerCard" aria-labelledby="random-heading">
+            <h2 id="random-heading">Random pick</h2>
+            <p aria-live="polite">
+              {eligibleCount === null
+                ? 'Draw from the unplayed games in this tournament.'
+                : `${eligibleCount} unplayed ${eligibleCount === 1 ? 'game' : 'games'} available${playerCount ? ` for ${playerCount} ${Number(playerCount) === 1 ? 'player' : 'players'}` : ' in this tournament'}.`}
+            </p>
+            <button type="button" onClick={rollRandom} disabled={isRolling || !validGroupSize}
+              className={`rollBtn ${isRolling ? 'rollBtnRolling' : ''}`}>
+              {isRolling ? 'Choosing…' : game && !activeRecommendedGameId ? 'Pick again' : 'Pick a random game'}
             </button>
           </section>
 
-          <section className="sectionCard">
-            <div>
-              <div className="sectionTitle">Game Setup & Results</div>
-              <div className="sectionSubtitle">Configure, shuffle, and celebrate the winners.</div>
-            </div>
+          <section className="pickerCard" aria-labelledby="ai-heading">
+            <h2 id="ai-heading"><label htmlFor="ai-prompt">Find a game with AI</label></h2>
+            <textarea id="ai-prompt" className="recommendationInput" rows={2}
+              value={recommendationPrompt} onChange={(event) => setRecommendationPrompt(event.target.value)}
+              placeholder="Something funny we can play in half an hour, with no drawing." />
+            <button type="button" className="startGameButton" onClick={runRecommendations}
+              disabled={isRolling || recommendState.loading || !recommendationPrompt.trim() || !validGroupSize}>
+              Search my games
+            </button>
+            {recommendState.error && <p role="alert">{recommendState.error}</p>}
+            {recommendState.result && recommendedGames.length === 0 ? <p>No matches for this request.</p> : null}
+          </section>
+        </div>
 
+        {(game || recommendedGames.length > 0 || status) && (
+          <section className="sectionCard pickerResults" aria-label="Game results">
             {recommendedGames.length > 0 && (
               <div style={{ display: 'grid', gap: 12 }}>
                 {recommendedGames.map((recommendation, index) => {
@@ -1932,11 +1568,6 @@ export default function Home() {
                         </div>
                       </div>
                       <h2 style={{ fontSize: 24, marginTop: 12, marginBottom: 6 }}>{recommendation.name}</h2>
-
-                      <div className="statRow">
-                        <div className="statPill">👥 Players: —</div>
-                        <div className="statPill">⏱️ Playtime: —</div>
-                      </div>
 
                       {recommendation.reason ? (
                         <p style={{ margin: '8px 0', fontStyle: 'italic', color: 'var(--text-secondary)' }}>
@@ -1964,38 +1595,20 @@ export default function Home() {
             )}
 
             {status && (
-              <p style={{ marginBottom: 16 }}>
+              <p role="status" style={{ marginBottom: 16 }}>
                 <strong>{status}</strong>{' '}
-                <a href="/history" style={{ color: 'var(--primary)' }}>
+                {status.startsWith('Saved:') && <a href="/history" style={{ color: 'var(--primary)' }}>
                   Open History
-                </a>
+                </a>}
               </p>
             )}
 
-            {(() => {
-              if (!game && recommendedGames.length === 0) {
-                return (
-                  <div className="resultCard">
-                    <div className="resultBadge">✨ Awaiting a game</div>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: 10 }}>
-                      Let the cabbage take the guessing out of things. Choose Find My Game to get rolling.
-                    </p>
-                  </div>
-                )
-              }
-
-              if (!game || activeRecommendedGameId) {
-                return null
-              }
-
-              return renderGameCard(game, {
-                badge: '✨ Fresh from the cabbage',
-                meta: 'Ready when you are',
-                key: String(rollKey),
-              })
-            })()}
+            {game && !activeRecommendedGameId && renderGameCard(game, {
+              badge: 'Random pick',
+              key: String(rollKey),
+            })}
           </section>
-        </div>
+        )}
       </div>
       {recommendState.loading && (
         <div
@@ -2011,49 +1624,6 @@ export default function Home() {
               className="recommendationLoadingSpinner"
             />
             <p className="recommendationLoadingCaption">Generating recommendations...</p>
-          </div>
-        </div>
-      )}
-      {welcomeModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(31, 42, 26, 0.55)',
-            display: 'grid',
-            placeItems: 'center',
-            padding: 16,
-            zIndex: 60,
-          }}
-        >
-          <div
-            style={{
-              background: 'var(--surface)',
-              color: 'var(--text-primary)',
-              borderRadius: 16,
-              width: 'min(720px, 94vw)',
-              padding: 24,
-              boxShadow: '0 18px 50px rgba(63, 90, 42, 0.2)',
-              textAlign: 'center',
-              border: '1px solid var(--border-strong)',
-              position: 'relative',
-            }}
-          >
-            <button
-              type="button"
-              className="modal-close"
-              onClick={closeWelcomeModal}
-              aria-label="Close this nonsense"
-            >
-              ✕
-            </button>
-            <p style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
-              Welcome, weary traveler. You have found yourself embarking on a quest for the hallowed cabbage — an
-              ancient relic of great power and deeply unclear purpose. Many have sought it, few have returned
-              unchanged, and none can quite explain the rules. Along this journey you will face trials of wit, luck,
-              and wildly confident bad decisions. Proceed boldly, trust the cabbage, and know this: the quest is
-              serious, but the outcome absolutely is not.
-            </p>
           </div>
         </div>
       )}

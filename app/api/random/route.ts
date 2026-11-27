@@ -46,16 +46,33 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: 'Enter a positive whole number of players.' }, { status: 400 })
   }
 
-  const { data: game, error } = await supabaseServer.rpc('pick_random_game', {
+  const options = {
     p_tournament_id: tournamentId,
     p_tags: tagSlugs,
     p_player_count: playerCount,
+  }
+  if (searchParams.get('countOnly') === '1') {
+    const { count, error } = await supabaseServer
+      .rpc('eligible_picker_games', options, { count: 'exact' })
+      .select('id')
+      .limit(1)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ eligibleCount: count, tournamentId })
+  }
+
+  const previousId = searchParams.get('previousId')
+  if (previousId && !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(previousId)) {
+    return NextResponse.json({ message: 'Invalid previous game ID.' }, { status: 400 })
+  }
+  const { data: game, error } = await supabaseServer.rpc('pick_random_game', {
+    ...options,
+    p_previous_id: previousId || null,
   }).maybeSingle<{ id: string }>()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!game) {
     return NextResponse.json(
-      { message: 'No unplayed game in the active tournament matches your filters.' },
+      { message: 'No unplayed games match this selection in the active tournament.' },
       { status: 404 }
     )
   }
