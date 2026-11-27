@@ -18,7 +18,6 @@ async function logGameSuggestion(tournamentId: string, gameId: string) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
 
-  // 1) Resolve active tournament
   const t = await supabaseServer
     .from('tournaments')
     .select('id')
@@ -30,7 +29,7 @@ export async function GET(request: Request) {
 
   const tournamentId = t.data.id as string
 
-  // 2) Parse tags (supports ?tags=a,b and legacy ?tag=a)
+  // Older clients send a single tag or use maxPlayers for the group size.
   const tagsParam = searchParams.get('tags')?.trim() || ''
   const legacyTag = searchParams.get('tag')?.trim() || ''
 
@@ -41,131 +40,26 @@ export async function GET(request: Request) {
         ? [legacyTag]
         : []
 
-  const maxPlayersParam = searchParams.get('maxPlayers')?.trim() || ''
-  const maxPlayers = Number.parseInt(maxPlayersParam, 10)
-  const shouldFilterByMaxPlayers = Number.isFinite(maxPlayers) && maxPlayers > 0
-
-  // 3) Get list of *played* game IDs for this tournament (played_at IS NOT NULL)
-  const played = await supabaseServer
-    .from('plays')
-    .select('game_id')
-    .eq('tournament_id', tournamentId)
-    .not('played_at', 'is', null)
-
-  if (played.error) return NextResponse.json({ error: played.error.message }, { status: 500 })
-
-  const playedIds = Array.from(
-    new Set((played.data ?? []).map((r: any) => r.game_id).filter(Boolean))
-  )
-
-  // Helper for "exclude played"
-  // NOTE: UUIDs should be quoted inside the in(...) list
-  const excludePlayed = (q: any) => {
-    if (!playedIds.length) return q
-    const quoted = playedIds.map((id: string) => `"${id}"`).join(',')
-    return q.not('id', 'in', `(${quoted})`)
+  const countInput = (searchParams.get('playerCount') ?? searchParams.get('maxPlayers'))?.trim()
+  const playerCount = countInput ? Number(countInput) : null
+  if (playerCount !== null && (!Number.isInteger(playerCount) || playerCount < 1 || playerCount > 2147483647)) {
+    return NextResponse.json({ message: 'Enter a positive whole number of players.' }, { status: 400 })
   }
 
-  // 4) No tags selected
-  if (tagSlugs.length === 0) {
-    let q = supabaseServer
-      .from('games')
-      .select('id, name, min_players, max_players, playtime_minutes, notes')
-      .eq('is_active', true)
-
-    q = excludePlayed(q)
-
-    const { data, error } = await q
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    if (!data || data.length === 0) {
-      return NextResponse.json(
-        { message: 'No unplayed games found for the active tournament.' },
-        { status: 404 }
-      )
-    }
-
-    const filtered =
-      shouldFilterByMaxPlayers
-        ? data.filter((game) => game.max_players === null || game.max_players >= maxPlayers)
-        : data
-
-    if (filtered.length === 0) {
-      return NextResponse.json(
-        { message: 'No unplayed games found for the active tournament.' },
-        { status: 404 }
-      )
-    }
-
-    const game = filtered[Math.floor(Math.random() * filtered.length)]
-    try {
-      await logGameSuggestion(tournamentId, game.id)
-    } catch (error) {
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : 'Failed to log game suggestion.' },
-        { status: 500 }
-      )
-    }
-    return NextResponse.json({ game, tournamentId })
-  }
-
-  // 5) Tags selected (OR semantics)
-  const matchingGameTags = await (supabaseServer as any)
-    .from('game_tags')
-    .select(
-      `
-      game_id,
-      tags!inner(slug)
-      `
-    )
-    .in('tags.slug' as any, tagSlugs)
-
-  if (matchingGameTags.error) {
-    return NextResponse.json({ error: matchingGameTags.error.message }, { status: 500 })
-  }
-
-  const matchingGameIds = Array.from(
-    new Set((matchingGameTags.data ?? []).map((entry: any) => entry.game_id).filter(Boolean))
-  )
-
-  if (matchingGameIds.length === 0) {
-    return NextResponse.json(
-      { message: `No unplayed games found for tags: ${tagSlugs.join(', ')}` },
-      { status: 404 }
-    )
-  }
-
-  let q = supabaseServer
-    .from('games')
-    .select('id, name, min_players, max_players, playtime_minutes, notes')
-    .eq('is_active', true)
-    .in('id', matchingGameIds)
-
-  q = excludePlayed(q)
-
-  const { data, error } = await q
+  const { data: game, error } = await supabaseServer.rpc('pick_random_game', {
+    p_tournament_id: tournamentId,
+    p_tags: tagSlugs,
+    p_player_count: playerCount,
+  }).maybeSingle<{ id: string }>()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (!data || data.length === 0) {
+  if (!game) {
     return NextResponse.json(
-      { message: `No unplayed games found for tags: ${tagSlugs.join(', ')}` },
+      { message: 'No unplayed game in the active tournament matches your filters.' },
       { status: 404 }
     )
   }
 
-  const filtered =
-    shouldFilterByMaxPlayers
-      ? data.filter((game) => game.max_players === null || game.max_players >= maxPlayers)
-      : data
-
-  if (filtered.length === 0) {
-    return NextResponse.json(
-      { message: `No unplayed games found for tags: ${tagSlugs.join(', ')}` },
-      { status: 404 }
-    )
-  }
-
-  const game = filtered[Math.floor(Math.random() * filtered.length)]
   try {
     await logGameSuggestion(tournamentId, game.id)
   } catch (error) {
