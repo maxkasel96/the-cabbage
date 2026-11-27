@@ -4,6 +4,7 @@ do $$
 declare
   tournament uuid;
   game uuid;
+  alternative uuid;
   drawing uuid;
   words uuid;
   teams uuid;
@@ -30,6 +31,16 @@ begin
   if exists (select 1 from public.pick_random_game(tournament,array['fixture_teams'],1))
      or exists (select 1 from public.pick_random_game(tournament,array['fixture_teams'],5))
     then raise exception 'Out-of-range group size passed'; end if;
+  select id into found_game from public.pick_random_game(tournament,array['fixture_teams'],4,game);
+  if found_game is distinct from game then raise exception 'Single eligible game lost on reroll'; end if;
+  insert into public.games(name,min_players,max_players) values ('Alternative picker fixture',4,6) returning id into alternative;
+  insert into public.game_tags(game_id,tag_id) values (alternative,teams);
+  if (select count(*) from public.eligible_picker_games(tournament,array['fixture_teams'],4)) <> 2
+     or (select count(*) from public.eligible_picker_games(tournament,array['fixture_teams'],2)) <> 1
+    then raise exception 'Incorrect pool size'; end if;
+  select id into found_game from public.pick_random_game(tournament,array['fixture_teams'],4,game);
+  if found_game is distinct from alternative then raise exception 'Reroll repeated the previous game'; end if;
+  update public.games set is_active=false where id=alternative;
   update public.games set min_players=null where id=game;
   if exists (select 1 from public.pick_random_game(tournament,array['fixture_teams'],3))
     then raise exception 'Unknown minimum passed'; end if;
