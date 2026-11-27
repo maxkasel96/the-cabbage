@@ -1,3 +1,4 @@
+import { TAG_CATEGORY_LABELS } from '@/lib/tagCategories'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
@@ -26,6 +27,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'label is required' }, { status: 400 })
   }
 
+  const category = body?.category ?? null
+  if (category !== null && (typeof category !== 'string' || !Object.hasOwn(TAG_CATEGORY_LABELS, category))) {
+    return NextResponse.json({ error: 'Unknown filter group' }, { status: 400 })
+  }
+
   const slug = slugInput ? slugify(slugInput) : slugify(label)
 
   // Default sort order if not provided
@@ -38,7 +44,7 @@ export async function POST(req: Request) {
 
   const ins = await db
     .from('tags')
-    .insert([{ label, slug, sort_order: finalSortOrder }])
+    .insert([{ label, slug, category, sort_order: finalSortOrder }])
     .select('id, slug, label, sort_order')
     .single()
 

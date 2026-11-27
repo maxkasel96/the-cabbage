@@ -1,5 +1,6 @@
 'use client'
 
+import { TAG_CATEGORY_LABELS } from '@/lib/tagCategories'
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, CSSProperties } from 'react'
 import Nav from './components/Nav'
@@ -57,24 +58,10 @@ const RECOMMENDATION_LOADING_IMAGE_URL =
   'https://mtywyenrzdkvypvvacjz.supabase.co/storage/v1/object/public/images/il_1588xN.7325241583_mwao%20copy.png'
 
 
-const TAG_CATEGORY_ORDER = [
-  'group_structure',
-  'complexity_time',
-  'gameplay_mechanics',
-  'social_vibe',
-  'custom_house_tags',
-] as const
-
-const TAG_CATEGORY_LABELS: Record<string, string> = {
-  group_structure: 'Group structure',
-  complexity_time: 'Complexity & time',
-  gameplay_mechanics: 'Gameplay mechanics',
-  social_vibe: 'Social vibe',
-  custom_house_tags: 'House tags',
-  uncategorized: 'Other',
-}
+const TAG_CATEGORY_ORDER = Object.keys(TAG_CATEGORY_LABELS)
 
 function getTagCategoryLabel(category: string) {
+  if (category === 'uncategorized') return 'Other'
   return TAG_CATEGORY_LABELS[category] ?? category.replace(/_/g, ' ')
 }
 
@@ -222,6 +209,7 @@ export default function Home() {
 
   function clearFilters() {
     setSelectedTagSlugs(new Set())
+    setPlayerCount('')
   }
 
   function toggleWinner(playerId: string) {
@@ -308,7 +296,7 @@ export default function Home() {
     }
     const trimmedPlayerCount = playerCount.trim()
     if (trimmedPlayerCount) {
-      params.set('maxPlayers', trimmedPlayerCount)
+      params.set('playerCount', trimmedPlayerCount)
     }
 
     const url = params.toString() ? `/api/random?${params.toString()}` : '/api/random'
@@ -1806,10 +1794,10 @@ export default function Home() {
             <div className="filtersHeader" style={{ marginTop: 16 }}>
               <div>
                 <div className="sectionTitle">Guide the Cabbage</div>
-                <div className="sectionSubtitle">Choose your vibe to guide the cabbage.</div>
+                <div className="sectionSubtitle">Pick any tags within a group. Your game must match at least one from each group you use.</div>
               </div>
               <div className="filtersMeta">
-                <div className="filtersCount">Active filters: {selectedTagSlugs.size}</div>
+                <div className="filtersCount">Selected tags: {selectedTagSlugs.size}</div>
                 <div className="filtersSummary">
                   <strong className="filtersSummaryLabel">Filters:</strong>
                   {selectedTags.length === 0 ? (
@@ -1855,6 +1843,7 @@ export default function Home() {
                             key={t.id}
                             onClick={() => toggleTag(t.slug)}
                             className={`chip filter-chip-button ${active ? 'chipActive' : ''}`}
+                            aria-pressed={active}
                             title={t.slug}
                           >
                             <span>{active ? '✨' : '•'}</span>
@@ -1878,8 +1867,8 @@ export default function Home() {
                 onChange={(event) => setPlayerCount(event.target.value)}
                 placeholder="e.g., 4"
               />
-              <div style={{ fontSize: 12, opacity: 0.7 }}>Leave blank to ignore player count.</div>
-              {selectedTagSlugs.size > 0 && (
+              <div style={{ fontSize: 12, opacity: 0.7 }}>Only games with a recorded range that fits your group qualify. Leave blank for any size.</div>
+              {(selectedTagSlugs.size > 0 || playerCount) && (
                 <button
                   onClick={clearFilters}
                   style={{

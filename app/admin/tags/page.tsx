@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { TAG_CATEGORY_LABELS } from '@/lib/tagCategories'
 import Nav from '@/app/components/Nav'
 import AdminSubNav from '@/app/components/AdminSubNav'
 import PageTitle from '@/app/components/PageTitle'
@@ -21,6 +22,7 @@ export default function AdminTagsPage() {
 
   // Create form
   const [newLabel, setNewLabel] = useState('')
+  const [category, setCategory] = useState('custom_house_tags')
   const [newSlug, setNewSlug] = useState('')
   const [newSortOrder, setNewSortOrder] = useState<number>(100)
   const [creating, setCreating] = useState(false)
@@ -73,6 +75,7 @@ export default function AdminTagsPage() {
       body: JSON.stringify({
         label,
         slug: slug || null,
+        category,
         sort_order: Number.isFinite(newSortOrder) ? newSortOrder : 100,
       }),
     })
@@ -147,6 +150,12 @@ export default function AdminTagsPage() {
             style={{ padding: 10, minWidth: 260 }}
             disabled={creating}
           />
+
+          <select aria-label="Filter group" value={category} onChange={(e) => setCategory(e.target.value)} disabled={creating}>
+            {Object.entries(TAG_CATEGORY_LABELS).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
 
           <input
             type="number"
