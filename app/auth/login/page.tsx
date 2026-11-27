@@ -3,7 +3,6 @@
 import { type FormEvent, Suspense, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
-import { canUsePasswordAuth, isProduction } from '@/lib/auth/env'
 
 function LoginContent() {
   const router = useRouter()
@@ -18,7 +17,7 @@ function LoginContent() {
   const nextPath = useMemo(() => {
     const candidate = searchParams.get('next')
 
-    if (candidate?.startsWith('/')) {
+    if (candidate?.startsWith('/') && !candidate.startsWith('//') && !candidate.includes('\\')) {
       return candidate
     }
 
@@ -71,7 +70,6 @@ function LoginContent() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         accessToken: data.session.access_token,
-        provider: 'email',
       }),
     })
 
@@ -82,7 +80,7 @@ function LoginContent() {
       setErrorMessage(
         typeof authorizationBody.error === 'string'
           ? authorizationBody.error
-          : 'Your email is not authorized for this app.'
+          : 'Your email is not authorized for this app.',
       )
       setIsSubmittingPassword(false)
       return
@@ -121,57 +119,8 @@ function LoginContent() {
     >
       <h1 style={{ margin: 0, marginBottom: 8 }}>Sign in</h1>
       <p style={{ marginTop: 0, marginBottom: 20, color: 'var(--text-secondary)' }}>
-        {isProduction
-          ? 'Use Google to authenticate with Supabase OAuth. Your first sign-in will provision a profile automatically.'
-          : 'Use email/password (dev/preview) or Google OAuth to sign in. Your first sign-in will provision a profile automatically.'}
+        For your first sign-in, use the Google account your admin approved.
       </p>
-
-      {canUsePasswordAuth ? (
-        <form onSubmit={signInWithPassword} style={{ display: 'grid', gap: 10, marginBottom: 12 }}>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
-            autoComplete="email"
-            required
-            style={{
-              width: '100%',
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-              padding: '10px 12px',
-            }}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password"
-            autoComplete="current-password"
-            required
-            style={{
-              width: '100%',
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-              padding: '10px 12px',
-            }}
-          />
-          <button
-            type="submit"
-            disabled={isSubmittingPassword || isSubmittingGoogle}
-            style={{
-              width: '100%',
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-              padding: '10px 14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            {isSubmittingPassword ? 'Signing in...' : 'Sign in with email'}
-          </button>
-        </form>
-      ) : null}
 
       <button
         type="button"
@@ -189,8 +138,55 @@ function LoginContent() {
         {isSubmittingGoogle ? 'Redirecting...' : 'Continue with Google'}
       </button>
 
+      <form onSubmit={signInWithPassword} style={{ display: 'grid', gap: 10, marginTop: 20 }}>
+        <input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Email"
+          autoComplete="email"
+          required
+          style={{
+            width: '100%',
+            borderRadius: 10,
+            border: '1px solid var(--border-subtle)',
+            padding: '10px 12px',
+          }}
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Password"
+          autoComplete="current-password"
+          required
+          style={{
+            width: '100%',
+            borderRadius: 10,
+            border: '1px solid var(--border-subtle)',
+            padding: '10px 12px',
+          }}
+        />
+        <button
+          type="submit"
+          disabled={isSubmittingPassword || isSubmittingGoogle}
+          style={{
+            width: '100%',
+            borderRadius: 10,
+            border: '1px solid var(--border-subtle)',
+            padding: '10px 14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          {isSubmittingPassword ? 'Signing in...' : 'Sign in with password'}
+        </button>
+      </form>
+
       {status ? <p style={{ marginBottom: 0 }}>{status}</p> : null}
-      {errorMessage ? <p style={{ marginBottom: 0, color: 'var(--danger-text, #b42318)' }}>{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p style={{ marginBottom: 0, color: 'var(--danger-text, #b42318)' }}>{errorMessage}</p>
+      ) : null}
     </div>
   )
 }

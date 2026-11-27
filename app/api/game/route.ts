@@ -1,7 +1,12 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function POST(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const body = await req.json().catch(() => null)
 
   const gameId = body?.gameId as string | undefined
@@ -11,7 +16,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'gameId is required' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await db
     .from('games')
     .update({
       played_at: new Date().toISOString(),

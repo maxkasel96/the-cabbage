@@ -84,6 +84,7 @@ export default function Home() {
   const [tags, setTags] = useState<Tag[]>([])
 
   const [status, setStatus] = useState<string>('')
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   // note modal state
@@ -163,17 +164,26 @@ export default function Home() {
   useEffect(() => {
     const supabase = supabaseBrowser()
 
-    supabase.auth.getUser().then(({ data }) => {
-      setIsAuthenticated(Boolean(data.user))
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session?.user))
+    let revision = 0
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const current = ++revision
+      if (!session) {
+        setIsAuthenticated(false)
+        setIsAdmin(false)
+        return
+      }
+      void fetch('/api/account/access', { headers: { Authorization: `Bearer ${session.access_token}` } })
+        .then(async response => response.ok ? response.json() : null)
+        .catch(() => null)
+        .then(access => {
+          if (current !== revision) return
+          setIsAuthenticated(Boolean(access?.player) || access?.role === 'admin')
+          setIsAdmin(access?.role === 'admin')
+        })
     })
 
     return () => {
+      revision++
       subscription.unsubscribe()
     }
   }, [])
@@ -787,7 +797,7 @@ export default function Home() {
             </div>
           )}
 
-          {showWinners && (
+          {isAdmin && showWinners && (
             <>
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontWeight: 700, marginBottom: 6 }}>🏆 Select Winner(s)</div>

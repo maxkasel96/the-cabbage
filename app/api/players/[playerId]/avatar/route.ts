@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 
@@ -16,6 +17,9 @@ const ALLOWED_TYPES: Record<string, string> = {
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
+  const admin = await requireAdmin(request)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+
   const { playerId } = await params
 
   if (!uuidPattern.test(playerId)) {

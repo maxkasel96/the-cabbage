@@ -46,27 +46,29 @@ export default function RulesPage() {
   const [rules, setRules] = useState<RuleEntry[]>([])
   const [draftText, setDraftText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
-  const [accessNotice, setAccessNotice] = useState('Sign in with an approved player account to submit or manage rules.')
+  const [accessNotice, setAccessNotice] = useState('Sign in with an approved player account to propose rules.')
+  const [canPropose, setCanPropose] = useState(false)
   const [canManageRules, setCanManageRules] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingRuleIds, setDeletingRuleIds] = useState<string[]>([])
 
   useEffect(() => {
     const loadRuleAccess = async () => {
-      const res = await fetch('/api/account/profile', { cache: 'no-store' })
+      const res = await fetch('/api/account/access', { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
 
       if (!res.ok) {
         setCanManageRules(false)
         setAccessNotice(
           res.status === 401
-            ? 'Sign in with an approved player account to submit or manage rules.'
-            : json.error || 'Sign in with an approved player account to submit or manage rules.'
+            ? 'Sign in with an approved player account to propose rules.'
+            : json.error || 'Sign in with an approved player account to propose rules.'
         )
         return
       }
 
-      setCanManageRules(true)
+      setCanManageRules(json.role === 'admin')
+      setCanPropose(Boolean(json.player))
       setAccessNotice('')
     }
 
@@ -181,7 +183,7 @@ export default function RulesPage() {
   )
 
   const handleSubmit = async () => {
-    if (!canManageRules) {
+    if (!canPropose) {
       setStatusMessage('Sign in with an approved player account to submit a rule.')
       return
     }
@@ -308,7 +310,7 @@ export default function RulesPage() {
           <Nav />
         </div>
         <PageTitle>Rules</PageTitle>
-        {!canManageRules && statusMessage ? <p className="rules__status">{statusMessage}</p> : null}
+        {!canPropose && statusMessage ? <p className="rules__status">{statusMessage}</p> : null}
 
         <section className="rules__section">
           <header className="rules__header">
@@ -322,7 +324,7 @@ export default function RulesPage() {
             </div>
           </header>
 
-          {canManageRules ? (
+          {canPropose ? (
             <div className="rules__editor">
               <p className="rules__editor-label">Propose a new rule</p>
               <textarea

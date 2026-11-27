@@ -13,9 +13,8 @@ export default function AdminSubNav() {
     { href: '/admin/games', label: 'Games' },
     { href: '/admin/tags', label: 'Tags' },
     { href: '/admin/players', label: 'Players' },
-    { href: '/admin/player-logins', label: 'Player logins' },
     { href: '/admin/tournaments', label: 'Tournaments' },
-    { href: '/admin/users', label: 'Users' },
+    { href: '/admin/members', label: 'Members' },
     { href: '/admin/app-configurations', label: 'App configurations' },
   ] as const
 

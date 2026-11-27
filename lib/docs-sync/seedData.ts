@@ -101,7 +101,7 @@ export const featureDocSeeds: FeatureDocSeed[] = [
   {
     key: 'player-logins-and-profiles',
     name: 'Player logins and profiles',
-    summary: 'Support member authentication, player login issuance, and editable account profiles.',
+    summary: 'Support member authentication, player invitations, and editable account profiles.',
     summaryDetails: {
       what: 'An account-management capability that covers authentication, issued player identities, role-aware access, and self-service profile editing.',
       whyItExists:
@@ -139,7 +139,7 @@ export const featureDocSeeds: FeatureDocSeed[] = [
     status: 'Active',
     owningArea: 'Accounts',
     currentState:
-      'Player login creation, role management, and self-service profile editing are all present in the current app.',
+      'Player invitations, role management, and self-service profile editing are all present in the current app.',
     notes: [
       'Covers auth callback/login flows plus admin-issued player logins.',
       'Profiles are synchronized into application records for ongoing member management.',
@@ -303,9 +303,9 @@ export const runbookDocSeeds: RunbookDocSeed[] = [
         'It ensures members can sign in with the correct permissions and see the right player profile without requiring ad hoc troubleshooting each time.',
       whoUsesIt: ['Admins or player-operations staff granting or correcting member access.'],
       flow: [
-        'Open the player logins admin workflow for the target member.',
-        'Locate the existing player login or create the missing login identity.',
-        'Associate the correct member email to the intended player record and save the update.',
+        'Open Admin → Members.',
+        'Select the existing active roster player.',
+        'Approve the member’s Google account email and share the player sign-in link.',
         'Validate that the member can authenticate and that the correct player profile is returned.',
       ],
       dependencies: ['Next.js admin workflow for player logins.', 'Underlying auth and player record persistence in Supabase.'],
@@ -333,7 +333,7 @@ export const runbookDocSeeds: RunbookDocSeed[] = [
     status: 'Active',
     owningArea: 'Player Ops',
     currentState:
-      'Admins can issue or update player login identities from the player logins admin workflow when member access needs to be granted.',
+      'Admins approve Google emails for roster players and manage account status and roles from the Members page.',
     notes: [
       'Use this when a member account exists but is not yet connected to the correct player profile.',
       'Changes are made in the Next.js admin flow; Confluence should mirror the operational procedure only.',
@@ -343,10 +343,10 @@ export const runbookDocSeeds: RunbookDocSeed[] = [
       'The member email address and intended player profile are already known.',
     ],
     steps: [
-      'Open the Player logins admin page.',
-      'Locate the target player or create the missing player login identity.',
-      'Associate the correct email address with the player record and save the change.',
-      'Confirm the member can authenticate and that the linked player profile appears correctly.',
+      'Open Admin → Members.',
+      'Choose an active player who has no pending approval or linked account.',
+      'Approve the member’s Google email and share /auth/login. Signing in with the approved Google account links it to the player.',
+      'Check the player, account email, and last sign-in in the Members table.',
     ],
   },
 ]

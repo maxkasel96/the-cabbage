@@ -1,3 +1,4 @@
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { supabaseServer } from '@/lib/supabaseServer'
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
   if (!admin.ok) {
     return NextResponse.json({ error: admin.message }, { status: admin.status })
   }
+  const db = getSupabaseServiceRole()
 
   const body = (await request.json().catch(() => null)) as CreateFavoritePlaylistRequest | null
   const spotifyUrl = typeof body?.spotifyUrl === 'string' ? body.spotifyUrl.trim() : ''
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
   try {
     const playlist = await getSpotifyPlaylistById(playlistId)
 
-    const result = await supabaseServer
+    const result = await db
       .from('spotify_favorite_playlists')
       .upsert(
         {

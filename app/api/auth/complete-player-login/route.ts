@@ -1,40 +1,22 @@
 import { NextResponse } from 'next/server'
-import { authorizePlayerLogin } from '@/lib/auth/authorizePlayerLogin'
-import { supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServerForToken } from '@/lib/supabaseServer'
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
-  const accessToken = body?.accessToken as string | undefined
-  const providerHint =
-    typeof body?.provider === 'string' && body.provider.trim() ? body.provider.trim().toLowerCase() : null
-
-  if (!accessToken) {
-    return NextResponse.json({ error: 'accessToken is required.' }, { status: 400 })
+  if (typeof body?.accessToken !== 'string' || !body.accessToken) {
+    return NextResponse.json({ error: 'Sign in to link your player.' }, { status: 401 })
   }
-
-  const { data, error } = await supabaseServer.auth.getUser(accessToken)
-
-  if (error || !data?.user) {
-    return NextResponse.json({ error: 'Invalid authorization token.' }, { status: 401 })
-  }
-
-  try {
-    const result = await authorizePlayerLogin(data.user, { providerHint })
-
-    if (!result.ok) {
-      return NextResponse.json({ error: result.reason }, { status: 403 })
-    }
-
-    return NextResponse.json({ ok: true, playerId: result.playerId, playerName: result.playerName })
-  } catch (authorizationError) {
+  const { error } = await supabaseServerForToken(body.accessToken).rpc('accept_player_invitation')
+  if (error) {
+    const denied = error.code === '42501'
     return NextResponse.json(
       {
-        error:
-          authorizationError instanceof Error
-            ? authorizationError.message
-            : 'Failed to authorize the signed-in player.',
+        error: denied
+          ? 'Ask an admin to approve your Google email or check that your membership is active.'
+          : 'Unable to complete sign-in.',
       },
-      { status: 500 }
+      { status: denied ? 403 : 500 },
     )
   }
+  return NextResponse.json({ ok: true })
 }

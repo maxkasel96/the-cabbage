@@ -1,6 +1,6 @@
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/navigation/requireAdmin'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 export const runtime = 'nodejs'
 
@@ -20,6 +20,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (!admin.ok) {
     return NextResponse.json({ error: admin.message }, { status: admin.status })
   }
+  const db = getSupabaseServiceRole()
 
   const { id } = await context.params
   const body = (await request.json().catch(() => null)) as UpdateFavoritePlaylistRequest | null
@@ -33,7 +34,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'sortOrder must be a number.' }, { status: 400 })
   }
 
-  const result = await supabaseServer
+  const result = await db
     .from('spotify_favorite_playlists')
     .update({ sort_order: sortOrder })
     .eq('id', id)
@@ -53,6 +54,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   if (!admin.ok) {
     return NextResponse.json({ error: admin.message }, { status: admin.status })
   }
+  const db = getSupabaseServiceRole()
 
   const { id } = await context.params
 
@@ -60,7 +62,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Playlist id is required.' }, { status: 400 })
   }
 
-  const result = await supabaseServer.from('spotify_favorite_playlists').delete().eq('id', id)
+  const result = await db.from('spotify_favorite_playlists').delete().eq('id', id)
 
   if (result.error) {
     return NextResponse.json({ error: result.error.message }, { status: 500 })

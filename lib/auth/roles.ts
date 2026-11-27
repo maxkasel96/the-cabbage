@@ -18,7 +18,7 @@ export const canAccessAuthenticatedApp = (value: unknown) => {
   return normalized === 'admin' || normalized === 'standard'
 }
 
-export const getRoleFromUser = (user: Pick<User, 'app_metadata' | 'user_metadata'>): AppRole =>
-  normalizeAppRole(user.app_metadata?.role ?? user.user_metadata?.role ?? null)
+export const getRoleFromUser = (user: Pick<User, 'app_metadata'>): AppRole =>
+  normalizeAppRole(user.app_metadata?.role ?? null)
 
 export const getRoleLabel = (value: unknown) => normalizeAppRole(value)
