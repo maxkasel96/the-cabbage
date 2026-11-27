@@ -119,7 +119,8 @@ function LoginContent() {
     >
       <h1 style={{ margin: 0, marginBottom: 8 }}>Sign in</h1>
       <p style={{ marginTop: 0, marginBottom: 20, color: 'var(--text-secondary)' }}>
-        Sign in with your invited email. Your first sign-in links your account to your player.
+        To claim your player, open your invitation email or use Google with the invited address.
+        Once linked, you can also sign in with your password.
       </p>
 
       <form onSubmit={signInWithPassword} style={{ display: 'grid', gap: 10, marginBottom: 12 }}>

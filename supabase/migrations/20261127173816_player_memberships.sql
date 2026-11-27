@@ -56,10 +56,24 @@ language plpgsql security definer set search_path='' as $$
 declare
   account auth.users%rowtype;
   membership public.player_memberships%rowtype;
+  claims jsonb := auth.jwt();
 begin
   select * into strict account from auth.users where id=auth.uid() for update;
   select * into membership from public.player_memberships where user_id=account.id for update;
-  if not found and account.email_confirmed_at is not null then
+  -- Automatic email confirmation can set a timestamp on a password signup.
+  -- For the first link, also require evidence from the signed sign-in session.
+  if not found and account.email_confirmed_at is not null
+    and lower(claims->>'email') = lower(account.email)
+    and (
+      claims->'amr' @> '[{"method":"magiclink"}]'::jsonb
+      or (claims->'amr' @> '[{"method":"otp"}]'::jsonb
+        and coalesce(claims->>'phone','') = '' and coalesce(account.phone,'') = '')
+      or (claims->'amr' @> '[{"method":"oauth"}]'::jsonb and exists (
+        select 1 from auth.identities i where i.user_id=account.id and i.provider='google'
+          and i.identity_data->>'email_verified'='true'
+          and lower(i.identity_data->>'email')=lower(account.email)
+      ))
+    ) then
     select * into membership from public.player_memberships
     where user_id is null and invited_email=lower(trim(account.email)) for update;
   end if;

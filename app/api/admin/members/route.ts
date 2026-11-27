@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   })
   if (mailError)
     return failure(
-      'Invitation saved. Email delivery failed. Use Resend or ask the player to sign in with their invited email.',
+      'Invitation saved. Email delivery failed. Use Resend or ask the player to sign in with Google using the invited address.',
       502,
     )
   return NextResponse.json({ ok: true })

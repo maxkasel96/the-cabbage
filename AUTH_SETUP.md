@@ -6,7 +6,7 @@ Members sign in with Google, a Supabase email link, or an existing email and pas
 
 1. Open **Admin → Members** and choose an active roster player.
 2. Enter their login email and send the invitation. Resend or cancel pending invitations on the same page.
-3. The player opens the email link or signs in with their invited, verified email. Acceptance claims the roster place once. Later email changes preserve ownership.
+3. The player opens the email link or signs in with Google using the same verified address. The database checks the sign-in method and address before linking the roster place. Once linked, they can also use a password. Later email changes preserve ownership.
 4. The Members table shows the account email, linked player, providers, last sign-in, status and role. Disable a membership to suspend its access, including existing sessions. A roster player can remain without an account.
 
 Members manage their personal profile and their own posts and can propose rules. Admins moderate posts and rules, manage the roster and catalog, record official results, and manage memberships. An initial admin can manage the site before claiming a roster place. To post as a player they also need a linked active roster place. Admin authority comes from Supabase Auth's server-managed app metadata.
@@ -15,7 +15,7 @@ Members manage their personal profile and their own posts and can propose rules.
 
 Test the player memberships migration and the matching app together on a local Supabase instance or an isolated staging project. The production project reference is `mtywyenrzdkvypvvacjz`. The migration expects the existing players, login approvals, profiles, posts and tournament schema. It preserves pending invitations and existing account links, and leaves unmatched historical post attribution intact. Older migrations in this repository differ from the live schema. Reconcile migration history before a production rollout. Coordinate the migration and application release because the legacy login functions lose execute permission.
 
-Enable Google and Email in Supabase Auth. Turn on **Confirm Email** before allowing players to claim invitations. The first claim relies on Supabase's email confirmation timestamp. If signups previously used automatic confirmation, review existing password accounts and verify their owners before inviting those addresses. Enabling confirmation affects new signups. Configure email delivery for invitation and recovery links.
+Enable Google and Email in Supabase Auth and turn on **Confirm Email** for new signups. This app uses email for one-time links and Google for social sign-in. If signups previously used automatic confirmation, review existing password accounts and verify their owners before inviting those addresses. An old password can still sign in after its account is linked. Configure email delivery for invitation and recovery links.
 
 Google returns the user to the Supabase provider callback, `https://<project-ref>.supabase.co/auth/v1/callback`. Supabase then sends the user back to the app that started sign-in. If you add hosted staging, set the staging app's **Site URL** in its own Supabase project. Under **Redirect URLs**, allow the staging hostname and the callback including its return path, for example `https://<staging-host>/auth/callback?next=**`. Copy the hostname from Vercel, including the full `.vercel.app` suffix when using a Vercel alias. Set the Vercel Preview environment variables to that staging Supabase project and redeploy.
 
