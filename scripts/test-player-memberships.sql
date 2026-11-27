@@ -8,8 +8,8 @@ insert into public.players(id,display_name,is_active) values
 insert into auth.users(id,email,email_confirmed_at,raw_app_meta_data,raw_user_meta_data) values
   ('20000000-0000-0000-0000-000000000001','member@example.test',null,'{}','{"role":"admin"}'),
   ('20000000-0000-0000-0000-000000000002','admin@example.test',now(),'{"role":"admin"}','{}');
-insert into public.player_memberships(player_id,invited_email) values
-  ('10000000-0000-0000-0000-000000000001','member@example.test');
+select public.prepare_player_invitation('10000000-0000-0000-0000-000000000001','Member@example.test');
+select public.prepare_player_invitation('10000000-0000-0000-0000-000000000001','member@example.test');
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000001',true);
@@ -47,6 +47,28 @@ select pg_temp.assert_ok(exists(select 1 from public.posts where message='update
 insert into public.rules(tournament_id,content,status) select id,'membership test rule','Proposed' from membership_test_tournament;
 update public.rules set status='Accepted' where content='membership test rule';
 select pg_temp.assert_ok(exists(select 1 from public.rules where content='membership test rule' and status='Proposed'),'member cannot moderate rules');
+
+reset role;
+insert into public.players(id,display_name,is_active) values
+  ('10000000-0000-0000-0000-000000000002','Second member',true);
+insert into auth.users(id,email,email_confirmed_at) values
+  ('20000000-0000-0000-0000-000000000003','second@example.test',now());
+insert into public.player_memberships(player_id,invited_email,user_id) values
+  ('10000000-0000-0000-0000-000000000002','second@example.test','20000000-0000-0000-0000-000000000003');
+set local role anon;
+select pg_temp.assert_ok(not has_table_privilege(current_user,'public.posts','DELETE'),'visitors cannot delete');
+select pg_temp.assert_ok(not has_table_privilege(current_user,'public.player_memberships','SELECT'),'invitation emails are private');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000003',true);
+update public.posts set message='changed by other player' where message='updated test post';
+delete from public.posts where message='updated test post';
+select pg_temp.assert_ok(exists(select 1 from public.posts where message='updated test post'),'other members cannot edit or delete');
+do $$ begin
+  begin
+    insert into public.rules(tournament_id,content,status) select id,'preapproved','Accepted' from membership_test_tournament;
+    raise exception 'Member approved a proposal during creation';
+  exception when insufficient_privilege then null; end;
+end $$;
 
 select set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000002',true);
 select pg_temp.assert_ok(cabbage_private.is_admin(),'unlinked admin can manage');

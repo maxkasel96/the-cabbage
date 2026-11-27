@@ -65,10 +65,9 @@ const RUNBOOK_DEFINITIONS: RunbookDefinition[] = [
         filePath === 'app/api/auth/complete-player-login/route.ts' ||
         filePath === 'app/api/account/profile/route.ts' ||
         filePath === 'app/api/account/profile/image/route.ts' ||
-        filePath === 'app/admin/player-logins/page.tsx' ||
-        filePath === 'app/admin/users/page.tsx' ||
-        filePath === 'app/api/admin/player-logins/route.ts' ||
-        filePath === 'app/api/admin/roles/route.ts' ||
+        filePath === 'app/admin/members/page.tsx' ||
+        filePath === 'app/api/admin/members/route.ts' ||
+        filePath === 'app/api/account/access/route.ts' ||
         filePath.startsWith('lib/auth/') ||
         filePath === 'lib/navigation/requireAdmin.ts' ||
         filePath === 'lib/userProfiles.ts' ||

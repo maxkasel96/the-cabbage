@@ -16,12 +16,13 @@ type Tournament = {
 
 type MemberProfile = {
   display_name: string | null
-  player_id: string | null
+  id: string
 }
 
 type PostEntry = {
   id: string
   tournamentId: string
+  authorUserId: string | null
   authorId: string
   authorName: string
   message: string
@@ -32,6 +33,7 @@ type PostEntry = {
 type PostRecord = {
   id: string
   tournament_id: string
+  author_user_id: string | null
   author_id: string
   author_name: string
   message: string
@@ -147,6 +149,9 @@ export default function PostsPage() {
   const [attachedImages, setAttachedImages] = useState<string[]>([])
   const [status, setStatus] = useState('')
   const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [canCreatePosts, setCanCreatePosts] = useState(false)
   const [accessNotice, setAccessNotice] = useState('Sign in with an approved player account to create a post.')
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
@@ -160,7 +165,7 @@ export default function PostsPage() {
 
   useEffect(() => {
     const loadMemberAccess = async () => {
-      const res = await fetch('/api/account/profile', { cache: 'no-store' })
+      const res = await fetch('/api/account/access', { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
 
       if (!res.ok) {
@@ -174,9 +179,11 @@ export default function PostsPage() {
         return
       }
 
-      const profile = (json.profile ?? null) as MemberProfile | null
+      const profile = (json.player ?? null) as MemberProfile | null
       setMemberProfile(profile)
-      setCanCreatePosts(Boolean(profile?.player_id))
+      setCanCreatePosts(Boolean(profile))
+      setUserId(json.userId)
+      setIsAdmin(json.role === 'admin')
       setAccessNotice('')
     }
 
@@ -216,8 +223,9 @@ export default function PostsPage() {
         const storedImages = normalizeImageList(post.images)
         const fallbackImages = storedImages.length ? storedImages : extractImageSources(post.message)
         const entry: PostEntry = {
-          id: post.id,
+          id: String(post.id),
           tournamentId: post.tournament_id,
+          authorUserId: post.author_user_id,
           authorId: post.author_id,
           authorName: post.author_name,
           message: sanitizeRichText(post.message),
@@ -249,16 +257,6 @@ export default function PostsPage() {
   const pageStartIndex = (safePage - 1) * pageSize
   const visiblePosts = sortedPosts.slice(pageStartIndex, pageStartIndex + pageSize)
 
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [selectedTournamentId, sortOrder])
-
-  useEffect(() => {
-    if (currentPage !== safePage) {
-      setCurrentPage(safePage)
-    }
-  }, [currentPage, safePage])
-
   const handleSubmit = async () => {
     const rawMessage = draftMessage
     const sanitized = sanitizeRichText(rawMessage)
@@ -269,7 +267,7 @@ export default function PostsPage() {
       return
     }
 
-    if (!canCreatePosts) {
+    if (!canCreatePosts && !(editingId && isAdmin)) {
       setStatus('Sign in with an approved player account to create a post.')
       return
     }
@@ -282,11 +280,12 @@ export default function PostsPage() {
     setStatus('Posting...')
 
     const res = await fetch('/api/posts', {
-      method: 'POST',
+      method: editingId ? 'PATCH' : 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        id: editingId,
         tournament_id: selectedTournamentId,
         message: sanitized,
         images,
@@ -307,8 +306,9 @@ export default function PostsPage() {
 
     const normalizedImages = normalizeImageList(post.images)
     const entry: PostEntry = {
-      id: post.id,
+      id: String(post.id),
       tournamentId: post.tournament_id,
+      authorUserId: post.author_user_id,
       authorId: post.author_id,
       authorName: post.author_name,
       message: sanitizeRichText(post.message),
@@ -318,12 +318,31 @@ export default function PostsPage() {
 
     setPostsByTournament((prev) => ({
       ...prev,
-      [entry.tournamentId]: [...(prev[entry.tournamentId] ?? []), entry],
+      [entry.tournamentId]: editingId
+        ? prev[entry.tournamentId].map(post => post.id === editingId ? entry : post)
+        : [...(prev[entry.tournamentId] ?? []), entry],
     }))
 
+    setEditingId(null)
     setDraftMessage('')
     setAttachedImages([])
     setStatus('')
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setDraftMessage('')
+    setAttachedImages([])
+  }
+
+  const deletePost = async (post: PostEntry) => {
+    if (!window.confirm('Delete this post?')) return
+    const res = await fetch('/api/posts', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: post.id }),
+    })
+    if (!res.ok) { setStatus('Unable to delete the post.'); return }
+    if (post.id === editingId) cancelEdit()
+    setPostsByTournament(prev => ({ ...prev, [post.tournamentId]: prev[post.tournamentId].filter(row => row.id !== post.id) }))
   }
 
   const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -399,7 +418,7 @@ export default function PostsPage() {
               <span className="posts__control-label">Tournament year</span>
               <select
                 value={selectedTournamentId}
-                onChange={(event) => setSelectedTournamentId(event.target.value)}
+                onChange={(event) => { if (editingId) cancelEdit(); setCurrentPage(1); setSelectedTournamentId(event.target.value) }}
               >
                 {tournaments.map((tournament) => (
                   <option key={tournament.id} value={tournament.id}>
@@ -414,7 +433,7 @@ export default function PostsPage() {
             </div>
             <label className="posts__control">
               <span className="posts__control-label">Sort by</span>
-              <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as 'newest' | 'oldest')}>
+              <select value={sortOrder} onChange={(event) => { setCurrentPage(1); setSortOrder(event.target.value as 'newest' | 'oldest') }}>
                 <option value="newest">Newest to oldest</option>
                 <option value="oldest">Oldest to newest</option>
               </select>
@@ -424,10 +443,10 @@ export default function PostsPage() {
 
         {status && <div className="posts__status">{status}</div>}
 
-        {canCreatePosts ? (
+        {canCreatePosts || editingId ? (
           <section className="posts__composer">
             <div className="posts__composer-header">
-              <h3>Start a new post</h3>
+              <h3>{editingId ? 'Edit post' : 'Start a new post'}</h3>
               <p>
                 Share a thought, update, or celebratory roast with the rest of the bracket as{' '}
                 {memberProfile?.display_name || 'your linked player'}.
@@ -475,8 +494,9 @@ export default function PostsPage() {
               </div>
 
               <div className="posts__composer-actions">
+                {editingId && <button type="button" onClick={cancelEdit}>Cancel edit</button>}
                 <button type="button" onClick={handleSubmit} className="posts__submit">
-                  Post comment
+                  {editingId ? 'Save changes' : 'Post comment'}
                 </button>
               </div>
             </div>
@@ -484,7 +504,7 @@ export default function PostsPage() {
         ) : (
           <section className="posts__composer">
             <div className="posts__composer-header">
-              <h3>Start a new post</h3>
+              <h3>{editingId ? 'Edit post' : 'Start a new post'}</h3>
               <p>Viewing stays public, but only signed-in members can publish new posts.</p>
             </div>
             <div className="posts__composer-body">
@@ -529,6 +549,15 @@ export default function PostsPage() {
                         <strong className="posts__entry-author">{post.authorName}</strong>
                         <span className="posts__entry-time">{formatDateTime(post.createdAt)}</span>
                       </div>
+                      {(isAdmin || (canCreatePosts && userId === post.authorUserId)) && <div>
+                        <button type="button" onClick={() => {
+                          setEditingId(post.id)
+                          setDraftMessage(post.message)
+                          setAttachedImages(post.images)
+                          document.querySelector('.posts__control')?.scrollIntoView()
+                        }}>Edit</button>
+                        <button type="button" onClick={() => deletePost(post)}>Delete</button>
+                      </div>}
                       <span className="posts__entry-index">#{pageStartIndex + index + 1}</span>
                     </header>
                     <div
@@ -558,7 +587,7 @@ export default function PostsPage() {
                   <button
                     type="button"
                     className="posts__pagination-button"
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() => setCurrentPage(safePage - 1)}
                     disabled={safePage === 1}
                   >
                     Previous
@@ -569,7 +598,7 @@ export default function PostsPage() {
                   <button
                     type="button"
                     className="posts__pagination-button"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    onClick={() => setCurrentPage(safePage + 1)}
                     disabled={safePage === totalPages}
                   >
                     Next

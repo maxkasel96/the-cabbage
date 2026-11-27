@@ -160,7 +160,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       setAuth({
         isAuthenticated: true,
         isAuthorized: true,
-        role: getRoleLabel(user.app_metadata?.role ?? user.user_metadata?.role ?? null),
+        role: getRoleLabel(user.app_metadata?.role ?? null),
       })
     })
 
@@ -177,7 +177,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       setAuth({
         isAuthenticated: true,
         isAuthorized: true,
-        role: getRoleLabel(session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? null),
+        role: getRoleLabel(session.user.app_metadata?.role ?? null),
       })
     })
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { parseEditableAccountProfileFields } from '@/lib/accountProfileFields'
 import { requireMember } from '@/lib/auth/requireMember'
-import { ensureUserProfile, updateOwnUserProfile } from '@/lib/userProfiles'
+import { getOwnProfile, updateOwnUserProfile } from '@/lib/userProfiles'
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -14,8 +14,8 @@ export async function GET(req: Request) {
   }
 
   try {
-    const profile = await ensureUserProfile(auth.user)
-    return NextResponse.json({ profile, role: auth.role })
+    const profile = await getOwnProfile(auth.user)
+    return NextResponse.json({ profile: { ...profile, player_id: auth.player.id }, role: auth.role })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to load your profile.' },
@@ -46,10 +46,10 @@ export async function PATCH(req: Request) {
     const editableFields = profileData ? parseEditableAccountProfileFields(profileData) : undefined
     const profile = await updateOwnUserProfile(auth.user, {
       display_name: displayName,
-      profile_data: editableFields ? { ...profileData, ...editableFields } : undefined,
+      profile_data: editableFields ? editableFields : undefined,
     })
 
-    return NextResponse.json({ profile })
+    return NextResponse.json({ profile: { ...profile, player_id: auth.player.id } })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update your profile.' },

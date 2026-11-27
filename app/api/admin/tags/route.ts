@@ -1,5 +1,6 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 function slugify(input: string) {
   return input
@@ -11,6 +12,10 @@ function slugify(input: string) {
 }
 
 export async function POST(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const body = await req.json().catch(() => null)
 
   const label = (body?.label as string | undefined)?.trim() ?? ''
@@ -31,7 +36,7 @@ export async function POST(req: Request) {
 
   const finalSortOrder = Number.isFinite(sort_order) ? sort_order : 100
 
-  const ins = await supabaseServer
+  const ins = await db
     .from('tags')
     .insert([{ label, slug, sort_order: finalSortOrder }])
     .select('id, slug, label, sort_order')

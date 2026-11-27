@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { requireMember } from '@/lib/auth/requireMember'
 import { supabaseServer, supabaseServerForToken } from '@/lib/supabaseServer'
 
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const auth = await requireMember(req)
+  const auth = await requireAdmin(req)
 
   if (!auth.ok) {
     return NextResponse.json({ error: auth.message }, { status: auth.status })
@@ -79,7 +80,7 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const auth = await requireMember(req)
+  const auth = await requireAdmin(req)
 
   if (!auth.ok) {
     return NextResponse.json({ error: auth.message }, { status: auth.status })

@@ -1,10 +1,15 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function PUT(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const { id } = await context.params
 
   if (!id) {
@@ -43,7 +48,7 @@ export async function PUT(
     return NextResponse.json({ error: 'min_players must be <= max_players' }, { status: 400 })
   }
 
-  const result = await supabaseServer
+  const result = await db
     .from('games')
     .update(update)
     .eq('id', id)
@@ -61,6 +66,10 @@ export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const { id } = await context.params
 
   console.log('DELETE /api/admin/games/:id', { id, url: req.url })
@@ -69,12 +78,12 @@ export async function DELETE(
     return NextResponse.json({ error: 'Missing game id' }, { status: 400 })
   }
 
-  const delJoin = await supabaseServer.from('game_tags').delete().eq('game_id', id)
+  const delJoin = await db.from('game_tags').delete().eq('game_id', id)
   if (delJoin.error) {
     return NextResponse.json({ error: delJoin.error.message }, { status: 500 })
   }
 
-  const delGame = await supabaseServer.from('games').delete().eq('id', id)
+  const delGame = await db.from('games').delete().eq('id', id)
   if (delGame.error) {
     return NextResponse.json({ error: delGame.error.message }, { status: 500 })
   }

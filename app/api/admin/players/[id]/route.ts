@@ -1,6 +1,7 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 type Params = {
   params: Promise<{
@@ -9,6 +10,10 @@ type Params = {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const { id } = await params
   const body = await req.json().catch(() => null)
   const isActive = body?.is_active
@@ -30,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'No valid fields to update.' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await db
     .from('players')
     .update(update)
     .eq('id', id)

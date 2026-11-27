@@ -1,3 +1,5 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
@@ -72,6 +74,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const body = await req.json().catch(() => null)
 
   const name = (body?.name as string | undefined)?.trim() ?? ''
@@ -81,7 +87,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 })
   }
 
-  const ins = await supabaseServer
+  const ins = await db
     .from('games')
     .insert([{ name, is_active }])
     .select('id, name, is_active, played_at, min_players, max_players')

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import PageTitle from '@/app/components/PageTitle'
 import Nav from '@/app/components/Nav'
 import ProfileImageUploader from '@/app/account/profile/ProfileImageUploader'
@@ -36,6 +37,7 @@ const formatDate = (value: string) => {
 export default function AccountProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [displayName, setDisplayName] = useState('')
+  const [password, setPassword] = useState('')
   const [bio, setBio] = useState('')
   const [favoriteGames, setFavoriteGames] = useState('')
   const [status, setStatus] = useState('Loading profile...')
@@ -292,6 +294,24 @@ export default function AccountProfilePage() {
                   </ul>
                 ) : null}
               </div>
+
+              <form onSubmit={async event => {
+                event.preventDefault()
+                setSaving(true)
+                try {
+                  const result = await supabaseBrowser().auth.updateUser({ password })
+                  if (result.error) throw result.error
+                  setPassword('')
+                  setError('')
+                  setStatus('Password saved.')
+                } catch (error) {
+                  setError(error instanceof Error ? error.message : 'Unable to save password.')
+                } finally { setSaving(false) }
+              }}>
+                <label>New sign-in password <input type="password" autoComplete="new-password" minLength={8}
+                  required value={password} onChange={event => setPassword(event.target.value)} /></label>
+                <button type="submit" disabled={saving}>Set password</button>
+              </form>
 
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                 <button

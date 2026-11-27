@@ -18,7 +18,7 @@ export default async function UnauthorizedPage({ searchParams }: UnauthorizedPag
         <h1>{isPlayerAuthorizationFailure ? 'Player login required' : 'Admin access required'}</h1>
         <p>
           {isPlayerAuthorizationFailure
-            ? 'Your Google account is signed in, but it is not linked to an approved player login yet. Contact an admin to assign your player account.'
+            ? 'Ask an admin to invite your email for an active roster player, then sign in with that address.'
             : 'Your account is signed in but does not have an admin role. Contact an existing admin if you need elevated access.'}
         </p>
         <Link href="/">Return home</Link>

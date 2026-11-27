@@ -1,5 +1,6 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -13,6 +14,10 @@ function extractGameIdFromPath(pathname: string) {
 }
 
 export async function PUT(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const url = new URL(req.url)
   const gameId = extractGameIdFromPath(url.pathname)
 
@@ -45,12 +50,12 @@ export async function PUT(req: Request) {
     )
   }
 
-  const del = await supabaseServer.from('game_tags').delete().eq('game_id', gameId)
+  const del = await db.from('game_tags').delete().eq('game_id', gameId)
   if (del.error) return NextResponse.json({ error: del.error.message }, { status: 500 })
 
   if (tagIds.length > 0) {
     const rows = tagIds.map((tagId) => ({ game_id: gameId, tag_id: tagId }))
-    const ins = await supabaseServer.from('game_tags').insert(rows)
+    const ins = await db.from('game_tags').insert(rows)
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 })
   }
 

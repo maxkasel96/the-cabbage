@@ -1,7 +1,12 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
+import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function POST(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const body = await req.json().catch(() => null)
 
   const gameIds = Array.isArray(body?.gameIds) ? body.gameIds : []
@@ -17,7 +22,7 @@ export async function POST(req: Request) {
 
   // If you have a unique constraint on (game_id, tag_id), upsert prevents duplicates.
   // If you do NOT have that constraint, add it in DB for best results.
-  const ins = await supabaseServer.from('game_tags').upsert(rows, { onConflict: 'game_id,tag_id' })
+  const ins = await db.from('game_tags').upsert(rows, { onConflict: 'game_id,tag_id' })
 
   if (ins.error) {
     return NextResponse.json({ error: ins.error.message }, { status: 500 })

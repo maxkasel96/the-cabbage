@@ -11,7 +11,7 @@ function AuthCallbackContent() {
 
   const nextPath = useMemo(() => {
     const candidate = searchParams.get('next')
-    return candidate?.startsWith('/') ? candidate : '/'
+    return candidate?.startsWith('/') && !candidate.startsWith('//') && !candidate.includes('\\') ? candidate : '/'
   }, [searchParams])
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function AuthCallbackContent() {
       const authorizationRes = await fetch('/api/auth/complete-player-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, provider: 'google' }),
+        body: JSON.stringify({ accessToken }),
       })
 
       if (!authorizationRes.ok) {
@@ -65,7 +65,7 @@ function AuthCallbackContent() {
           setStatus(
             typeof authorizationBody.error === 'string'
               ? authorizationBody.error
-              : 'This Google account is not authorized for this app.'
+              : 'This account is not authorized for this app.'
           )
         }
 

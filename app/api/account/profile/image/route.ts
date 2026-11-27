@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireMember } from '@/lib/auth/requireMember'
 import { getEditableAccountProfileFields } from '@/lib/accountProfileFields'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
-import { ensureUserProfile, updateOwnUserProfile } from '@/lib/userProfiles'
+import { getOwnProfile, updateOwnUserProfile } from '@/lib/userProfiles'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES: Record<string, string> = {
@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getSupabaseServiceRole()
-    const currentProfile = await ensureUserProfile(auth.user)
+    const currentProfile = await getOwnProfile(auth.user)
     const currentFields = getEditableAccountProfileFields(currentProfile.profile_data)
-    const objectPath = `profiles/${auth.user.id}/profile-${Date.now()}.${extension}`
+    const objectPath = `profiles/${auth.user.id}/profile-${crypto.randomUUID()}.${extension}`
     const buffer = Buffer.from(await file.arrayBuffer())
 
     const { error: uploadError } = await supabase.storage.from('images').upload(objectPath, buffer, {
@@ -56,17 +56,16 @@ export async function POST(request: NextRequest) {
     try {
       const profile = await updateOwnUserProfile(auth.user, {
         profile_data: {
-          ...currentProfile.profile_data,
           profileImagePath: objectPath,
         },
       })
 
-      if (currentFields.profileImagePath && currentFields.profileImagePath !== objectPath) {
+      if (currentFields.profileImagePath?.startsWith(`profiles/${auth.user.id}/`) && currentFields.profileImagePath !== objectPath) {
         await supabase.storage.from('images').remove([currentFields.profileImagePath])
       }
 
       return NextResponse.json({
-        profile,
+        profile: { ...profile, player_id: auth.player.id },
         profileImagePath: objectPath,
       })
     } catch (error) {

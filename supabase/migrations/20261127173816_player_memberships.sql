@@ -45,6 +45,11 @@ begin
   return new;
 end $$;
 
+insert into public.user_profiles(user_id,email,display_name,role,last_sign_in_at)
+select id,email,coalesce(raw_user_meta_data->>'display_name',raw_user_meta_data->>'name'),
+  case when raw_app_meta_data->>'role'='admin' then 'admin' else 'standard' end,last_sign_in_at
+from auth.users on conflict(user_id) do nothing;
+
 -- Caller identity comes from the verified Supabase session. Locking makes concurrent callbacks idempotent.
 create function public.accept_player_invitation() returns uuid
 language plpgsql security definer set search_path='' as $$
@@ -115,6 +120,11 @@ revoke all on public.posts,public.rules from public,anon,authenticated;
 grant select on public.posts,public.rules to anon,authenticated;
 grant insert(tournament_id,author_id,author_user_id,author_name,message,images),update(message,images),delete on public.posts to authenticated;
 grant insert(tournament_id,content,status),update(status,updated_at),delete on public.rules to authenticated;
+do $$
+declare sequence_name regclass := pg_get_serial_sequence('public.posts','id')::regclass;
+begin
+  if sequence_name is not null then execute format('grant usage on sequence %s to authenticated',sequence_name); end if;
+end $$;
 create policy public_posts on public.posts for select using(true);
 create policy write_own_posts on public.posts for insert to authenticated with check(
   author_user_id=(select auth.uid()) and author_id=(select cabbage_private.member_player())
@@ -144,10 +154,10 @@ end $$;
 
 -- Merge individual fields under the row lock so a concurrent photo upload and bio edit both survive.
 create function public.update_member_profile_fields(p_user_id uuid, p_fields jsonb, p_display_name text default null)
-returns void language sql security invoker set search_path='' as $$
+returns setof public.user_profiles language sql security invoker set search_path='' as $$
   update public.user_profiles set profile_data=profile_data || p_fields,
     display_name=case when p_display_name is null then display_name else nullif(trim(p_display_name),'') end
-  where user_id=p_user_id;
+  where user_id=p_user_id returning *;
 $$;
 revoke all on function public.update_member_profile_fields(uuid,jsonb,text) from public,anon,authenticated;
 grant execute on function public.update_member_profile_fields(uuid,jsonb,text) to service_role;
@@ -172,3 +182,36 @@ begin
 end $$;
 revoke all on function public.save_tournament_result(uuid,uuid,uuid[],uuid[],text,text) from public,anon,authenticated;
 grant execute on function public.save_tournament_result(uuid,uuid,uuid[],uuid[],text,text) to service_role;
+
+-- Reject an invitation addressed to an account that already has a different roster place.
+-- Only identical, still-pending invitations can be resent.
+create function public.prepare_player_invitation(p_player uuid, p_email text) returns void
+language plpgsql security definer set search_path='' as $$
+declare account_id uuid;
+begin
+  p_email := lower(trim(p_email));
+  select id into account_id from auth.users where lower(email)=p_email for update;
+  if exists(select 1 from public.player_memberships where user_id=account_id) then
+    raise exception 'This account already has a roster membership.' using errcode='23505';
+  end if;
+  if not exists(select 1 from public.players where id=p_player and is_active) then
+    raise exception 'Choose an active player.' using errcode='22023';
+  end if;
+  insert into public.player_memberships(player_id, invited_email) values(p_player,p_email)
+  on conflict(player_id) do nothing;
+  if not exists(select 1 from public.player_memberships where player_id=p_player
+    and user_id is null and invited_email=p_email and is_active) then
+    raise exception 'This player already has a different invitation or membership.' using errcode='23505';
+  end if;
+end $$;
+revoke all on function public.prepare_player_invitation(uuid,text) from public,anon,authenticated;
+grant execute on function public.prepare_player_invitation(uuid,text) to service_role;
+
+do $$
+declare archive regclass;
+begin
+  foreach archive in array array[to_regclass('public.player_login_tokens'),to_regclass('public.player_login_token_redemptions')]
+  loop
+    if archive is not null then execute format('revoke all on %s from public,anon,authenticated',archive); end if;
+  end loop;
+end $$;

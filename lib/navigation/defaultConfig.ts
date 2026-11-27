@@ -191,16 +191,6 @@ export const defaultNavConfig: NavConfig = {
               sortOrder: 1,
               isVisible: true,
             },
-            {
-              id: '2a47f777-f7f2-4eab-b10d-2cd5b80e05e0',
-              href: '/admin/player-logins',
-              title: 'Player logins',
-              description: 'Map Google emails to players before first sign-in.',
-              icon: 'users',
-              tone: 'sage',
-              sortOrder: 2,
-              isVisible: true,
-            },
           ],
         },
         {
@@ -221,8 +211,8 @@ export const defaultNavConfig: NavConfig = {
             },
             {
               id: '9aa7fba4-c0b9-49de-b8b5-a062ac0b0f04',
-              href: '/admin/users',
-              title: 'Users',
+              href: '/admin/members',
+              title: 'Members',
               description: 'Manage admin and standard role assignments.',
               icon: 'users',
               tone: 'mint',

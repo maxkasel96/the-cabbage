@@ -1,6 +1,6 @@
+import { requireAdmin } from '@/lib/navigation/requireAdmin'
 import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabaseServer'
 import { getActiveTournamentId } from '@/lib/getActiveTournamentId'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 
@@ -15,6 +15,10 @@ const ALLOWED_TYPES: Record<string, string> = {
 }
 
 export async function POST(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin.ok) return NextResponse.json({ error: admin.message }, { status: admin.status })
+  const db = getSupabaseServiceRole()
+
   const contentType = req.headers.get('content-type') ?? ''
   let gameId: string | undefined
   let winnerPlayerIdsRaw: unknown = []
@@ -88,47 +92,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No active tournament set.' }, { status: 400 })
   }
 
-  // 1) Create (or re-use) play record for this game in this tournament
-  // If you want to allow playing the same game multiple times in a tournament,
-  // remove the unique index and use insert(). For now we keep one play per game.
-  const playUpsert = await supabaseServer
-    .from('plays')
-    .upsert(
-      [{ tournament_id: tournamentId, game_id: gameId }],
-      { onConflict: 'tournament_id,game_id' }
-    )
-    .select('id, played_at')
-    .single()
-
-  if (playUpsert.error) {
-    return NextResponse.json({ error: playUpsert.error.message }, { status: 500 })
+  const uploadedPaths: string[] = []
+  const uploadId = randomUUID()
+  if (winImageFiles.some(file => !ALLOWED_TYPES[file.type] || file.size > MAX_FILE_SIZE)) {
+    return NextResponse.json({ error: 'Choose PNG, JPEG, or WebP files up to 5MB each.' }, { status: 400 })
   }
-
-  const playId = playUpsert.data.id as string
-  const previouslyPlayedAt = playUpsert.data.played_at as string | null
-  let winImageValue: string | null = null
-
-  if (winImageFiles.length > 0) {
-    const supabaseServiceRole = getSupabaseServiceRole()
-    const uploadedPaths: string[] = []
-
+  if (winImageFiles.length) {
     for (const winImageFile of winImageFiles) {
       const extension = ALLOWED_TYPES[winImageFile.type]
-      if (!extension) {
-        return NextResponse.json(
-          { error: 'Invalid file type. Please upload a PNG, JPEG, or WebP image.' },
-          { status: 400 }
-        )
-      }
-
-      if (winImageFile.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ error: 'File size must be 5MB or less.' }, { status: 400 })
-      }
-
-      const objectPath = `wins/${playId}/${randomUUID()}.${extension}`
+      const objectPath = `wins/${uploadId}/${randomUUID()}.${extension}`
       const buffer = Buffer.from(await winImageFile.arrayBuffer())
 
-      const { error: uploadError } = await supabaseServiceRole.storage
+      const { error: uploadError } = await db.storage
         .from('images')
         .upload(objectPath, buffer, {
           contentType: winImageFile.type,
@@ -136,97 +111,23 @@ export async function POST(req: Request) {
         })
 
       if (uploadError) {
+        if (uploadedPaths.length) await db.storage.from('images').remove(uploadedPaths)
         return NextResponse.json({ error: uploadError.message }, { status: 500 })
       }
 
       uploadedPaths.push(objectPath)
     }
 
-    winImageValue = uploadedPaths.length === 1 ? uploadedPaths[0] : JSON.stringify(uploadedPaths)
   }
 
-  // 2) Replace winners for this play (delete then insert)
-  const del = await supabaseServer.from('game_winners').delete().eq('play_id', playId)
-  if (del.error) return NextResponse.json({ error: del.error.message }, { status: 500 })
-
-  if (winnerPlayerIds.length > 0) {
-    const rows = winnerPlayerIds.map((playerId) => ({
-      play_id: playId,
-      player_id: playerId,
-      ...(winImageValue ? { win_image: winImageValue } : {}),
-    }))
-    const ins = await supabaseServer.from('game_winners').insert(rows)
-    if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 })
+  const image = uploadedPaths.length > 1 ? JSON.stringify(uploadedPaths) : uploadedPaths[0] ?? null
+  const { data: playId, error } = await db.rpc('save_tournament_result', {
+    p_tournament: tournamentId, p_game: gameId, p_winners: winnerPlayerIds,
+    p_participants: participantPlayerIds, p_note: note, p_image: image,
+  })
+  if (error) {
+    if (uploadedPaths.length) await db.storage.from('images').remove(uploadedPaths)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-
-  // 3) Replace participants for this play (delete then insert)
-  const participantsDelete = await supabaseServer.from('play_players').delete().eq('play_id', playId)
-  if (participantsDelete.error) {
-    return NextResponse.json({ error: participantsDelete.error.message }, { status: 500 })
-  }
-
-  if (participantPlayerIds.length > 0) {
-    const participantRows = participantPlayerIds.map((playerId) => ({
-      play_id: playId,
-      player_id: playerId,
-    }))
-    const participantsInsert = await supabaseServer.from('play_players').insert(participantRows)
-    if (participantsInsert.error) {
-      return NextResponse.json({ error: participantsInsert.error.message }, { status: 500 })
-    }
-  }
-
-  // 4) Mark the game as played + store the note
-  const upd = await supabaseServer
-    .from('plays')
-    .update({
-      played_at: new Date().toISOString(),
-      played_note: note,
-    })
-    .eq('id', playId)
-
-  if (upd.error) {
-    return NextResponse.json({ error: upd.error.message }, { status: 500 })
-  }
-
-  // 5) Record losses for the active tournament (skip if the play was already finalized)
-  if (!previouslyPlayedAt) {
-    const winners = new Set<string>(winnerPlayerIds)
-    const loserIds = participantPlayerIds.filter((playerId) => !winners.has(playerId))
-
-    if (loserIds.length > 0) {
-      const { data: existingLosses, error: existingLossesError } = await supabaseServer
-        .from('player_losses_by_tournament')
-        .select('player_id, losses')
-        .eq('tournament_id', tournamentId)
-        .in('player_id', loserIds)
-
-      if (existingLossesError) {
-        return NextResponse.json({ error: existingLossesError.message }, { status: 500 })
-      }
-
-      const lossesByPlayer = new Map<string, number>()
-      ;(existingLosses ?? []).forEach((row) => {
-        if (row.player_id && typeof row.losses === 'number') {
-          lossesByPlayer.set(row.player_id, row.losses)
-        }
-      })
-
-      const rows = loserIds.map((playerId) => ({
-        tournament_id: tournamentId,
-        player_id: playerId,
-        losses: (lossesByPlayer.get(playerId) ?? 0) + 1,
-      }))
-
-      const lossUpsert = await supabaseServer
-        .from('player_losses_by_tournament')
-        .upsert(rows, { onConflict: 'tournament_id,player_id' })
-
-      if (lossUpsert.error) {
-        return NextResponse.json({ error: lossUpsert.error.message }, { status: 500 })
-      }
-    }
-  }
-
   return NextResponse.json({ ok: true, tournamentId, gameId, playId, winnerPlayerIds })
 }

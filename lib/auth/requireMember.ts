@@ -1,77 +1,37 @@
-import type { User } from '@supabase/supabase-js'
 import { getAccessTokenFromRequest } from '@/lib/auth/token'
 import { getRoleFromUser } from '@/lib/auth/roles'
 import { getSupabaseServiceRole } from '@/lib/supabaseServiceRole'
 import { supabaseServer } from '@/lib/supabaseServer'
 
-type LinkedPlayer = {
-  id: string
-  display_name: string
-  is_active: boolean
-}
+type Player = { id: string; display_name: string; is_active: boolean }
 
-type AuthenticatedMember = {
-  ok: true
-  token: string
-  userId: string
-  role: 'admin' | 'standard'
-  user: User
-  player: LinkedPlayer
-}
-
-type UnauthorizedMember = {
-  ok: false
-  status: number
-  message: string
-}
-
-type UserProfileLookup = {
-  user_id: string
-  player_id: string | null
-  players: LinkedPlayer | LinkedPlayer[] | null
-}
-
-export async function requireMember(req: Request): Promise<AuthenticatedMember | UnauthorizedMember> {
+export async function getAccountAccess(req: Request) {
   const token = getAccessTokenFromRequest(req)
+  if (!token) return { ok: false, status: 401, message: 'Sign in to continue.' } as const
+  const {
+    data: { user },
+    error,
+  } = await supabaseServer.auth.getUser(token)
+  if (error || !user) return { ok: false, status: 401, message: 'Please sign in again.' } as const
 
-  if (!token) {
-    return { ok: false, status: 401, message: 'Authentication required.' }
-  }
-
-  const { data, error } = await supabaseServer.auth.getUser(token)
-
-  if (error || !data?.user) {
-    return { ok: false, status: 401, message: 'Invalid authorization token.' }
-  }
-
-  const supabase = getSupabaseServiceRole()
-  const { data: profile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('user_id, player_id, players:player_id ( id, display_name, is_active )')
-    .eq('user_id', data.user.id)
+  const { data, error: lookupError } = await getSupabaseServiceRole()
+    .from('player_memberships')
+    .select('is_active, players!inner(id,display_name,is_active)')
+    .eq('user_id', user.id)
     .maybeSingle()
-
-  if (profileError) {
-    return { ok: false, status: 500, message: profileError.message }
+  if (lookupError) return { ok: false, status: 500, message: 'Unable to load membership.' } as const
+  const linked = data?.players
+  const player: Player | null = (Array.isArray(linked) ? linked[0] : linked) ?? null
+  if (data && (!data.is_active || !player?.is_active)) {
+    return { ok: false, status: 403, message: 'This membership is inactive.' } as const
   }
+  return { ok: true, user, token, userId: user.id, role: getRoleFromUser(user), player } as const
+}
 
-  const typedProfile = profile as UserProfileLookup | null
-  const player = Array.isArray(typedProfile?.players) ? typedProfile.players[0] ?? null : typedProfile?.players ?? null
-
-  if (!typedProfile?.player_id || !player) {
-    return { ok: false, status: 403, message: 'Your account is not linked to an approved player.' }
-  }
-
-  if (!player.is_active) {
-    return { ok: false, status: 403, message: 'Your linked player profile is inactive.' }
-  }
-
-  return {
-    ok: true,
-    token,
-    userId: data.user.id,
-    role: getRoleFromUser(data.user),
-    user: data.user,
-    player,
-  }
+export async function requireMember(req: Request) {
+  const access = await getAccountAccess(req)
+  if (!access.ok) return access
+  if (!access.player)
+    return { ok: false, status: 403, message: 'An approved player membership is required.' } as const
+  return { ...access, player: access.player }
 }
