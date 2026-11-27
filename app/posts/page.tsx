@@ -398,8 +398,8 @@ export default function PostsPage() {
 
   return (
     <main
+      className="pageFrame"
       style={{
-        padding: 24,
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
         backgroundColor: 'var(--page-background)',
         color: 'var(--text-primary)',
