@@ -151,7 +151,7 @@ textarea {
   border-radius: 10px;
 }
 
-button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__desktop-trigger):not(
+button:not([data-nav-control]):not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__desktop-trigger):not(
     .main-nav__menu-button
   ):not(.main-nav__mobile-auth-button):not(.main-nav__scrim):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab),
 .btn {
@@ -187,7 +187,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(.main-nav__de
     filter 140ms ease;
 }
 
-button:not(.cabbage-roll-button):not(.floating-utility-button):not(
+button:not([data-nav-control]):not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
   ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.main-nav__scrim):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):hover,
 .btn:hover {
@@ -196,7 +196,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
   filter: brightness(1.02);
 }
 
-button:not(.cabbage-roll-button):not(.floating-utility-button):not(
+button:not([data-nav-control]):not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
   ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.main-nav__scrim):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):active,
 .btn:active {
@@ -205,7 +205,7 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
   filter: brightness(0.98);
 }
 
-button:not(.cabbage-roll-button):not(.floating-utility-button):not(
+button:not([data-nav-control]):not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
   ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.main-nav__scrim):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):focus-visible,
 .btn:focus-visible {
@@ -213,10 +213,10 @@ button:not(.cabbage-roll-button):not(.floating-utility-button):not(
   outline-offset: 3px;
 }
 
-button:not(.cabbage-roll-button):not(.floating-utility-button):not(
+button:not([data-nav-control]):not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
   ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.main-nav__scrim):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab):disabled,
-button:not(.cabbage-roll-button):not(.floating-utility-button):not(
+button:not([data-nav-control]):not(.cabbage-roll-button):not(.floating-utility-button):not(
     .main-nav__desktop-trigger
   ):not(.main-nav__menu-button):not(.main-nav__mobile-auth-button):not(.main-nav__scrim):not(.btn--secondary):not(.filter-chip-button):not(.spotify-playlist-button):not(.spotify-playlist-modal__tab)[aria-disabled="true"],
 .btn:disabled,
@@ -3653,4 +3653,111 @@ button:not(.cabbage-roll-button) svg,
   .spotify-playlist-modal__search-button {
     width: 100%;
   }
+}
+
+/* Navigation rows use their own typography, spacing and interaction states. */
+.main-nav__sheet {
+  background: #f8f9f3;
+  color: #243122;
+  padding: max(12px, env(safe-area-inset-top)) 20px 0;
+  gap: 4px;
+}
+.main-nav__sheet-header {
+  justify-content: space-between;
+  border-bottom: 1px solid #82907b;
+}
+.main-nav__sheet-header h2 {
+  font: 650 1.5rem/1.25 var(--font-geist-sans), sans-serif;
+  color: inherit;
+  letter-spacing: -.02em;
+  text-transform: none;
+}
+.mobile-nav-close, .mobile-nav-group-trigger, .admin-mobile-switcher {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  color: inherit;
+}
+.mobile-nav-close {
+  min-height: 48px;
+  padding-inline: 8px;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+.main-nav__sheet-content { gap: 0; }
+.mobile-nav-section + .mobile-nav-section { border-top: 1px solid #d6dcd0; }
+.main-nav__sheet-link, .mobile-nav-group-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 8px;
+  border-radius: 0;
+  text-align: start;
+  text-transform: none;
+  font: 550 1rem/1.4 var(--font-geist-sans), sans-serif;
+  color: inherit;
+}
+.mobile-nav-disclosure {
+  margin-inline-start: 12px;
+  font-size: .8125rem;
+  font-weight: 450;
+}
+.mobile-nav-children {
+  margin: 0 0 10px 8px;
+  border-inline-start: 1px solid #b0bda9;
+  padding-inline-start: 12px;
+}
+.mobile-nav-children .main-nav__sheet-link { min-height: 48px; font-weight: 450; }
+.main-nav__sheet-link[aria-current='page'] {
+  background: #e4ebdd;
+  box-shadow: inset 3px 0 #425a38;
+  font-weight: 650;
+}
+.main-nav__sheet :focus-visible, .admin-mobile-switcher:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
+}
+.admin-mobile-switcher { display: none; }
+@media (max-width: 960px) {
+  .admin-mobile-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 50px;
+    width: 100%;
+    padding: 8px 4px;
+    text-align: start;
+  }
+  .admin-side-nav__title, .admin-side-nav__links { display: none; }
+  .admin-side-nav__links.is-expanded { display: flex; flex-direction: column; gap: 0; }
+  .admin-side-nav__link {
+    min-height: 48px;
+    border-radius: 0;
+    font-size: 1rem;
+    text-transform: none;
+    padding-inline: 16px;
+  }
+  .admin-side-nav__link.is-active { background: #e4ebdd; color: #243122; border-color: transparent; box-shadow: inset 3px 0 #425a38; }
+  .admin-side-nav {
+    flex-basis: auto;
+    border: 0;
+    border-block: 1px solid #a6b09f;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-primary);
+    padding: 0;
+  }
+  .admin-side-nav__link { color: inherit; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-nav, .main-nav__sheet, .main-nav__scrim, .main-nav__sheet-link {
+    transition: none;
+  }
+}
+
+body:has(.main-nav__sheet.is-open) .utility-fab-menu {
+  visibility: hidden;
 }

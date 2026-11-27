@@ -225,3 +225,16 @@ export const defaultNavConfig: NavConfig = {
     },
   ],
 }
+
+export const adminNavLinks = defaultNavConfig.megaMenus
+  .filter(menu => menu.id === 'admin' && menu.isVisible)
+  .flatMap(menu => menu.groups.filter(group => group.isVisible))
+  .flatMap(group => group.items.filter(item => item.isVisible))
+  .map(item => ({ href: item.href, label: item.title }))
+
+export const mobileNavConfig = [
+  { id: 'picker', label: 'Game picker', hrefs: ['/'], grouped: false },
+  { id: 'annals', label: 'The Annals', hrefs: ['/history', '/posts', '/rules', '/game-data'], grouped: true },
+  { id: 'players-utilities', label: 'Players & utilities', hrefs: ['/player-cards', '/bracket'], grouped: true },
+  { id: 'admin', label: 'Administration', hrefs: adminNavLinks.map(link => link.href), grouped: true },
+]

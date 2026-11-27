@@ -8,7 +8,7 @@ import type {
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
 } from 'react'
-import { defaultNavConfig } from '@/lib/navigation/defaultConfig'
+import { defaultNavConfig, mobileNavConfig } from '@/lib/navigation/defaultConfig'
 import useBodyScrollLock from '@/app/hooks/useBodyScrollLock'
 import { getRoleLabel } from '@/lib/auth/roles'
 import { persistServerSession } from '@/lib/auth/persistServerSession'
@@ -133,6 +133,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
   })
   const wasMenuOpenRef = useRef(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [expandedMobileGroup, setExpandedMobileGroup] = useState<string | null>(null)
   const [isAuthMenuOpen, setIsAuthMenuOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
@@ -247,9 +248,8 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
   }, [navConfig])
 
   const desktopMegaMenus = useMemo(() => {
-    if (showAdminMenu) return megaMenus
-    return megaMenus.filter((menu) => menu.id !== 'admin')
-  }, [megaMenus, showAdminMenu])
+    return megaMenus.filter((menu) => menu.id !== 'admin' || (showAdminMenu && auth.role === 'admin'))
+  }, [megaMenus, showAdminMenu, auth.role])
   const navItems = useMemo(() => {
     const megaMenuEntries = desktopMegaMenus.map((menu) => ({
       type: 'menu' as const,
@@ -267,11 +267,46 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     )
   }, [desktopMegaMenus, primaryLinks])
 
+  const mobileDestinations = new Map(primaryLinks.map(link => [link.href, link.label]))
+  const mobileLabels: Record<string, string> = {
+    '/game-data': 'Game stats',
+    '/player-cards': 'Player cards',
+    '/bracket': 'Bracket generator',
+  }
+  for (const menu of desktopMegaMenus) {
+    for (const group of menu.groups) {
+      for (const item of group.items) mobileDestinations.set(item.href, item.title)
+    }
+  }
+
+  const mobileSections = mobileNavConfig.map(section => ({
+    ...section,
+    links: section.hrefs.flatMap(href => {
+      const label = mobileDestinations.get(href)
+      return label ? [{ href, label: mobileLabels[href] ?? label }] : []
+    }),
+  })).filter(section => section.links.length > 0)
+
   useEffect(() => {
-    setIsMobileMenuOpen(false)
-    setIsAuthMenuOpen(false)
-    setIsNavHidden(false)
+    const frame = window.requestAnimationFrame(() => {
+      setIsMobileMenuOpen(false)
+      setIsAuthMenuOpen(false)
+      setIsNavHidden(false)
+    })
+    return () => window.cancelAnimationFrame(frame)
   }, [pathname])
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 961px)')
+    const closeMobileMenus = () => {
+      if (desktop.matches) {
+        setIsMobileMenuOpen(false)
+        setIsAuthMenuOpen(false)
+      }
+    }
+    desktop.addEventListener('change', closeMobileMenus)
+    return () => desktop.removeEventListener('change', closeMobileMenus)
+  }, [])
 
   const handleMobileClose = () => {
     setIsMobileMenuOpen(false)
@@ -371,14 +406,14 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
     wasMenuOpenRef.current = true
 
     const sheet = sheetRef.current
-    const focusableElements = sheet
+    const getFocusableElements = () => sheet
       ? Array.from(
           sheet.querySelectorAll<HTMLElement>(
             'a[href], button:not([disabled]), [tabindex]:not([tabindex=\"-1\"])'
           )
-        )
+        ).filter(element => element.getClientRects().length > 0)
       : []
-    const firstElement = focusableElements[0] ?? sheet
+    const firstElement = getFocusableElements()[0] ?? sheet
 
     // Move focus into the drawer when it opens.
     firstElement?.focus()
@@ -394,6 +429,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
         return
       }
 
+      const focusableElements = getFocusableElements()
       if (focusableElements.length === 0) {
         event.preventDefault()
         return
@@ -413,9 +449,21 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       focusableElements[nextIndex].focus()
     }
 
+    const background: { element: HTMLElement; wasInert: boolean }[] = []
+    let branch: HTMLElement | null = sheet
+    while (branch?.parentElement && branch !== document.body) {
+      for (const sibling of Array.from(branch.parentElement.children)) {
+        if (sibling instanceof HTMLElement && sibling !== branch && !sibling.classList.contains('main-nav__scrim')) {
+          background.push({ element: sibling, wasInert: sibling.inert })
+          sibling.inert = true
+        }
+      }
+      branch = branch.parentElement
+    }
     document.addEventListener('keydown', handleKeyDown)
 
     return () => {
+      background.forEach(({ element, wasInert }) => { element.inert = wasInert })
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isMobileMenuOpen])
@@ -455,6 +503,7 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
       prefetch={!href.startsWith('/admin')}
       className="main-nav__sheet-link"
       data-active={pathname === href}
+      aria-current={pathname === href ? 'page' : undefined}
       onClick={handleUtilityLinkClick(handleMobileClose)}
     >
       <span className="main-nav__sheet-label">{label}</span>
@@ -527,6 +576,9 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
           ref={menuButtonRef}
           onClick={() => {
             setIsAuthMenuOpen(false)
+            setExpandedMobileGroup(mobileSections.find(section => section.links.some(link =>
+              pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href + '/'))
+            ))?.id ?? null)
             setIsMobileMenuOpen((prev) => !prev)
           }}
         >
@@ -709,62 +761,51 @@ export default function NavClient({ showAdminMenu = true }: NavProps) {
         className={`main-nav__sheet ${isMobileMenuOpen ? 'is-open' : ''}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation"
+        aria-labelledby="mobile-navigation-title"
+        inert={!isMobileMenuOpen}
+        aria-hidden={!isMobileMenuOpen}
         ref={sheetRef}
         tabIndex={-1}
       >
         <div className="main-nav__sheet-header">
+          <h2 id="mobile-navigation-title">Menu</h2>
           <button
             type="button"
-            className="modal-close"
+            data-nav-control
+            className="mobile-nav-close"
             onClick={handleMobileClose}
-            aria-label="Close this nonsense"
+            aria-label="Close navigation"
           >
-            ✕
+            Close
           </button>
         </div>
         <div className="main-nav__sheet-content">
-          {navItems.map((item, index) => {
-            if (item.type === 'link') {
-              const isAfterMenu = index > 0 && navItems[index - 1].type === 'menu'
-              return (
-                <div
-                  key={item.link.href}
-                  className={`main-nav__sheet-links${
-                    isAfterMenu ? ' main-nav__sheet-links--separated' : ''
-                  }`}
-                >
-                  {renderMobileLink(item.link.href, item.link.label)}
-                </div>
-              )
-            }
-
-            const menu = item.menu
-            return (
-              <div key={menu.id} className="main-nav__sheet-section">
-                <div className="main-nav__sheet-section-title">{menu.label}</div>
-                {menu.groups.map((group) => (
-                  <div key={group.title} className="main-nav__sheet-group">
-                    {group.title === menu.label ? null : (
-                      <div className="main-nav__sheet-group-title">{group.title}</div>
-                    )}
-                    <div className="main-nav__sheet-links">
-                      {group.items.map((item) => renderMobileLink(item.href, item.title))}
-                    </div>
+          {mobileSections.map(section => (
+            <div key={section.id} className={section.id === 'admin' ? 'mobile-nav-section mobile-nav-section--admin' : 'mobile-nav-section'}>
+              {!section.grouped ? (
+                renderMobileLink(section.links[0].href, section.label)
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    data-nav-control
+                    className="mobile-nav-group-trigger"
+                    aria-expanded={expandedMobileGroup === section.id}
+                    aria-controls={`mobile-group-${section.id}`}
+                    onClick={() => setExpandedMobileGroup(current => current === section.id ? null : section.id)}
+                  >
+                    <span>{section.label}</span>
+                    <span className="mobile-nav-disclosure" aria-hidden="true">
+                      {expandedMobileGroup === section.id ? 'Hide' : 'Show'}
+                    </span>
+                  </button>
+                  <div id={`mobile-group-${section.id}`} hidden={expandedMobileGroup !== section.id} className="mobile-nav-children">
+                    {section.links.map(link => renderMobileLink(link.href, link.label))}
                   </div>
-                ))}
-              </div>
-            )
-          })}
-          <div className="main-nav__sheet-section main-nav__sheet-section--utility">
-            <div className="main-nav__sheet-section-title">Utility</div>
-            <div className="main-nav__sheet-links">
-              {auth.isAuthenticated && auth.role === 'admin'
-                ? renderMobileLink('/admin/games', 'Admin')
-                : null}
-              {utilityLinks.map((link) => renderMobileLink(link.href, link.label))}
+                </>
+              )}
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </nav>
