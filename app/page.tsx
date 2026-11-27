@@ -413,6 +413,12 @@ export default function Home() {
       return
     }
 
+    const groupSize = playerCount.trim() ? Number(playerCount) : undefined
+    if (groupSize !== undefined && (!Number.isSafeInteger(groupSize) || groupSize < 1)) {
+      setRecommendState({ loading: false, error: 'Enter a positive whole number of players.', result: null })
+      return
+    }
+
     setRecommendState({ loading: true, error: null, result: null })
     setRecommendedGames([])
     setActiveRecommendedGameId(null)
@@ -423,6 +429,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tournamentId: activeTournamentId,
+          playerCount: groupSize,
           userPrompt: recommendationPrompt,
         }),
       })
@@ -430,6 +437,12 @@ export default function Home() {
 
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Recommendation request failed')
+      }
+
+      if (data.meta?.candidateCount === 0) {
+        const count = data.meta.playerCount
+        const message = count ? `No active games support a group of ${count}.` : 'There are no active games to recommend.'
+        throw new Error(message)
       }
 
       setRecommendState({ loading: false, error: null, result: data })

@@ -4,11 +4,12 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 
 import { requireMember } from "@/lib/auth/requireMember"
-import openai from "@/lib/openai"
-import { supabaseAdmin } from "@/lib/supabase-admin"
+import { getOpenAI } from "@/lib/openai"
+import { getSupabaseServiceRole } from "@/lib/supabaseServiceRole"
 
 const requestSchema = z.object({
   tournamentId: z.string().uuid(),
+  playerCount: z.number().int().positive().optional(),
   userPrompt: z.string().min(1),
 })
 
@@ -159,7 +160,7 @@ function scoreCandidateGame(params: {
 
 function buildRecommendationUserPayload(params: {
   userPrompt: string
-  playerCount: number
+  playerCount: number | null
   allKnownTags: string[]
   recentGameIds: string[]
   candidateGames: CandidateGame[]
@@ -178,7 +179,9 @@ function buildRecommendationUserPayload(params: {
     instructions: {
       hardConstraints: [
         "Only recommend games from candidateGames.",
-        "Treat candidateGames as already filtered for player-count compatibility; do not invent any game outside that set.",
+        playerCount === null
+          ? "Group size is unknown unless specified in userPrompt. If specified, use the candidates' player ranges to match it."
+          : "Treat candidateGames as already filtered for player-count compatibility.",
         "If candidateGames is empty, return no recommendations.",
       ],
       preferenceFramework: {
@@ -474,19 +477,20 @@ export async function POST(request: Request) {
     }
 
     const { tournamentId, userPrompt } = parsedInput.data
+    const supabaseAdmin = getSupabaseServiceRole()
 
-    stage = "load_players"
-    const playersResult = await supabaseAdmin
-      .from("tournament_players")
-      .select("id")
-      .eq("tournament_id", tournamentId)
-      .is("left_at", null)
+    let playerCount = parsedInput.data.playerCount ?? null
+    if (playerCount === null) {
+      stage = "load_players"
+      const playersResult = await supabaseAdmin
+        .from("tournament_players")
+        .select("id")
+        .eq("tournament_id", tournamentId)
+        .is("left_at", null)
 
-    if (playersResult.error) {
-      throw playersResult.error
+      if (playersResult.error) throw playersResult.error
+      if (playersResult.data.length > 0) playerCount = playersResult.data.length
     }
-
-    const playerCount = playersResult.data.length
 
     stage = "load_recent_plays"
     const recentPlaysResult = await supabaseAdmin
@@ -505,12 +509,15 @@ export async function POST(request: Request) {
     )
 
     stage = "load_games"
-    const gamesResult = await supabaseAdmin
+    let gamesQuery = supabaseAdmin
       .from("games")
       .select("id,name,min_players,max_players,playtime_minutes,notes")
       .eq("is_active", true)
-      .lte("min_players", playerCount)
-      .gte("max_players", playerCount)
+
+    if (playerCount !== null) {
+      gamesQuery = gamesQuery.lte("min_players", playerCount).gte("max_players", playerCount)
+    }
+    const gamesResult = await gamesQuery
 
     if (gamesResult.error) {
       throw gamesResult.error
@@ -607,6 +614,13 @@ export async function POST(request: Request) {
     )
 
     stage = "openai_request"
+    const openai = getOpenAI()
+    if (!openai) {
+      return NextResponse.json(
+        { error: "AI recommendations are unavailable because the server is missing its OpenAI API key." },
+        { status: 503 },
+      )
+    }
     const response = await openai.responses.create({
       model: "gpt-5-mini",
       input: [
